@@ -13,7 +13,7 @@ namespace ModernLauncher.Views
 
         private void InitializeComponent()
         {
-            Title = "ヘルプ - FenrirFS";
+            Title = "ヘルプ - Pathhub";
             Width = 600;
             Height = 500;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -30,7 +30,7 @@ namespace ModernLauncher.Views
             // Title
             var titleBlock = new TextBlock
             {
-                Text = "FenrirFS ランチャー",
+                Text = "Pathhub ",
                 FontSize = 18,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 0, 0, 20),
@@ -100,7 +100,6 @@ namespace ModernLauncher.Views
             // About
             AddSection(stackPanel, "このソフトについて", new[]
             {
-                "FenrirFS風のクラシックなデザインを持つランチャーアプリケーションです。",
                 "MVVMパターンとSOLID原則に従って設計されており、",
                 "拡張性と保守性を重視した構造になっています。",
                 "",
