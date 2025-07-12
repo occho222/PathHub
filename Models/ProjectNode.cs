@@ -31,7 +31,7 @@ namespace ModernLauncher.Models
             set => SetProperty(ref isSelected, value);
         }
 
-        public string DisplayName => IsFolder ? $"[F] {Name}" : Name;
+        public string DisplayName => IsFolder ? $"[ƒtƒHƒ‹ƒ_] {Name}" : Name;
         public int Level => Parent?.Level + 1 ?? 0;
 
         public event PropertyChangedEventHandler? PropertyChanged;

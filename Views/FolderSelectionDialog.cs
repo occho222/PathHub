@@ -137,8 +137,8 @@ namespace ModernLauncher.Views
             var allFolders = GetFlattenedFolders(folders);
             foreach (var folderInfo in allFolders)
             {
-                var indent = new string(' ', folderInfo.Level * 2);
-                var displayItem = new { DisplayName = $"{indent}[F] {folderInfo.Node.Name}", Node = folderInfo.Node };
+                var indent = new string(' ', folderInfo.Level * 4);
+                var displayItem = new { DisplayName = $"{indent}[フォルダ] {folderInfo.Node.Name}", Node = folderInfo.Node };
                 folderComboBox.Items.Add(displayItem);
             }
 
@@ -210,7 +210,7 @@ namespace ModernLauncher.Views
         {
             return new TreeViewItem
             {
-                Header = $"[F] {folder.Name}",
+                Header = $"[フォルダ] {folder.Name}",
                 Tag = folder,
                 FontSize = 13,
                 IsExpanded = true

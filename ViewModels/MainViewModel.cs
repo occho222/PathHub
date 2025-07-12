@@ -471,14 +471,20 @@ namespace ModernLauncher.ViewModels
         // Command implementations
         private void NewProject(object? parameter)
         {
-            var dialog = new TextInputDialog("新規プロジェクト", "プロジェクト名を入力してください:");
-            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.InputText))
+            // 利用可能なフォルダノードを取得
+            var availableFolders = new List<ProjectNode>();
+            CollectFoldersRecursive(ProjectNodes, availableFolders);
+
+            var dialog = new NewProjectDialog(availableFolders);
+            dialog.Owner = Application.Current.MainWindow;
+            
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ProjectName))
             {
-                var parentId = SelectedProjectNode?.IsFolder == true ? SelectedProjectNode.Id : SelectedProjectNode?.ParentId;
+                var parentId = dialog.SelectedFolder?.Id; // nullの場合はルートレベル
                 
                 var newProject = new Project
                 {
-                    Name = dialog.InputText,
+                    Name = dialog.ProjectName,
                     Id = Guid.NewGuid().ToString(),
                     OrderIndex = Projects.Count,
                     ParentId = parentId,
@@ -510,7 +516,22 @@ namespace ModernLauncher.ViewModels
                     if (newNode != null)
                     {
                         SelectedProjectNode = newNode;
+                        
+                        // プロジェクトが作成されたフォルダを展開
+                        if (dialog.SelectedFolder != null)
+                        {
+                            var parentNode = FindProjectNode(dialog.SelectedFolder.Id);
+                            if (parentNode != null)
+                            {
+                                parentNode.IsExpanded = true;
+                            }
+                        }
                     }
+                    
+                    // 成功メッセージ
+                    var folderName = dialog.SelectedFolder?.Name ?? "ルート";
+                    MessageBox.Show($"プロジェクト「{newProject.Name}」を「{folderName}」に作成しました。", "プロジェクト作成完了",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
