@@ -19,7 +19,7 @@ namespace ModernLauncher.Resources
 
         // Toolbar buttons
         public string AddItem => "アイテム追加";
-        public string Archive => "アーカイブ";
+        public string Archive => "エクスポート";
         public string Delete => "削除";
         public string Label => "ラベル";
         public string Search => "検索:";
