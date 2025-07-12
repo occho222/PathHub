@@ -58,7 +58,8 @@
                                 <ContentPresenter x:Name="PART_Header" 
                                                 ContentSource="Header"
                                                 HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"/>
+                                                VerticalAlignment="Center"
+                                                TextElement.Foreground="{TemplateBinding Foreground}"/>
                             </Border>
                             <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
                                           Visibility="Collapsed" Margin="16,0,0,0"/>
@@ -70,6 +71,7 @@
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
                                 <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
@@ -81,6 +83,7 @@
                                 </MultiTrigger.Conditions>
                                 <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
                                 <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -472,15 +475,38 @@
                                 <Setter Property="FontSize" Value="13"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#316AC5"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#E6F2FF"/>
-                                    </Trigger>
-                                </Style.Triggers>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TreeViewItem">
+                                            <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter x:Name="PART_Header" 
+                                                                ContentSource="Header"
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Center"
+                                                                TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                                                </Trigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="IsSelected" Value="True"/>
+                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
+                                                </MultiTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
                             </Style>
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
@@ -507,6 +533,34 @@
                     FontSize="13"
                     AllowDrop="True"
                     MouseDoubleClick="ListView_MouseDoubleClick">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="Padding" Value="2"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </MultiTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Type}" Width="60">
@@ -521,7 +575,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Category}" FontSize="12" 
-                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"/>
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -529,7 +584,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}" FontSize="13" 
-                                             Foreground="{StaticResource TextColor}" Margin="6,2"/>
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -537,7 +593,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Description}" FontSize="12" 
-                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -546,7 +603,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Path}" FontSize="12" 
-                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -555,7 +613,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding GroupNames}" FontSize="12" 
-                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
