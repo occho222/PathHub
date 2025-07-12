@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
+using ModernLauncher.Models;
 
 namespace ModernLauncher.Converters
 {
@@ -67,6 +69,45 @@ namespace ModernLauncher.Converters
                 return "??"; // フォルダアイコン
             }
             return "??"; // ファイル/プロジェクトアイコン
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class CategoryColorConverter : IValueConverter
+    {
+        public static readonly CategoryColorConverter Instance = new CategoryColorConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string category)
+            {
+                return CategoryColorSettings.Instance.GetBrushForCategory(category);
+            }
+            return new SolidColorBrush(Colors.LightGray);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class CategoryColorIndicatorConverter : IValueConverter
+    {
+        public static readonly CategoryColorIndicatorConverter Instance = new CategoryColorIndicatorConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string category)
+            {
+                var brush = CategoryColorSettings.Instance.GetBrushForCategory(category);
+                return brush;
+            }
+            return new SolidColorBrush(Colors.Transparent);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

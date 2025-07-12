@@ -25,7 +25,7 @@ namespace ModernLauncher.Resources
         public string Search => "検索:";
 
         // Project bar
-        public string WorkTray => "作業用トレイ";
+        public string WorkTray => "選択項目操作";
         public string New => "新規";
         public string Import => "インポート";
 

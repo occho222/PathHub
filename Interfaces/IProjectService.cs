@@ -12,5 +12,7 @@ namespace ModernLauncher.Interfaces
         void DeleteProject(string id);
         void ExportProject(Project project, string filePath);
         Project? ImportProject(string filePath);
+        void SaveColorSettings(Dictionary<string, string> colorSettings);
+        Dictionary<string, string>? LoadColorSettings();
     }
 }

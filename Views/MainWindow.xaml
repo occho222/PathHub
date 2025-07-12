@@ -104,6 +104,8 @@
         </Style>
 
         <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
+        <local:CategoryColorConverter x:Key="CategoryColorConverter"/>
+        <local:CategoryColorIndicatorConverter x:Key="CategoryColorIndicatorConverter"/>
         
         <Style x:Key="ToolbarButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -277,6 +279,7 @@
                         <MenuItem Header="View"/>
                         <MenuItem Header="Tools">
                             <MenuItem Header="Create Test Folders" Command="{Binding CreateTestFoldersCommand}"/>
+                            <MenuItem Header="Color Settings" Command="{Binding ShowColorSettingsCommand}"/>
                         </MenuItem>
                         <MenuItem Header="Help" Command="{Binding ShowHelpCommand}"/>
                     </Menu>
@@ -634,12 +637,21 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Category}" Width="110">
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Category}" Width="130">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Category}" FontSize="12" 
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
-                                             Margin="6,2"/>
+                                    <StackPanel Orientation="Horizontal" Margin="6,2">
+                                        <!-- Color indicator -->
+                                        <Border Width="16" Height="12" 
+                                                Background="{Binding Category, Converter={StaticResource CategoryColorIndicatorConverter}}"
+                                                BorderBrush="Gray" BorderThickness="1" 
+                                                CornerRadius="2" Margin="0,0,6,0"
+                                                VerticalAlignment="Center"/>
+                                        <!-- Category text -->
+                                        <TextBlock Text="{Binding Category}" FontSize="12" 
+                                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                                 VerticalAlignment="Center"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

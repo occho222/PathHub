@@ -12,6 +12,7 @@ namespace ModernLauncher.Services
     {
         private readonly string projectsFolder = "Projects";
         private readonly string projectListFile = "projects.json";
+        private readonly string colorSettingsFile = "colorSettings.json";
 
         public ProjectService()
         {
@@ -54,6 +55,36 @@ namespace ModernLauncher.Services
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"プロジェクト一覧の保存に失敗しました: {ex.Message}", ex);
+            }
+        }
+
+        public void SaveColorSettings(Dictionary<string, string> colorSettings)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(colorSettings, Formatting.Indented);
+                File.WriteAllText(colorSettingsFile, json);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"色設定の保存に失敗しました: {ex.Message}", ex);
+            }
+        }
+
+        public Dictionary<string, string>? LoadColorSettings()
+        {
+            try
+            {
+                if (File.Exists(colorSettingsFile))
+                {
+                    string json = File.ReadAllText(colorSettingsFile);
+                    return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"色設定の読み込みに失敗しました: {ex.Message}", ex);
             }
         }
 

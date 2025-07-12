@@ -46,6 +46,7 @@ namespace ModernLauncher.ViewModels
         public ICommand ExportProjectCommand { get; }
         public ICommand ImportProjectCommand { get; }
         public ICommand ShowHelpCommand { get; }
+        public ICommand ShowColorSettingsCommand { get; }
 
         public MainViewModel() : this(
             ServiceLocator.Instance.GetService<IProjectService>(), 
@@ -75,6 +76,7 @@ namespace ModernLauncher.ViewModels
             ExportProjectCommand = new RelayCommand(ExportProject, CanExportProject);
             ImportProjectCommand = new RelayCommand(ImportProject);
             ShowHelpCommand = new RelayCommand(ShowHelp);
+            ShowColorSettingsCommand = new RelayCommand(ShowColorSettings);
 
             LoadProjects();
             InitializeUI();
@@ -964,6 +966,13 @@ namespace ModernLauncher.ViewModels
             helpDialog.ShowDialog();
         }
 
+        private void ShowColorSettings(object? parameter)
+        {
+            var colorSettingsDialog = new ColorSettingsDialog();
+            colorSettingsDialog.Owner = Application.Current.MainWindow;
+            colorSettingsDialog.ShowDialog();
+        }
+
         private void DeleteProjectOrFolder(object? parameter)
         {
             if (SelectedProjectNode == null) return;
@@ -1315,7 +1324,17 @@ namespace ModernLauncher.ViewModels
                 // URLの場合
                 if (IsUrl(path))
                 {
-                    return "Webサイト";
+                    var uri = new Uri(path);
+                    var host = uri.Host.ToLower();
+                    
+                    if (host.Contains("github.com"))
+                        return "GitHubURL";
+                    else if (host.Contains("gitlab.com"))
+                        return "GitLabURL";
+                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
+                        return "Googleドライブ";
+                    else
+                        return "Webサイト";
                 }
 
                 if (System.IO.Directory.Exists(path))
@@ -1326,15 +1345,22 @@ namespace ModernLauncher.ViewModels
                 if (System.IO.File.Exists(path))
                 {
                     var extension = System.IO.Path.GetExtension(path).ToLower();
+                    var fileName = System.IO.Path.GetFileName(path).ToLower();
+                    
                     return extension switch
                     {
                         ".exe" or ".msi" or ".bat" or ".cmd" => "アプリケーション",
-                        ".txt" or ".doc" or ".docx" or ".pdf" or ".rtf" => "ドキュメント",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" => "画像",
-                        ".mp3" or ".wav" or ".wma" or ".flac" => "音楽",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" => "動画",
-                        ".zip" or ".rar" or ".7z" or ".tar" => "アーカイブ",
+                        ".txt" or ".rtf" => "ドキュメント",
+                        ".doc" or ".docx" => "Word",
+                        ".xls" or ".xlsx" => "Excel",
+                        ".ppt" or ".pptx" => "PowerPoint",
+                        ".pdf" => "PDF",
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "アーカイブ",
                         ".lnk" => "ショートカット",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ドキュメント",
                         _ => "ファイル"
                     };
                 }
