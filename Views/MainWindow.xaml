@@ -97,6 +97,9 @@
                 <DataTrigger Binding="{Binding IsFolder}" Value="True">
                     <Setter Property="FontWeight" Value="Normal"/>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="True">
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -148,9 +151,10 @@
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Style.Triggers>
                 <Trigger Property="IsFocused" Value="True">
                     <Setter Property="BorderBrush" Value="#316AC5"/>
@@ -183,6 +187,51 @@
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- GridView Column Header Style for Resizing -->
+        <Style x:Key="GridViewColumnHeaderStyle" TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="{StaticResource PanelColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Grid>
+                            <Border x:Name="HeaderBorder" 
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                RecognizesAccessKey="True"/>
+                            </Border>
+                            <!-- Resize Grip -->
+                            <Thumb x:Name="PART_HeaderGripper" 
+                                   HorizontalAlignment="Right" 
+                                   Width="3" 
+                                   Cursor="SizeWE" 
+                                   Background="Transparent"
+                                   Margin="0,0,-1,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#CCDDEE"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -257,8 +306,9 @@
                     <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Search}" Foreground="{StaticResource TextColor}" 
                              VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
                     <TextBox Style="{StaticResource ClassicTextBox}"
-                           Width="220" Height="28" VerticalAlignment="Center"
-                           Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                           Width="220" Height="30" VerticalAlignment="Center"
+                           Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                           VerticalContentAlignment="Center" Padding="8,4"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -348,7 +398,7 @@
         <Grid Grid.Row="3" Background="{StaticResource BackgroundColor}"
               AllowDrop="True">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="300" MinWidth="200" MaxWidth="500"/>
                 <ColumnDefinition Width="2"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -359,10 +409,10 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="150" MinHeight="80"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="4"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*" MinHeight="80"/>
                     </Grid.RowDefinitions>
                     
                     <!-- Project Section -->
@@ -404,8 +454,7 @@
                     <TreeView Grid.Row="1" 
                              Style="{StaticResource ProjectTreeViewStyle}"
                              Margin="4"
-                             ItemsSource="{Binding ProjectNodes}"
-                             MaxHeight="180">
+                             ItemsSource="{Binding ProjectNodes}">
                         <TreeView.ItemContainerStyle>
                             <StaticResource ResourceKey="ProjectTreeViewItemStyle"/>
                         </TreeView.ItemContainerStyle>
@@ -413,7 +462,8 @@
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">
                                     <!-- Folder icon for folders only -->
-                                    <TextBlock Text="[+]" FontSize="13" Margin="0,0,4,0" FontWeight="Bold">
+                                    <TextBlock Text="[+]" FontSize="13" Margin="0,0,4,0" FontWeight="Bold"
+                                               Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -427,22 +477,36 @@
                                     </TextBlock>
                                     <!-- Project name -->
                                     <TextBlock Text="{Binding Name}" FontSize="13" Margin="0,0,4,0"
-                                             Style="{StaticResource ProjectNodeTextBlockStyle}"/>
+                                             Style="{StaticResource ProjectNodeTextBlockStyle}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}"/>
                                     <!-- Item count -->
                                     <TextBlock Text="{Binding ItemCountText}" FontSize="12" 
-                                             Foreground="{StaticResource SubTextColor}"
-                                             VerticalAlignment="Center"/>
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}"
+                                             VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="False">
+                                                        <Setter Property="Foreground" Value="{StaticResource SubTextColor}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
 
-                    <!-- Separator -->
-                    <Border Grid.Row="2" Background="{StaticResource BorderColor}"/>
+                    <!-- Horizontal Splitter -->
+                    <GridSplitter Grid.Row="2" Background="{StaticResource BorderColor}" 
+                                HorizontalAlignment="Stretch" Height="2" Cursor="SizeNS"
+                                ResizeBehavior="PreviousAndCurrent" ResizeDirection="Rows"
+                                VerticalAlignment="Center"/>
                     
                     <!-- Group Section -->
                     <Border Grid.Row="3" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
-                            BorderThickness="0,0,0,1" Padding="8,6">
+                            BorderThickness="0,1,0,1" Padding="8,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -519,7 +583,8 @@
 
             <!-- Splitter -->
             <GridSplitter Grid.Column="1" Background="{StaticResource BorderColor}" 
-                        HorizontalAlignment="Stretch" Width="2" Cursor="SizeWE"/>
+                        HorizontalAlignment="Stretch" Width="2" Cursor="SizeWE"
+                        ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"/>
 
             <!-- Main ListView with Drag and Drop -->
             <ListView Grid.Column="2" Background="White" BorderThickness="0"
@@ -557,7 +622,10 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.View>
-                    <GridView>
+                    <GridView AllowsColumnReorder="True">
+                        <GridView.ColumnHeaderContainerStyle>
+                            <StaticResource ResourceKey="GridViewColumnHeaderStyle"/>
+                        </GridView.ColumnHeaderContainerStyle>
                         <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Type}" Width="60">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
