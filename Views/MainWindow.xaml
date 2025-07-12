@@ -1,0 +1,489 @@
+<Window x:Class="ModernLauncher.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ModernLauncher.Converters"
+        xmlns:vm="clr-namespace:ModernLauncher.ViewModels"
+        xmlns:res="clr-namespace:ModernLauncher.Resources"
+        mc:Ignorable="d"
+        Title="FenrirFS" Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        Background="#ECE9D8"
+        AllowDrop="True">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <res:LocalizedStrings x:Key="Strings"/>
+        
+        <SolidColorBrush x:Key="ToolbarColor" Color="#ECE9D8"/>
+        <SolidColorBrush x:Key="PanelColor" Color="#F6F6F6"/>
+        <SolidColorBrush x:Key="SelectedColor" Color="#316AC5"/>
+        <SolidColorBrush x:Key="HoverColor" Color="#E6F2FF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#ACA899"/>
+        <SolidColorBrush x:Key="TextColor" Color="#000000"/>
+        <SolidColorBrush x:Key="SubTextColor" Color="#666666"/>
+        <SolidColorBrush x:Key="BackgroundColor" Color="#FFFFFF"/>
+        
+        <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
+        
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E6F2FF"/>
+                    <Setter Property="BorderBrush" Value="#8CB4D8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ClassicButton" TargetType="Button">
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E6F2FF"/>
+                    <Setter Property="BorderBrush" Value="#8CB4D8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource ClassicButton}">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+        </Style>
+
+        <Style x:Key="ClassicTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#316AC5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ProjectListBox Style -->
+        <Style x:Key="ProjectListBox" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+
+        <Style x:Key="ProjectListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextColor}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewProjectCommand}"/>
+        <KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding AddItemCommand}"/>
+        <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding AddGroupCommand}"/>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveDataCommand}"/>
+        <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}"/>
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="38"/>
+            <RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+        </Grid.RowDefinitions>
+
+        <!-- Menu Bar -->
+        <Border Grid.Row="0" Background="{StaticResource ToolbarColor}" 
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" Margin="6,0">
+                    <Menu Background="Transparent" FontSize="13">
+                        <MenuItem Header="File">
+                            <MenuItem Header="New Project" Command="{Binding NewProjectCommand}"/>
+                            <MenuItem Header="New Folder" Command="{Binding NewFolderCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Import" Command="{Binding ImportProjectCommand}"/>
+                            <MenuItem Header="Export" Command="{Binding ExportProjectCommand}"/>
+                        </MenuItem>
+                        <MenuItem Header="Edit">
+                            <MenuItem Header="Move Project" Command="{Binding MoveToFolderCommand}"/>
+                            <MenuItem Header="Delete" Command="{Binding DeleteProjectCommand}"/>
+                        </MenuItem>
+                        <MenuItem Header="View"/>
+                        <MenuItem Header="Tools">
+                            <MenuItem Header="Create Test Folders" Command="{Binding CreateTestFoldersCommand}"/>
+                        </MenuItem>
+                        <MenuItem Header="Help" Command="{Binding ShowHelpCommand}"/>
+                    </Menu>
+                </StackPanel>
+                
+                <TextBlock DockPanel.Dock="Right" Text="{Binding AppVersion}" 
+                         Foreground="{StaticResource SubTextColor}" FontSize="12" 
+                         VerticalAlignment="Center" Margin="0,0,8,0"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="{StaticResource ToolbarColor}" 
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
+            <DockPanel Margin="6,5">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button Style="{StaticResource ToolbarButton}" 
+                            Command="{Binding AddItemCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[+]" FontSize="14" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=AddItem}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderColor}" Margin="6,2"/>
+                    
+                    <Button Content="{Binding Source={StaticResource Strings}, Path=Archive}" Style="{StaticResource ToolbarButton}"
+                            Command="{Binding ExportProjectCommand}"/>
+                    <Button Content="{Binding Source={StaticResource Strings}, Path=Label}" Style="{StaticResource ToolbarButton}"
+                            Command="{Binding AddGroupCommand}"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="0,0,8,0">
+                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Search}" Foreground="{StaticResource TextColor}" 
+                             VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
+                    <TextBox Style="{StaticResource ClassicTextBox}"
+                           Width="220" Height="28" VerticalAlignment="Center"
+                           Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Project Bar with Item Operations -->
+        <Border Grid.Row="2" Background="{StaticResource PanelColor}" 
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
+            <Grid Margin="6,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Work Tray Label -->
+                <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=WorkTray}" 
+                         Foreground="{StaticResource TextColor}" 
+                         VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Margin="0,0,20,0"/>
+                
+                <!-- Item Operation Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource ClassicButton}" 
+                            Command="{Binding EditItemCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            Margin="3,0" Height="32" MinWidth="60">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[Edit]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Edit}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Style="{StaticResource ClassicButton}"
+                            Command="{Binding DeleteItemCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            Margin="3,0" Height="32" MinWidth="60">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[Del]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Delete}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Style="{StaticResource ClassicButton}"
+                            Command="{Binding MoveItemUpCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            Margin="3,0" Height="32" MinWidth="50">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[Up]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Up}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Style="{StaticResource ClassicButton}"
+                            Command="{Binding MoveItemDownCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            Margin="3,0" Height="32" MinWidth="50">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[Down]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Down}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Project Management Buttons -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="[F]" Style="{StaticResource SmallButton}" 
+                            Command="{Binding NewFolderCommand}" ToolTip="New Folder"
+                            Width="26" Height="20" Margin="0,0,2,0" FontSize="10" Padding="2"/>
+                    <Button Content="[+]" Style="{StaticResource SmallButton}" 
+                            Command="{Binding NewProjectCommand}" ToolTip="New Project"
+                            Width="24" Height="20" Margin="0,0,2,0" FontSize="10" Padding="2"/>
+                    <Button Content="[&gt;]" Style="{StaticResource SmallButton}" 
+                            Command="{Binding MoveToFolderCommand}" ToolTip="Move to Folder"
+                            Width="26" Height="20" Margin="0,0,2,0" FontSize="10" Padding="2"/>
+                    <Button Content="[-]" Style="{StaticResource SmallButton}" 
+                            Command="{Binding DeleteProjectCommand}" ToolTip="Delete"
+                            Width="24" Height="20" Margin="0,0,0,0" FontSize="10" Padding="2"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="3" Background="{StaticResource BackgroundColor}"
+              AllowDrop="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel -->
+            <Border Grid.Column="0" Background="{StaticResource PanelColor}" 
+                    BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="4"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Project Section -->
+                    <Border Grid.Row="0" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
+                            BorderThickness="0,0,0,1" Padding="8,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=Projects}" 
+                                     FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
+                                     VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Content="[F]" Style="{StaticResource SmallButton}"
+                                        Command="{Binding NewFolderCommand}" 
+                                        ToolTip="New Folder"
+                                        Width="26" Height="20" Margin="0,0,2,0"
+                                        FontSize="10" Padding="2"/>
+                                <Button Content="[+]" Style="{StaticResource SmallButton}"
+                                        Command="{Binding NewProjectCommand}" 
+                                        ToolTip="New Project"
+                                        Width="24" Height="20" Margin="0,0,2,0"
+                                        FontSize="10" Padding="2"/>
+                                <Button Content="[&gt;]" Style="{StaticResource SmallButton}"
+                                        Command="{Binding MoveToFolderCommand}" 
+                                        ToolTip="Move to Folder"
+                                        Width="26" Height="20" Margin="0,0,2,0"
+                                        FontSize="10" Padding="2"/>
+                                <Button Content="[-]" Style="{StaticResource SmallButton}"
+                                        Command="{Binding DeleteProjectCommand}" 
+                                        ToolTip="Delete"
+                                        Width="24" Height="20" Margin="0,0,0,0"
+                                        FontSize="10" Padding="2"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <TreeView Grid.Row="1" 
+                             Background="Transparent" BorderThickness="0"
+                             FontSize="13" Margin="4"
+                             ItemsSource="{Binding ProjectNodes}"
+                             MaxHeight="180">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                                <Setter Property="Padding" Value="2"/>
+                                <Setter Property="Margin" Value="0,1"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <EventSetter Event="Selected" Handler="ProjectTreeViewItem_Selected"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding DisplayName}" FontSize="13" Margin="0,0,6,0"
+                                             Foreground="{StaticResource TextColor}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+
+                    <!-- Separator -->
+                    <Border Grid.Row="2" Background="{StaticResource BorderColor}"/>
+                    
+                    <!-- Group Section -->
+                    <Border Grid.Row="3" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
+                            BorderThickness="0,0,0,1" Padding="8,6">
+                        <TextBlock Text="{Binding Source={StaticResource Strings}, Path=SmartFolders}" FontSize="13" FontWeight="Bold" 
+                                 Foreground="{StaticResource TextColor}"/>
+                    </Border>
+
+                    <TreeView Grid.Row="4" Background="Transparent" BorderThickness="0"
+                            FontSize="13" Margin="4"
+                            ItemsSource="{Binding CurrentProject.Groups}"
+                            SelectedItemChanged="TreeView_SelectedItemChanged">
+                        <TreeView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontSize="13" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding ItemCount}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Background="{StaticResource BorderColor}" 
+                        HorizontalAlignment="Stretch" Width="2" Cursor="SizeWE"/>
+
+            <!-- Main ListView with Drag and Drop -->
+            <ListView Grid.Column="2" Background="White" BorderThickness="0"
+                    ItemsSource="{Binding DisplayedItems}"
+                    SelectedItem="{Binding SelectedItem}"
+                    FontSize="13"
+                    AllowDrop="True"
+                    MouseDoubleClick="ListView_MouseDoubleClick">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Type}" Width="60">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Icon}" FontSize="14" 
+                                             HorizontalAlignment="Center" Margin="4"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Category}" Width="110">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Category}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Name}" Width="240">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" FontSize="13" 
+                                             Foreground="{StaticResource TextColor}" Margin="6,2"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Description}" Width="200">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Description}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Path}" Width="280">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Group}" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding GroupNames}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}" Margin="6,2"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding LaunchItemCommand}" CommandParameter="{Binding SelectedItem}"/>
+                    <KeyBinding Key="Delete" Command="{Binding DeleteItemCommand}" CommandParameter="{Binding SelectedItem}"/>
+                </ListView.InputBindings>
+            </ListView>
+
+            <!-- Drop overlay for visual feedback -->
+            <Border x:Name="DropOverlay" Grid.ColumnSpan="3" 
+                    Background="#80E6F2FF" 
+                    BorderBrush="#316AC5" 
+                    BorderThickness="2" 
+                    Visibility="Collapsed">
+                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=DropMessage}" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center" 
+                           FontSize="16" 
+                           Foreground="#316AC5"/>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="4" Background="{StaticResource ToolbarColor}" 
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0">
+            <DockPanel Margin="6,3">
+                <TextBlock Text="{Binding StatusText}" FontSize="12" 
+                         Foreground="{StaticResource TextColor}" VerticalAlignment="Center"/>
+                <TextBlock DockPanel.Dock="Right" FontSize="12" 
+                         Foreground="{StaticResource SubTextColor}" VerticalAlignment="Center"
+                         Text="{Binding Source={StaticResource Strings}, Path=StatusHelp}"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

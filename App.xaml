@@ -1,0 +1,161 @@
+﻿<Application x:Class="ModernLauncher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ModernLauncher"
+             StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        <!-- FenrirFS風のクラシックスタイル - フォントサイズを大きくして視認性向上 -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Border Background="#F0F0F0" BorderBrush="#ACA899" BorderThickness="1"/>
+                            <Track Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#E0E0E0" BorderBrush="#ACA899" 
+                                                        BorderThickness="1" Margin="2">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#D0D0D0"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TreeViewスタイル - フォントサイズを大きく -->
+        <Style TargetType="TreeView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style TargetType="TreeViewItem">
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Border x:Name="Border" Grid.Row="0" Background="Transparent" 
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter x:Name="PART_Header" 
+                                                ContentSource="Header"
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                            <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
+                                          Visibility="Collapsed" Margin="19,0,0,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBoxスタイル - フォントサイズを大きく -->
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="6,4"/>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="#316AC5"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Button用のベーススタイル - フォントサイズを大きく -->
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="MinHeight" Value="26"/>
+        </Style>
+
+        <!-- TextBox用のベーススタイル - フォントサイズを大きく -->
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MinHeight" Value="26"/>
+        </Style>
+
+        <!-- TextBlock用のベーススタイル - フォントサイズを大きく -->
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- ListView用のスタイル - 行の高さと文字サイズを調整 -->
+        <Style TargetType="ListView">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style TargetType="ListViewItem">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="4,6"/>
+            <Setter Property="MinHeight" Value="28"/>
+        </Style>
+
+        <!-- GridViewColumnHeader用のスタイル - ヘッダーのフォントサイズを大きく -->
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderBrush" Value="#ACA899"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+
+        <!-- メニュー項目のフォントサイズを大きく -->
+        <Style TargetType="MenuItem">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="6,3"/>
+        </Style>
+
+        <!-- ラベルのフォントサイズを大きく -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </Application.Resources>
+</Application>
