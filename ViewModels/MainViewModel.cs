@@ -1333,6 +1333,14 @@ namespace ModernLauncher.ViewModels
                         return "GitLabURL";
                     else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
                         return "Googleドライブ";
+                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
+                        return "MicrosoftTeams";
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
+                        return "SharePoint";
+                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
+                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
+                        return "SharePoint"; // OneDriveもSharePointカテゴリに含める
                     else
                         return "Webサイト";
                 }

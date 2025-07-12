@@ -194,7 +194,9 @@ namespace ModernLauncher.Views
                 new { Name = "PowerPointûÚ", Value = "#D24726" },
                 new { Name = "GitHubçï", Value = "#24292e" },
                 new { Name = "GitLabûÚ", Value = "#FC6D26" },
-                new { Name = "Googleê¬", Value = "#4285F4" }
+                new { Name = "Googleê¬", Value = "#4285F4" },
+                new { Name = "Teamséá", Value = "#6264A7" },
+                new { Name = "SharePointê¬", Value = "#0078D4" }
             };
 
             colorComboBox.ItemsSource = predefinedColors;

@@ -27,6 +27,8 @@ namespace ModernLauncher.Models
             ["GitHubURL"] = "#24292e",         // GitHub のブランドカラー
             ["GitLabURL"] = "#FC6D26",         // GitLab のブランドカラー
             ["Googleドライブ"] = "#4285F4",     // Google ドライブのブルー
+            ["MicrosoftTeams"] = "#6264A7",    // Microsoft Teams のパープル
+            ["SharePoint"] = "#0078D4",        // SharePoint/Microsoft のブルー
             ["Excel"] = "#217346",             // Excel のグリーン
             ["Word"] = "#2B579A",              // Word のブルー
             ["PowerPoint"] = "#D24726",        // PowerPoint のオレンジ

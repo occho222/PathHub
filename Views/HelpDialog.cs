@@ -99,7 +99,9 @@ namespace ModernLauncher.Views
                 "• 説明欄を活用してアイテムの詳細情報を記録",
                 "• 色設定で分類をより見やすくカスタマイズ",
                 "• GitHubやGitLabのURLは自動で専用色で表示",
-                "• ExcelやWordファイルは対応アプリの色で表示"
+                "• ExcelやWordファイルは対応アプリの色で表示",
+                "• Microsoft TeamsとSharePointのリンクも自動判定",
+                "• G:ドライブのGoogleドライブファイルも自動で色分け"
             });
 
             // About
