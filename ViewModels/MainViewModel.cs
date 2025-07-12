@@ -1337,13 +1337,27 @@ namespace ModernLauncher.ViewModels
                         return "Webサイト";
                 }
 
+                // ローカルパスの場合
                 if (System.IO.Directory.Exists(path))
                 {
+                    // G:ドライブの場合はGoogleドライブと判定
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Googleドライブ";
+                    }
                     return "フォルダ";
                 }
 
                 if (System.IO.File.Exists(path))
                 {
+                    // G:ドライブ上のファイルもGoogleドライブと判定
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Googleドライブ";
+                    }
+
                     var extension = System.IO.Path.GetExtension(path).ToLower();
                     var fileName = System.IO.Path.GetFileName(path).ToLower();
                     
@@ -1363,6 +1377,13 @@ namespace ModernLauncher.ViewModels
                         ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ドキュメント",
                         _ => "ファイル"
                     };
+                }
+
+                // パスが存在しない場合もG:で始まっていればGoogleドライブと判定
+                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Googleドライブ";
                 }
 
                 return "その他";
