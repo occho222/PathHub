@@ -39,7 +39,7 @@
         <Style x:Key="ProjectTreeViewItemStyle" TargetType="TreeViewItem">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Padding" Value="4,2"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -54,14 +54,14 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
                             <Border x:Name="Border" Grid.Row="0" Background="Transparent" 
-                                    Padding="{TemplateBinding Padding}" CornerRadius="4" Margin="2,0">
+                                    Padding="{TemplateBinding Padding}" CornerRadius="3" Margin="1,0">
                                 <ContentPresenter x:Name="PART_Header" 
                                                 ContentSource="Header"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Center"/>
                             </Border>
                             <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
-                                          Visibility="Collapsed" Margin="19,0,0,0"/>
+                                          Visibility="Collapsed" Margin="16,0,0,0"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsExpanded" Value="True">
@@ -74,6 +74,14 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
                             </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -81,9 +89,10 @@
         </Style>
 
         <Style x:Key="ProjectNodeTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontWeight" Value="Normal"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFolder}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontWeight" Value="Normal"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -405,8 +414,26 @@
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding DisplayName}" FontSize="13" Margin="0,0,6,0"
+                                    <!-- Folder icon for folders only -->
+                                    <TextBlock Text="[+]" FontSize="13" Margin="0,0,4,0" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!-- Project name -->
+                                    <TextBlock Text="{Binding Name}" FontSize="13" Margin="0,0,4,0"
                                              Style="{StaticResource ProjectNodeTextBlockStyle}"/>
+                                    <!-- Item count -->
+                                    <TextBlock Text="{Binding ItemCountText}" FontSize="12" 
+                                             Foreground="{StaticResource SubTextColor}"
+                                             VerticalAlignment="Center"/>
                                 </StackPanel>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>

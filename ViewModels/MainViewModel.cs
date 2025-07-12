@@ -337,6 +337,17 @@ namespace ModernLauncher.ViewModels
             SelectedViewGroup = null;
             ShowAllItems();
             UpdateStatusText();
+            
+            // プロジェクトノードの表示名を更新
+            RefreshProjectNodeDisplayNames();
+        }
+
+        private void RefreshProjectNodeDisplayNames()
+        {
+            if (ProjectNodes != null)
+            {
+                RefreshAllNodeDisplayNames(ProjectNodes);
+            }
         }
 
         private void UpdateGroupList()
@@ -648,6 +659,9 @@ namespace ModernLauncher.ViewModels
                     ShowAllItems();
                 }
                 
+                // プロジェクトノードの表示名を更新
+                RefreshProjectNodeDisplayNames();
+                
                 SaveData();
             }
         }
@@ -761,6 +775,9 @@ namespace ModernLauncher.ViewModels
                     {
                         ShowAllItems();
                     }
+                    
+                    // プロジェクトノードの表示名を更新
+                    RefreshProjectNodeDisplayNames();
                     
                     SaveData();
                 }
@@ -1157,6 +1174,9 @@ namespace ModernLauncher.ViewModels
                     ShowAllItems();
                 }
 
+                // プロジェクトノードの表示名を更新
+                RefreshProjectNodeDisplayNames();
+
                 // データを保存
                 SaveData();
 
@@ -1363,6 +1383,21 @@ namespace ModernLauncher.ViewModels
 
             // ソート
             SortProjectNodes(ProjectNodes);
+            
+            // すべてのノードのDisplayNameを更新
+            RefreshAllNodeDisplayNames(ProjectNodes);
+        }
+
+        private void RefreshAllNodeDisplayNames(ObservableCollection<ProjectNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                node.RefreshDisplayName();
+                if (node.Children.Count > 0)
+                {
+                    RefreshAllNodeDisplayNames(node.Children);
+                }
+            }
         }
 
         private void SortProjectNodes(ObservableCollection<ProjectNode> nodes)

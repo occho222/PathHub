@@ -31,9 +31,65 @@ namespace ModernLauncher.Models
             set => SetProperty(ref isSelected, value);
         }
 
-        // DisplayNameからフォルダープレフィックスを削除
-        public string DisplayName => Name;
+        // フォルダアイコンと項目数を含む表示名
+        public string DisplayName 
+        { 
+            get 
+            {
+                if (IsFolder)
+                {
+                    var childCount = GetDescendantProjectCount();
+                    return $"[+] {Name} ({childCount})";
+                }
+                else if (Project != null)
+                {
+                    var itemCount = Project.Items?.Count ?? 0;
+                    return $"{Name} ({itemCount})";
+                }
+                return Name;
+            }
+        }
+
         public int Level => Parent?.Level + 1 ?? 0;
+
+        // フォルダアイコンのみ
+        public string FolderIcon => IsFolder ? "[+]" : "";
+
+        // 項目数のみ
+        public string ItemCountText
+        {
+            get
+            {
+                if (IsFolder)
+                {
+                    var childCount = GetDescendantProjectCount();
+                    return $"({childCount})";
+                }
+                else if (Project != null)
+                {
+                    var itemCount = Project.Items?.Count ?? 0;
+                    return $"({itemCount})";
+                }
+                return "";
+            }
+        }
+
+        private int GetDescendantProjectCount()
+        {
+            int count = 0;
+            foreach (var child in Children)
+            {
+                if (child.IsFolder)
+                {
+                    count += child.GetDescendantProjectCount();
+                }
+                else
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -60,6 +116,13 @@ namespace ModernLauncher.Models
         {
             child.Parent = null;
             Children.Remove(child);
+        }
+
+        // DisplayNameの更新をトリガーするメソッド
+        public void RefreshDisplayName()
+        {
+            OnPropertyChanged(nameof(DisplayName));
+            OnPropertyChanged(nameof(ItemCountText));
         }
     }
 }
