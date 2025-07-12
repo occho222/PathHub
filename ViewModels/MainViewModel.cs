@@ -27,7 +27,7 @@ namespace ModernLauncher.ViewModels
         private string searchText = string.Empty;
         private LauncherItem? selectedItem;
         private string statusText = string.Empty;
-        private readonly string appVersion = "1.3.0";
+        private readonly string appVersion = "1.4.0";
 
         // Commands
         public ICommand NewProjectCommand { get; }

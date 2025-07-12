@@ -28,6 +28,66 @@
         <SolidColorBrush x:Key="SubTextColor" Color="#666666"/>
         <SolidColorBrush x:Key="BackgroundColor" Color="#FFFFFF"/>
         
+        <!-- Project Tree View Style -->
+        <Style x:Key="ProjectTreeViewStyle" TargetType="TreeView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <Style x:Key="ProjectTreeViewItemStyle" TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <EventSetter Event="Selected" Handler="ProjectTreeViewItem_Selected"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Border x:Name="Border" Grid.Row="0" Background="Transparent" 
+                                    Padding="{TemplateBinding Padding}" CornerRadius="4" Margin="2,0">
+                                <ContentPresenter x:Name="PART_Header" 
+                                                ContentSource="Header"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                            <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
+                                          Visibility="Collapsed" Margin="19,0,0,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ProjectNodeTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
         
         <Style x:Key="ToolbarButton" TargetType="Button">
@@ -335,25 +395,18 @@
                     </Border>
 
                     <TreeView Grid.Row="1" 
-                             Background="Transparent" BorderThickness="0"
-                             FontSize="13" Margin="4"
+                             Style="{StaticResource ProjectTreeViewStyle}"
+                             Margin="4"
                              ItemsSource="{Binding ProjectNodes}"
                              MaxHeight="180">
                         <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                                <Setter Property="Padding" Value="2"/>
-                                <Setter Property="Margin" Value="0,1"/>
-                                <Setter Property="FontSize" Value="13"/>
-                                <EventSetter Event="Selected" Handler="ProjectTreeViewItem_Selected"/>
-                            </Style>
+                            <StaticResource ResourceKey="ProjectTreeViewItemStyle"/>
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding DisplayName}" FontSize="13" Margin="0,0,6,0"
-                                             Foreground="{StaticResource TextColor}"/>
+                                             Style="{StaticResource ProjectNodeTextBlockStyle}"/>
                                 </StackPanel>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>

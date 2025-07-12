@@ -138,7 +138,7 @@ namespace ModernLauncher.Views
             foreach (var folderInfo in allFolders)
             {
                 var indent = new string(' ', folderInfo.Level * 4);
-                var displayItem = new { DisplayName = $"{indent}[フォルダ] {folderInfo.Node.Name}", Node = folderInfo.Node };
+                var displayItem = new { DisplayName = $"{indent}{folderInfo.Node.Name}", Node = folderInfo.Node };
                 folderComboBox.Items.Add(displayItem);
             }
 
@@ -210,10 +210,11 @@ namespace ModernLauncher.Views
         {
             return new TreeViewItem
             {
-                Header = $"[フォルダ] {folder.Name}",
+                Header = folder.Name,
                 Tag = folder,
                 FontSize = 13,
-                IsExpanded = true
+                IsExpanded = true,
+                FontWeight = System.Windows.FontWeights.Bold
             };
         }
 

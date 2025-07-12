@@ -31,7 +31,8 @@ namespace ModernLauncher.Models
             set => SetProperty(ref isSelected, value);
         }
 
-        public string DisplayName => IsFolder ? $"[フォルダ] {Name}" : Name;
+        // DisplayNameからフォルダープレフィックスを削除
+        public string DisplayName => Name;
         public int Level => Parent?.Level + 1 ?? 0;
 
         public event PropertyChangedEventHandler? PropertyChanged;

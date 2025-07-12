@@ -247,7 +247,7 @@ namespace ModernLauncher.Views
             foreach (var folderInfo in allFolders)
             {
                 var indent = new string(' ', folderInfo.Level * 4); // 半角スペースでインデント（レベル×4文字）
-                var displayItem = new { DisplayName = $"{indent}[フォルダ] {folderInfo.Node.Name}", Node = folderInfo.Node };
+                var displayItem = new { DisplayName = $"{indent}{folderInfo.Node.Name}", Node = folderInfo.Node };
                 folderComboBox.Items.Add(displayItem);
             }
 

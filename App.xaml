@@ -4,27 +4,41 @@
              xmlns:local="clr-namespace:ModernLauncher"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-        <!-- FenrirFS風のクラシックスタイル - フォントサイズを大きくして視認性向上 -->
+        <!-- モダンなカラーパレット -->
+        <SolidColorBrush x:Key="PrimaryBlue" Color="#0078D4"/>
+        <SolidColorBrush x:Key="PrimaryBlueDark" Color="#106EBE"/>
+        <SolidColorBrush x:Key="PrimaryBlueLight" Color="#40E0FF"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#FF6900"/>
+        <SolidColorBrush x:Key="SurfaceColor" Color="#F8F9FA"/>
+        <SolidColorBrush x:Key="CardColor" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColorModern" Color="#E1E5E9"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#1F2937"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
+        <SolidColorBrush x:Key="HoverColor" Color="#F1F5F9"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#EF4444"/>
+
+        <!-- モダンなスクロールバー -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Width" Value="18"/>
-            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Grid>
-                            <Border Background="#F0F0F0" BorderBrush="#ACA899" BorderThickness="1"/>
+                            <Border Background="Transparent" Opacity="0.1"/>
                             <Track Name="PART_Track" IsDirectionReversed="True">
                                 <Track.Thumb>
                                     <Thumb>
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="#E0E0E0" BorderBrush="#ACA899" 
-                                                        BorderThickness="1" Margin="2">
+                                                <Border Background="#B0BEC5" CornerRadius="6" Margin="2">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Style.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Background" Value="#D0D0D0"/>
+                                                                    <Setter Property="Background" Value="#90A4AE"/>
                                                                 </Trigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -41,16 +55,17 @@
             </Setter>
         </Style>
 
-        <!-- TreeViewスタイル - フォントサイズを大きく -->
+        <!-- モダンなTreeViewスタイル -->
         <Style TargetType="TreeView">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
         </Style>
 
         <Style TargetType="TreeViewItem">
-            <Setter Property="Padding" Value="4"/>
-            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -63,7 +78,7 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
                             <Border x:Name="Border" Grid.Row="0" Background="Transparent" 
-                                    Padding="{TemplateBinding Padding}">
+                                    Padding="{TemplateBinding Padding}" CornerRadius="4" Margin="2,0">
                                 <ContentPresenter x:Name="PART_Header" 
                                                 ContentSource="Header"
                                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -77,11 +92,11 @@
                                 <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryBlue}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverColor}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -89,73 +104,244 @@
             </Setter>
         </Style>
 
-        <!-- ComboBoxスタイル - フォントサイズを大きく -->
+        <!-- モダンなComboBoxスタイル -->
         <Style TargetType="ComboBox">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Background" Value="{StaticResource CardColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="36"/>
         </Style>
 
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Padding" Value="10,6"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
             <Style.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
-                    <Setter Property="Background" Value="#316AC5"/>
+                    <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
                     <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Button用のベーススタイル - フォントサイズを大きく -->
+        <!-- モダンなButtonスタイル -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Background" Value="{StaticResource CardColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="BorderElement" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BorderElement" Property="Background" Value="{StaticResource HoverColor}"/>
+                                <Setter TargetName="BorderElement" Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BorderElement" Property="Background" Value="{StaticResource PrimaryBlue}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="BorderElement" Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="Foreground" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- TextBox用のベーススタイル - フォントサイズを大きく -->
+        <!-- プライマリボタンスタイル -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="BorderElement" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BorderElement" Property="Background" Value="{StaticResource PrimaryBlueDark}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BorderElement" Property="Background" Value="#0B5394"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- モダンなTextBoxスタイル -->
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Background" Value="{StaticResource CardColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Name="BorderElement"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ScrollViewer Name="PART_ContentHost" 
+                                        Margin="{TemplateBinding Padding}"
+                                        VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="BorderElement" Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+                                <Setter TargetName="BorderElement" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BorderElement" Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- TextBlock用のベーススタイル - フォントサイズを大きく -->
+        <!-- TextBlockスタイル -->
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
         </Style>
 
-        <!-- ListView用のスタイル - 行の高さと文字サイズを調整 -->
+        <!-- モダンなListViewスタイル -->
         <Style TargetType="ListView">
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Background" Value="{StaticResource CardColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style TargetType="ListViewItem">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="4,6"/>
-            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#F3F4F6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border Name="Border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <GridViewRowPresenter Content="{TemplateBinding Content}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E3F2FD"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverColor}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- GridViewColumnHeader用のスタイル - ヘッダーのフォントサイズを大きく -->
+        <!-- モダンなGridViewColumnHeaderスタイル -->
         <Style TargetType="GridViewColumnHeader">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="MinHeight" Value="28"/>
-            <Setter Property="Background" Value="#F5F5F5"/>
-            <Setter Property="BorderBrush" Value="#ACA899"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- メニュー項目のフォントサイズを大きく -->
+        <!-- メニュー項目スタイル -->
         <Style TargetType="MenuItem">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
 
-        <!-- ラベルのフォントサイズを大きく -->
+        <!-- ラベルスタイル -->
         <Style TargetType="Label">
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <!-- カードスタイル -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Opacity="0.1" ShadowDepth="2" BlurRadius="8"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- セクションヘッダースタイル -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
     </Application.Resources>
 </Application>

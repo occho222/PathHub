@@ -41,7 +41,7 @@ namespace ModernLauncher.Views
             // Version
             var versionBlock = new TextBlock
             {
-                Text = "バージョン 1.3.0",
+                Text = "バージョン 1.4.0",
                 FontSize = 13,
                 Margin = new Thickness(0, 0, 0, 20),
                 HorizontalAlignment = HorizontalAlignment.Center,
