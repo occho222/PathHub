@@ -184,8 +184,6 @@
                     
                     <Button Content="{Binding Source={StaticResource Strings}, Path=Archive}" Style="{StaticResource ToolbarButton}"
                             Command="{Binding ExportProjectCommand}"/>
-                    <Button Content="{Binding Source={StaticResource Strings}, Path=Label}" Style="{StaticResource ToolbarButton}"
-                            Command="{Binding AddGroupCommand}"/>
                 </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="0,0,8,0">
@@ -367,14 +365,44 @@
                     <!-- Group Section -->
                     <Border Grid.Row="3" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
                             BorderThickness="0,0,0,1" Padding="8,6">
-                        <TextBlock Text="{Binding Source={StaticResource Strings}, Path=SmartFolders}" FontSize="13" FontWeight="Bold" 
-                                 Foreground="{StaticResource TextColor}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=SmartFolders}" 
+                                     FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
+                                     VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="[+]" Style="{StaticResource SmallButton}"
+                                    Command="{Binding AddGroupCommand}" 
+                                    ToolTip="{Binding Source={StaticResource Strings}, Path=AddGroup}"
+                                    Width="24" Height="20" Margin="0,0,0,0"
+                                    FontSize="10" Padding="2"/>
+                        </Grid>
                     </Border>
 
                     <TreeView Grid.Row="4" Background="Transparent" BorderThickness="0"
                             FontSize="13" Margin="4"
                             ItemsSource="{Binding CurrentProject.Groups}"
                             SelectedItemChanged="TreeView_SelectedItemChanged">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="Padding" Value="2"/>
+                                <Setter Property="Margin" Value="0,1"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#316AC5"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E6F2FF"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">

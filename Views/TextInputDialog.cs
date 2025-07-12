@@ -52,7 +52,7 @@ namespace ModernLauncher.Views
                 Margin = new Thickness(0, 24, 0, 0)
             };
 
-            var okButton = CreateButton("OK", true);
+            var okButton = CreateButton("グループ追加", true);
             var cancelButton = CreateButton("キャンセル", false);
 
             buttonPanel.Children.Add(cancelButton);

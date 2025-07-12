@@ -21,7 +21,7 @@ namespace ModernLauncher.Resources
         public string AddItem => "アイテム追加";
         public string Archive => "エクスポート";
         public string Delete => "削除";
-        public string Label => "ラベル";
+        public string AddGroup => "グループ追加";
         public string Search => "検索:";
 
         // Project bar
