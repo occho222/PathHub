@@ -41,13 +41,13 @@ namespace ModernLauncher.Views
 
             var grid = new Grid { Margin = new Thickness(20) };
             
-            // Row definitions
+            // Row definitions - corrected structure
             for (int i = 0; i < 8; i++)
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             }
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Row 8 - Groups ListBox
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 9 - Button panel
 
             // Name
             var nameLabel = new TextBlock
@@ -157,7 +157,7 @@ namespace ModernLauncher.Views
             groupsListBox = new ListBox
             {
                 FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 20),
+                Margin = new Thickness(0, 5, 0, 15),
                 SelectionMode = SelectionMode.Multiple
             };
             
@@ -173,27 +173,17 @@ namespace ModernLauncher.Views
                 groupsListBox.Items.Add(checkBox);
             }
             
-            Grid.SetRow(groupsListBox, 9);
+            Grid.SetRow(groupsListBox, 8);
             grid.Children.Add(groupsListBox);
 
-            // Buttons
-            var buttonPanel = new StackPanel
+            // Buttons - using Grid for proper layout
+            var buttonGrid = new Grid
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(0, 10, 0, 0)
             };
-
-            var okButton = new Button
-            {
-                Content = "OK",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(5, 0, 0, 0),
-                IsDefault = true
-            };
-            okButton.Click += OkButton_Click;
+            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             var cancelButton = new Button
             {
@@ -201,13 +191,26 @@ namespace ModernLauncher.Views
                 Width = 80,
                 FontSize = 13,
                 Padding = new Thickness(8, 5, 8, 5),
+                Margin = new Thickness(0, 0, 10, 0),
                 IsCancel = true
             };
+            Grid.SetColumn(cancelButton, 1);
+            buttonGrid.Children.Add(cancelButton);
 
-            buttonPanel.Children.Add(cancelButton);
-            buttonPanel.Children.Add(okButton);
-            Grid.SetRow(buttonPanel, 10);
-            grid.Children.Add(buttonPanel);
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                FontSize = 13,
+                Padding = new Thickness(8, 5, 8, 5),
+                IsDefault = true
+            };
+            okButton.Click += OkButton_Click;
+            Grid.SetColumn(okButton, 2);
+            buttonGrid.Children.Add(okButton);
+
+            Grid.SetRow(buttonGrid, 9);
+            grid.Children.Add(buttonGrid);
 
             Content = grid;
 

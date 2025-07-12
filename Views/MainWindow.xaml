@@ -251,11 +251,6 @@
                             <TextBlock Text="{Binding Source={StaticResource Strings}, Path=AddItem}"/>
                         </StackPanel>
                     </Button>
-                    
-                    <Separator Style="{x:Null}" Width="1" Background="{StaticResource BorderColor}" Margin="6,2"/>
-                    
-                    <Button Content="{Binding Source={StaticResource Strings}, Path=Archive}" Style="{StaticResource ToolbarButton}"
-                            Command="{Binding ExportProjectCommand}"/>
                 </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="0,0,8,0">
