@@ -12,7 +12,12 @@
     <FileVersion>1.4.0.0</FileVersion>
     <StartupObject>ModernLauncher.App</StartupObject>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <ApplicationIcon>PathHub.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="PathHub.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include=".github\copilot-instructions.md" />

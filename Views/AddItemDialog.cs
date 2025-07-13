@@ -32,20 +32,24 @@ namespace ModernLauncher.Views
         {
             Title = "アイテム追加";
             Width = 500;
-            Height = 450;
+            Height = 600; // 高さをさらに増やしてボタンが見えるようにする
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = new SolidColorBrush(Color.FromRgb(236, 233, 216));
 
             var grid = new Grid { Margin = new Thickness(20) };
             
-            // Row definitions
-            for (int i = 0; i < 8; i++)
-            {
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            }
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            // Row definitions - 正しい構造に修正
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 0 - Name Label
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 1 - Name TextBox
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 2 - Path Label
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 3 - Path Panel
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 4 - Category Label
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 5 - Category ComboBox
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 6 - Description Label
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 7 - Description TextBox
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 8 - Groups Label
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(120, GridUnitType.Pixel) }); // Row 9 - Groups ListBox (固定高さ)
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 10 - Button panel
 
             // Name
             var nameLabel = new TextBlock
@@ -143,7 +147,7 @@ namespace ModernLauncher.Views
             Grid.SetRow(descriptionTextBox, 7);
             grid.Children.Add(descriptionTextBox);
 
-            // Groups
+            // Groups Label
             var groupsLabel = new TextBlock
             {
                 Text = "グループ:",
@@ -153,10 +157,11 @@ namespace ModernLauncher.Views
             Grid.SetRow(groupsLabel, 8);
             grid.Children.Add(groupsLabel);
 
+            // Groups ListBox - 全てのグループを表示（"all"のみ除外）
             groupsListBox = new ListBox
             {
                 FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 0),
+                Margin = new Thickness(0, 0, 0, 15),
                 SelectionMode = SelectionMode.Multiple
             };
             
@@ -174,16 +179,6 @@ namespace ModernLauncher.Views
             
             Grid.SetRow(groupsListBox, 9);
             grid.Children.Add(groupsListBox);
-
-            // よく使うチェックボックス
-            var favoriteCheckBox = new CheckBox
-            {
-                Content = "よく使う",
-                FontSize = 13,
-                Margin = new Thickness(0, 10, 0, 0)
-            };
-            Grid.SetRow(favoriteCheckBox, 10);
-            grid.Children.Add(favoriteCheckBox);
 
             // Buttons (Gridで右寄せ)
             var buttonGrid = new Grid
@@ -218,7 +213,7 @@ namespace ModernLauncher.Views
             Grid.SetColumn(okButton, 2);
             buttonGrid.Children.Add(okButton);
 
-            Grid.SetRow(buttonGrid, 11);
+            Grid.SetRow(buttonGrid, 10);
             grid.Children.Add(buttonGrid);
 
             Content = grid;
