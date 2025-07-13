@@ -31,6 +31,17 @@ namespace ModernLauncher.ViewModels
         private string statusText = string.Empty;
         private readonly string appVersion = "1.4.0";
 
+        // 全プロジェクト表示用のフラグを追加
+        private bool isShowingAllProjects = false;
+        public bool IsShowingAllProjects
+        {
+            get => isShowingAllProjects;
+            set => SetProperty(ref isShowingAllProjects, value);
+        }
+
+        // 現在表示中のプロジェクトのリスト（フォルダ展開時用）
+        private List<Project> currentDisplayedProjects = new List<Project>();
+
         // Commands
         public ICommand NewProjectCommand { get; }
         public ICommand NewFolderCommand { get; }
@@ -121,7 +132,29 @@ namespace ModernLauncher.ViewModels
                 {
                     if (value?.Project != null)
                     {
+                        // 単一プロジェクトが選択された場合
                         CurrentProject = value.Project;
+                        IsShowingAllProjects = false;
+                        currentDisplayedProjects.Clear();
+                        currentDisplayedProjects.Add(value.Project);
+                    }
+                    else if (value?.IsFolder == true)
+                    {
+                        // フォルダが選択された場合、子プロジェクトを収集して表示
+                        var childProjects = GetChildProjects(value);
+                        if (childProjects.Any())
+                        {
+                            CurrentProject = null; // フォルダ選択時はCurrentProjectはnull
+                            IsShowingAllProjects = true;
+                            currentDisplayedProjects.Clear();
+                            currentDisplayedProjects.AddRange(childProjects);
+                            ShowAllProjectsItems();
+                        }
+                    }
+                    else if (value == null)
+                    {
+                        // 何も選択されていない場合は全プロジェクト表示
+                        ShowAllProjectsGlobal();
                     }
                 }
             }
@@ -335,9 +368,12 @@ namespace ModernLauncher.ViewModels
 
         private void UpdateAfterProjectChange()
         {
-            UpdateGroupList();
-            SelectedViewGroup = null;
-            ShowAllItems();
+            if (!IsShowingAllProjects)
+            {
+                UpdateGroupList();
+                SelectedViewGroup = null;
+                ShowAllItems();
+            }
             UpdateStatusText();
             
             // プロジェクトノードの表示名を更新
@@ -376,17 +412,30 @@ namespace ModernLauncher.ViewModels
 
         private void ShowGroupItems(ItemGroup? group)
         {
-            if (CurrentProject == null || group == null) return;
+            if (CurrentProject == null && !IsShowingAllProjects) return;
             
             IEnumerable<LauncherItem> items;
-            if (group.Id == "all")
+            
+            if (IsShowingAllProjects)
             {
-                items = CurrentProject.Items;
+                // 全プロジェクト表示時はグループフィルタリングを行わない
+                items = GetAllItemsFromDisplayedProjects();
+            }
+            else if (CurrentProject != null && group != null)
+            {
+                if (group.Id == "all")
+                {
+                    items = CurrentProject.Items;
+                }
+                else
+                {
+                    items = CurrentProject.Items.Where(i =>
+                        i.GroupIds != null && i.GroupIds.Contains(group.Id));
+                }
             }
             else
             {
-                items = CurrentProject.Items.Where(i =>
-                    i.GroupIds != null && i.GroupIds.Contains(group.Id));
+                items = new List<LauncherItem>();
             }
 
             // 検索フィルタを適用
@@ -402,7 +451,11 @@ namespace ModernLauncher.ViewModels
 
         private void ShowAllItems()
         {
-            if (CurrentProject != null)
+            if (IsShowingAllProjects)
+            {
+                ShowAllProjectsItems();
+            }
+            else if (CurrentProject != null)
             {
                 var items = string.IsNullOrEmpty(SearchText)
                     ? CurrentProject.Items
@@ -411,6 +464,75 @@ namespace ModernLauncher.ViewModels
                 var sortedItems = items.OrderBy(i => i.OrderIndex);
                 UpdateDisplayedItems(sortedItems);
             }
+        }
+
+        private void ShowAllProjectsGlobal()
+        {
+            IsShowingAllProjects = true;
+            CurrentProject = null;
+            currentDisplayedProjects.Clear();
+            currentDisplayedProjects.AddRange(Projects.Where(p => !p.IsFolder));
+            ShowAllProjectsItems();
+        }
+
+        private void ShowAllProjectsItems()
+        {
+            var allItems = GetAllItemsFromDisplayedProjects();
+
+            // 検索フィルタを適用
+            if (!string.IsNullOrEmpty(SearchText))
+            {
+                allItems = FilterItems(allItems, SearchText);
+            }
+
+            var sortedItems = allItems.OrderBy(item => 
+            {
+                // プロジェクト名でソート、その後OrderIndexでソート
+                var project = currentDisplayedProjects.FirstOrDefault(p => p.Items.Contains(item));
+                return project?.Name ?? "";
+            })
+            .ThenBy(i => i.OrderIndex);
+
+            UpdateDisplayedItems(sortedItems);
+            UpdateStatusText();
+        }
+
+        private IEnumerable<LauncherItem> GetAllItemsFromDisplayedProjects()
+        {
+            var allItems = new List<LauncherItem>();
+            foreach (var project in currentDisplayedProjects)
+            {
+                foreach (var item in project.Items)
+                {
+                    // アイテムにプロジェクト情報を設定（フォルダパス表示用）
+                    item.ProjectName = project.Name;
+                    item.FolderPath = GetProjectFolderPath(project);
+                    allItems.Add(item);
+                }
+            }
+            return allItems;
+        }
+
+        private string GetProjectFolderPath(Project project)
+        {
+            var pathParts = new List<string>();
+            var currentProject = project;
+            
+            while (!string.IsNullOrEmpty(currentProject.ParentId))
+            {
+                var parentProject = Projects.FirstOrDefault(p => p.Id == currentProject.ParentId);
+                if (parentProject != null)
+                {
+                    pathParts.Insert(0, parentProject.Name);
+                    currentProject = parentProject;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            return pathParts.Count > 0 ? string.Join(" > ", pathParts) : "ルート";
         }
 
         private void UpdateDisplayedItems(IEnumerable<LauncherItem> items)
@@ -435,7 +557,11 @@ namespace ModernLauncher.ViewModels
 
         private void ApplySearch()
         {
-            if (SelectedViewGroup != null)
+            if (IsShowingAllProjects)
+            {
+                ShowAllProjectsItems();
+            }
+            else if (SelectedViewGroup != null)
             {
                 ShowGroupItems(SelectedViewGroup);
             }
@@ -447,9 +573,19 @@ namespace ModernLauncher.ViewModels
 
         private void UpdateStatusText()
         {
-            if (CurrentProject != null)
+            if (IsShowingAllProjects)
+            {
+                var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
+                var projectCount = currentDisplayedProjects.Count;
+                StatusText = $"{totalItems} 個のオブジェクト ({projectCount} プロジェクト)";
+            }
+            else if (CurrentProject != null)
             {
                 StatusText = $"{CurrentProject.Items.Count} 個のオブジェクト";
+            }
+            else
+            {
+                StatusText = "プロジェクトを選択してください";
             }
         }
 
@@ -478,6 +614,470 @@ namespace ModernLauncher.ViewModels
             {
                 MessageBox.Show($"保存に失敗しました: {ex.Message}", "エラー",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private ProjectNode? FindProjectNode(string projectId)
+        {
+            return FindProjectNodeRecursive(ProjectNodes, projectId);
+        }
+
+        private ProjectNode? FindProjectNodeRecursive(ObservableCollection<ProjectNode> nodes, string projectId)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Id == projectId)
+                    return node;
+                
+                var found = FindProjectNodeRecursive(node.Children, projectId);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        private List<Project> GetChildProjects(ProjectNode folderNode)
+        {
+            var childProjects = new List<Project>();
+            CollectChildProjectsRecursive(folderNode, childProjects);
+            return childProjects;
+        }
+
+        private void CollectChildProjectsRecursive(ProjectNode node, List<Project> projects)
+        {
+            foreach (var child in node.Children)
+            {
+                if (child.IsFolder)
+                {
+                    // 子フォルダの場合は再帰的に探索
+                    CollectChildProjectsRecursive(child, projects);
+                }
+                else if (child.Project != null)
+                {
+                    // プロジェクトの場合はリストに追加
+                    projects.Add(child.Project);
+                }
+            }
+        }
+
+        private void BuildProjectHierarchy()
+        {
+            ProjectNodes.Clear();
+            var nodeMap = new Dictionary<string, ProjectNode>();
+
+            // すべてのプロジェクトとフォルダーからノードを作成
+            foreach (var project in Projects.OrderBy(p => p.OrderIndex))
+            {
+                var node = new ProjectNode
+                {
+                    Id = project.Id,
+                    Name = project.Name,
+                    IsFolder = project.IsFolder,
+                    OrderIndex = project.OrderIndex,
+                    ParentId = project.ParentId,
+                    Project = project.IsFolder ? null : project
+                };
+                nodeMap[project.Id] = node;
+            }
+
+            // 親子関係を構築
+            foreach (var node in nodeMap.Values)
+            {
+                if (!string.IsNullOrEmpty(node.ParentId) && nodeMap.ContainsKey(node.ParentId))
+                {
+                    nodeMap[node.ParentId].AddChild(node);
+                }
+                else
+                {
+                    // 親がない場合はルートレベルに追加
+                    ProjectNodes.Add(node);
+                }
+            }
+
+            // ソート
+            SortProjectNodes(ProjectNodes);
+            
+            // すべてのノードのDisplayNameを更新
+            RefreshAllNodeDisplayNames(ProjectNodes);
+        }
+
+        private void RefreshAllNodeDisplayNames(ObservableCollection<ProjectNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                node.RefreshDisplayName();
+                if (node.Children.Count > 0)
+                {
+                    RefreshAllNodeDisplayNames(node.Children);
+                }
+            }
+        }
+
+        private void SortProjectNodes(ObservableCollection<ProjectNode> nodes)
+        {
+            var sortedNodes = nodes.OrderBy(n => n.OrderIndex).ToList();
+            nodes.Clear();
+            foreach (var node in sortedNodes)
+            {
+                nodes.Add(node);
+                if (node.Children.Count > 0)
+                {
+                    SortProjectNodes(node.Children);
+                }
+            }
+        }
+
+        public void AddItemFromPath(string path)
+        {
+            if (CurrentProject == null && !IsShowingAllProjects)
+            {
+                MessageBox.Show("プロジェクトを選択してください", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 全プロジェクト表示時は最初のプロジェクトに追加
+            var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
+            if (targetProject == null)
+            {
+                MessageBox.Show("アイテムを追加するプロジェクトがありません", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                // 既存のアイテムで同じパスがないかチェック
+                if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // ファイル名から名前を生成
+                string name;
+                string description;
+
+                if (IsUrl(path))
+                {
+                    // URLの場合はドメイン名を名前として使用
+                    try
+                    {
+                        var uri = new Uri(path);
+                        name = uri.Host;
+                        if (name.StartsWith("www."))
+                        {
+                            name = name.Substring(4);
+                        }
+                        description = $"Webサイト: {path}";
+                    }
+                    catch
+                    {
+                        name = "Webサイト";
+                        description = $"Webサイト: {path}";
+                    }
+                }
+                else if (System.IO.Directory.Exists(path))
+                {
+                    name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
+                    description = $"フォルダ: {path}";
+                }
+                else if (System.IO.File.Exists(path))
+                {
+                    name = System.IO.Path.GetFileNameWithoutExtension(path);
+                    description = $"ファイル: {System.IO.Path.GetFileName(path)}";
+                }
+                else
+                {
+                    name = System.IO.Path.GetFileName(path);
+                    description = $"ドラッグ&ドロップで追加: {name}";
+                }
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    name = path;
+                }
+
+                // 分類を自動判定
+                string category = DetermineCategory(path);
+
+                // 新しいアイテムを作成
+                var newItem = new LauncherItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name,
+                    Path = path,
+                    Description = description,
+                    Category = category,
+                    GroupIds = new List<string>(), // デフォルトグループなし
+                    OrderIndex = targetProject.Items.Count,
+                    ProjectName = targetProject.Name,
+                    FolderPath = GetProjectFolderPath(targetProject)
+                };
+
+                // アイコンとタイプを設定
+                newItem.RefreshIconAndType();
+
+                // グループ名を更新
+                if (CurrentProject != null)
+                {
+                    UpdateItemGroupNames(newItem);
+                }
+
+                // プロジェクトに追加
+                targetProject.Items.Add(newItem);
+                
+                if (CurrentProject != null)
+                {
+                    UpdateGroupList();
+                }
+
+                // 表示を更新
+                if (IsShowingAllProjects)
+                {
+                    ShowAllProjectsItems();
+                }
+                else if (SelectedViewGroup != null)
+                {
+                    ShowGroupItems(SelectedViewGroup);
+                }
+                else
+                {
+                    ShowAllItems();
+                }
+
+                // プロジェクトノードの表示名を更新
+                RefreshProjectNodeDisplayNames();
+
+                // データを保存
+                SaveData();
+
+                // 成功メッセージ（オプション）
+                if (IsShowingAllProjects)
+                {
+                    var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
+                    StatusText = $"「{name}」を{targetProject.Name}に追加しました ({totalItems} 個のオブジェクト)";
+                }
+                else
+                {
+                    StatusText = $"「{name}」を追加しました ({targetProject.Items.Count} 個のオブジェクト)";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
+            }
+        }
+
+        public void ShowAddItemDialogWithPath(string path)
+        {
+            if (CurrentProject == null && !IsShowingAllProjects)
+            {
+                MessageBox.Show("プロジェクトを選択してください", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 全プロジェクト表示時は最初のプロジェクトに追加
+            var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
+            if (targetProject == null)
+            {
+                MessageBox.Show("アイテムを追加するプロジェクトがありません", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                // 既存のアイテムで同じパスがないかチェック
+                if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // AddItemDialogに事前情報を設定して表示
+                var dialog = new AddItemDialog(targetProject.Groups.ToList());
+                
+                // ファイル名から名前を生成
+                string name;
+                string description;
+                
+                if (IsUrl(path))
+                {
+                    // URLの場合はドメイン名を名前として使用
+                    try
+                    {
+                        var uri = new Uri(path);
+                        name = uri.Host;
+                        if (name.StartsWith("www."))
+                        {
+                            name = name.Substring(4);
+                        }
+                        description = $"Webサイト: {path}";
+                    }
+                    catch
+                    {
+                        name = "Webサイト";
+                        description = $"Webサイト: {path}";
+                    }
+                }
+                else if (System.IO.Directory.Exists(path))
+                {
+                    name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
+                    description = $"フォルダ: {path}";
+                }
+                else if (System.IO.File.Exists(path))
+                {
+                    name = System.IO.Path.GetFileNameWithoutExtension(path);
+                    description = $"ファイル: {System.IO.Path.GetFileName(path)}";
+                }
+                else
+                {
+                    name = System.IO.Path.GetFileName(path);
+                    description = $"ドラッグ&ドロップで追加: {name}";
+                }
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    name = path;
+                }
+
+                // 分類を自動判定
+                string category = DetermineCategory(path);
+
+                // ダイアログに初期値を設定
+                dialog.SetInitialValues(name, path, category, description);
+
+                if (dialog.ShowDialog() == true && dialog.Result != null)
+                {
+                    var newItem = dialog.Result;
+                    newItem.OrderIndex = targetProject.Items.Count;
+                    newItem.ProjectName = targetProject.Name;
+                    newItem.FolderPath = GetProjectFolderPath(targetProject);
+                    
+                    // アイコンとタイプを設定
+                    newItem.RefreshIconAndType();
+                    
+                    // グループ名を更新
+                    if (CurrentProject != null)
+                    {
+                        UpdateItemGroupNames(newItem);
+                    }
+                    
+                    targetProject.Items.Add(newItem);
+                    
+                    if (CurrentProject != null)
+                    {
+                        UpdateGroupList();
+                    }
+                    
+                    // 表示を更新
+                    if (IsShowingAllProjects)
+                    {
+                        ShowAllProjectsItems();
+                    }
+                    else if (SelectedViewGroup != null)
+                    {
+                        ShowGroupItems(SelectedViewGroup);
+                    }
+                    else
+                    {
+                        ShowAllItems();
+                    }
+                    
+                    SaveData();
+                    
+                    // 成功メッセージ
+                    if (IsShowingAllProjects)
+                    {
+                        var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
+                        StatusText = $"「{newItem.Name}」を{targetProject.Name}に追加しました ({totalItems} 個のオブジェクト)";
+                    }
+                    else
+                    {
+                        StatusText = $"「{newItem.Name}」を追加しました ({targetProject.Items.Count} 個のオブジェクト)";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
+            }
+        }
+
+        private void AddItem(object? parameter)
+        {
+            if (CurrentProject == null && !IsShowingAllProjects)
+            {
+                MessageBox.Show("プロジェクトを選択してください", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 全プロジェクト表示時は最初のプロジェクトに追加
+            var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
+            if (targetProject == null)
+            {
+                MessageBox.Show("アイテムを追加するプロジェクトがありません", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new AddItemDialog(targetProject.Groups.ToList());
+            if (dialog.ShowDialog() == true && dialog.Result != null)
+            {
+                var newItem = dialog.Result;
+                newItem.OrderIndex = targetProject.Items.Count;
+                newItem.ProjectName = targetProject.Name;
+                newItem.FolderPath = GetProjectFolderPath(targetProject);
+                
+                // 新しいメソッドを使用してアイコンとタイプを設定
+                newItem.RefreshIconAndType();
+                
+                // グループ名を更新
+                if (CurrentProject != null)
+                {
+                    UpdateItemGroupNames(newItem);
+                }
+                
+                targetProject.Items.Add(newItem);
+                
+                if (CurrentProject != null)
+                {
+                    UpdateGroupList();
+                }
+                
+                // 表示を更新
+                if (IsShowingAllProjects)
+                {
+                    ShowAllProjectsItems();
+                }
+                else if (SelectedViewGroup != null)
+                {
+                    ShowGroupItems(SelectedViewGroup);
+                }
+                else
+                {
+                    ShowAllItems();
+                }
+                
+                // プロジェクトノードの表示名を更新
+                RefreshProjectNodeDisplayNames();
+                
+                SaveData();
             }
         }
 
@@ -606,66 +1206,6 @@ namespace ModernLauncher.ViewModels
                     MessageBox.Show($"Failed to save folder: {ex.Message}", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
-        }
-
-        private ProjectNode? FindProjectNode(string projectId)
-        {
-            return FindProjectNodeRecursive(ProjectNodes, projectId);
-        }
-
-        private ProjectNode? FindProjectNodeRecursive(ObservableCollection<ProjectNode> nodes, string projectId)
-        {
-            foreach (var node in nodes)
-            {
-                if (node.Id == projectId)
-                    return node;
-                
-                var found = FindProjectNodeRecursive(node.Children, projectId);
-                if (found != null)
-                    return found;
-            }
-            return null;
-        }
-
-        private void AddItem(object? parameter)
-        {
-            if (CurrentProject == null)
-            {
-                MessageBox.Show("プロジェクトを選択してください", "エラー",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var dialog = new AddItemDialog(CurrentProject.Groups.ToList());
-            if (dialog.ShowDialog() == true && dialog.Result != null)
-            {
-                var newItem = dialog.Result;
-                newItem.OrderIndex = CurrentProject.Items.Count;
-                
-                // 新しいメソッドを使用してアイコンとタイプを設定
-                newItem.RefreshIconAndType();
-                
-                // グループ名を更新
-                UpdateItemGroupNames(newItem);
-                
-                CurrentProject.Items.Add(newItem);
-                UpdateGroupList();
-                
-                // 表示を更新
-                if (SelectedViewGroup != null)
-                {
-                    ShowGroupItems(SelectedViewGroup);
-                }
-                else
-                {
-                    ShowAllItems();
-                }
-                
-                // プロジェクトノードの表示名を更新
-                RefreshProjectNodeDisplayNames();
-                
-                SaveData();
             }
         }
 
@@ -1104,393 +1644,15 @@ namespace ModernLauncher.ViewModels
             return null;
         }
 
-        public void AddItemFromPath(string path)
-        {
-            if (CurrentProject == null)
-            {
-                MessageBox.Show("プロジェクトを選択してください", "エラー",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return;
-            }
-
-            try
-            {
-                // 既存のアイテムで同じパスがないかチェック
-                if (CurrentProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
-                {
-                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                // ファイル名から名前を生成
-                string name;
-                string description;
-
-                if (IsUrl(path))
-                {
-                    // URLの場合はドメイン名を名前として使用
-                    try
-                    {
-                        var uri = new Uri(path);
-                        name = uri.Host;
-                        if (name.StartsWith("www."))
-                        {
-                            name = name.Substring(4);
-                        }
-                        description = $"Webサイト: {path}";
-                    }
-                    catch
-                    {
-                        name = "Webサイト";
-                        description = $"Webサイト: {path}";
-                    }
-                }
-                else if (System.IO.Directory.Exists(path))
-                {
-                    name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
-                    description = $"フォルダ: {path}";
-                }
-                else if (System.IO.File.Exists(path))
-                {
-                    name = System.IO.Path.GetFileNameWithoutExtension(path);
-                    description = $"ファイル: {System.IO.Path.GetFileName(path)}";
-                }
-                else
-                {
-                    name = System.IO.Path.GetFileName(path);
-                    description = $"ドラッグ&ドロップで追加: {name}";
-                }
-
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    name = path;
-                }
-
-                // 分類を自動判定
-                string category = DetermineCategory(path);
-
-                // 新しいアイテムを作成
-                var newItem = new LauncherItem
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = name,
-                    Path = path,
-                    Description = description,
-                    Category = category,
-                    GroupIds = new List<string>(), // デフォルトグループなし
-                    OrderIndex = CurrentProject.Items.Count
-                };
-
-                // アイコンとタイプを設定
-                newItem.RefreshIconAndType();
-
-                // グループ名を更新
-                UpdateItemGroupNames(newItem);
-
-                // プロジェクトに追加
-                CurrentProject.Items.Add(newItem);
-                UpdateGroupList();
-
-                // 表示を更新
-                if (SelectedViewGroup != null)
-                {
-                    ShowGroupItems(SelectedViewGroup);
-                }
-                else
-                {
-                    ShowAllItems();
-                }
-
-                // プロジェクトノードの表示名を更新
-                RefreshProjectNodeDisplayNames();
-
-                // データを保存
-                SaveData();
-
-                // 成功メッセージ（オプション）
-                StatusText = $"「{name}」を追加しました ({CurrentProject.Items.Count} 個のオブジェクト)";
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
-            }
-        }
-
-        public void ShowAddItemDialogWithPath(string path)
-        {
-            if (CurrentProject == null)
-            {
-                MessageBox.Show("プロジェクトを選択してください", "エラー",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return;
-            }
-
-            try
-            {
-                // 既存のアイテムで同じパスがないかチェック
-                if (CurrentProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
-                {
-                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                // AddItemDialogに事前情報を設定して表示
-                var dialog = new AddItemDialog(CurrentProject.Groups.ToList());
-                
-                // ファイル名から名前を生成
-                string name;
-                string description;
-                
-                if (IsUrl(path))
-                {
-                    // URLの場合はドメイン名を名前として使用
-                    try
-                    {
-                        var uri = new Uri(path);
-                        name = uri.Host;
-                        if (name.StartsWith("www."))
-                        {
-                            name = name.Substring(4);
-                        }
-                        description = $"Webサイト: {path}";
-                    }
-                    catch
-                    {
-                        name = "Webサイト";
-                        description = $"Webサイト: {path}";
-                    }
-                }
-                else if (System.IO.Directory.Exists(path))
-                {
-                    name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
-                    description = $"フォルダ: {path}";
-                }
-                else if (System.IO.File.Exists(path))
-                {
-                    name = System.IO.Path.GetFileNameWithoutExtension(path);
-                    description = $"ファイル: {System.IO.Path.GetFileName(path)}";
-                }
-                else
-                {
-                    name = System.IO.Path.GetFileName(path);
-                    description = $"ドラッグ&ドロップで追加: {name}";
-                }
-
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    name = path;
-                }
-
-                // 分類を自動判定
-                string category = DetermineCategory(path);
-
-                // ダイアログに初期値を設定
-                dialog.SetInitialValues(name, path, category, description);
-
-                if (dialog.ShowDialog() == true && dialog.Result != null)
-                {
-                    var newItem = dialog.Result;
-                    newItem.OrderIndex = CurrentProject.Items.Count;
-                    
-                    // アイコンとタイプを設定
-                    newItem.RefreshIconAndType();
-                    
-                    // グループ名を更新
-                    UpdateItemGroupNames(newItem);
-                    
-                    CurrentProject.Items.Add(newItem);
-                    UpdateGroupList();
-                    
-                    // 表示を更新
-                    if (SelectedViewGroup != null)
-                    {
-                        ShowGroupItems(SelectedViewGroup);
-                    }
-                    else
-                    {
-                        ShowAllItems();
-                    }
-                    
-                    SaveData();
-                    
-                    // 成功メッセージ
-                    StatusText = $"「{newItem.Name}」を追加しました ({CurrentProject.Items.Count} 個のオブジェクト)";
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
-            }
-        }
-
-        private bool IsUrl(string path)
-        {
-            return !string.IsNullOrEmpty(path) && 
-                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
-                    path.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
-        }
-
-        private string DetermineCategory(string path)
-        {
-            try
-            {
-                // URLの場合
-                if (IsUrl(path))
-                {
-                    var uri = new Uri(path);
-                    var host = uri.Host.ToLower();
-                    
-                    if (host.Contains("github.com"))
-                        return "GitHubURL";
-                    else if (host.Contains("gitlab.com"))
-                        return "GitLabURL";
-                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
-                        return "Googleドライブ";
-                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
-                        return "MicrosoftTeams";
-                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
-                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
-                        return "SharePoint";
-                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
-                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
-                        return "SharePoint"; // OneDriveもSharePointカテゴリに含める
-                    else
-                        return "Webサイト";
-                }
-
-                // ローカルパスの場合
-                if (System.IO.Directory.Exists(path))
-                {
-                    // G:ドライブの場合はGoogleドライブと判定
-                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Googleドライブ";
-                    }
-                    return "フォルダ";
-                }
-
-                if (System.IO.File.Exists(path))
-                {
-                    // G:ドライブ上のファイルもGoogleドライブと判定
-                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Googleドライブ";
-                    }
-
-                    var extension = System.IO.Path.GetExtension(path).ToLower();
-                    var fileName = System.IO.Path.GetFileName(path).ToLower();
-                    
-                    return extension switch
-                    {
-                        ".exe" or ".msi" or ".bat" or ".cmd" => "アプリケーション",
-                        ".txt" or ".rtf" => "ドキュメント",
-                        ".doc" or ".docx" => "Word",
-                        ".xls" or ".xlsx" => "Excel",
-                        ".ppt" or ".pptx" => "PowerPoint",
-                        ".pdf" => "PDF",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
-                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
-                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "アーカイブ",
-                        ".lnk" => "ショートカット",
-                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ドキュメント",
-                        _ => "ファイル"
-                    };
-                }
-
-                // パスが存在しない場合もG:で始まっていればGoogleドライブと判定
-                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "Googleドライブ";
-                }
-
-                return "その他";
-            }
-            catch
-            {
-                return "その他";
-            }
-        }
-
-        private void BuildProjectHierarchy()
-        {
-            ProjectNodes.Clear();
-            var nodeMap = new Dictionary<string, ProjectNode>();
-
-            // すべてのプロジェクトとフォルダーからノードを作成
-            foreach (var project in Projects.OrderBy(p => p.OrderIndex))
-            {
-                var node = new ProjectNode
-                {
-                    Id = project.Id,
-                    Name = project.Name,
-                    IsFolder = project.IsFolder,
-                    OrderIndex = project.OrderIndex,
-                    ParentId = project.ParentId,
-                    Project = project.IsFolder ? null : project
-                };
-                nodeMap[project.Id] = node;
-            }
-
-            // 親子関係を構築
-            foreach (var node in nodeMap.Values)
-            {
-                if (!string.IsNullOrEmpty(node.ParentId) && nodeMap.ContainsKey(node.ParentId))
-                {
-                    nodeMap[node.ParentId].AddChild(node);
-                }
-                else
-                {
-                    // 親がない場合はルートレベルに追加
-                    ProjectNodes.Add(node);
-                }
-            }
-
-            // ソート
-            SortProjectNodes(ProjectNodes);
-            
-            // すべてのノードのDisplayNameを更新
-            RefreshAllNodeDisplayNames(ProjectNodes);
-        }
-
-        private void RefreshAllNodeDisplayNames(ObservableCollection<ProjectNode> nodes)
+        private void CollectFoldersRecursive(ObservableCollection<ProjectNode> nodes, List<ProjectNode> folders)
         {
             foreach (var node in nodes)
             {
-                node.RefreshDisplayName();
-                if (node.Children.Count > 0)
+                if (node.IsFolder)
                 {
-                    RefreshAllNodeDisplayNames(node.Children);
+                    folders.Add(node);
                 }
-            }
-        }
-
-        private void SortProjectNodes(ObservableCollection<ProjectNode> nodes)
-        {
-            var sortedNodes = nodes.OrderBy(n => n.OrderIndex).ToList();
-            nodes.Clear();
-            foreach (var node in sortedNodes)
-            {
-                nodes.Add(node);
-                if (node.Children.Count > 0)
-                {
-                    SortProjectNodes(node.Children);
-                }
+                CollectFoldersRecursive(node.Children, folders);
             }
         }
 
@@ -1498,38 +1660,18 @@ namespace ModernLauncher.ViewModels
         {
             if (SelectedProjectNode == null) return;
 
-            // デバッグ：現在のプロジェクト状況を確認
-            System.Diagnostics.Debug.WriteLine("=== Current Projects Status ===");
-            foreach (var project in Projects)
-            {
-                System.Diagnostics.Debug.WriteLine($"Project: {project.Name} | IsFolder: {project.IsFolder} | ParentId: {project.ParentId ?? "null"}");
-            }
-            System.Diagnostics.Debug.WriteLine("=== ProjectNodes Status ===");
-            PrintProjectNodes(ProjectNodes, 0);
-
             // 利用可能なフォルダーを取得（移動対象自身と子フォルダーは除外）
             var availableFolders = GetAvailableFolders(SelectedProjectNode);
             
-            // デバッグ: 利用可能なフォルダー数を確認
-            System.Diagnostics.Debug.WriteLine($"Available folders for move: {availableFolders.Count}");
-            foreach (var folder in availableFolders)
-            {
-                System.Diagnostics.Debug.WriteLine($"  - {folder.Name} (ID: {folder.Id}, IsFolder: {folder.IsFolder})");
-            }
-            
-            // テスト用の仮想フォルダーを追加（デバッグ目的）
             if (availableFolders.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("No folders found - this is the issue!");
-                
-                // テスト目的で一時的なフォルダーを作成
-                MessageBox.Show("No folders available for moving. Please create a folder first using the [F] button.", 
-                    "No Folders", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("移動先として利用可能なフォルダーがありません。先にフォルダーを作成してください。", 
+                    "フォルダーなし", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             
             var dialog = new FolderSelectionDialog(availableFolders, 
-                $"Select destination folder for '{SelectedProjectNode.Name}'");
+                $"'{SelectedProjectNode.Name}'の移動先フォルダーを選択してください");
             dialog.Owner = Application.Current.MainWindow;
             
             if (dialog.ShowDialog() == true)
@@ -1538,8 +1680,6 @@ namespace ModernLauncher.ViewModels
                 {
                     var targetFolder = dialog.SelectedFolder;
                     var targetParentId = targetFolder?.Id; // nullの場合はルートレベル
-
-                    System.Diagnostics.Debug.WriteLine($"Selected target folder: {targetFolder?.Name ?? "[Root]"}");
 
                     // プロジェクトの親IDを更新
                     var project = Projects.FirstOrDefault(p => p.Id == SelectedProjectNode.Id);
@@ -1570,27 +1710,14 @@ namespace ModernLauncher.ViewModels
                             }
                         }
                         
-                        MessageBox.Show("Move completed successfully.", "Move Complete", 
+                        MessageBox.Show("移動が完了しました。", "移動完了", 
                             MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Move failed: {ex.Message}", "Error",
+                    MessageBox.Show($"移動に失敗しました: {ex.Message}", "エラー",
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void PrintProjectNodes(ObservableCollection<ProjectNode> nodes, int level)
-        {
-            var indent = new string(' ', level * 2);
-            foreach (var node in nodes)
-            {
-                System.Diagnostics.Debug.WriteLine($"{indent}{node.Name} | IsFolder: {node.IsFolder} | Children: {node.Children.Count}");
-                if (node.Children.Count > 0)
-                {
-                    PrintProjectNodes(node.Children, level + 1);
                 }
             }
         }
@@ -1600,30 +1727,13 @@ namespace ModernLauncher.ViewModels
             var allFolders = new List<ProjectNode>();
             CollectFoldersRecursive(ProjectNodes, allFolders);
             
-            System.Diagnostics.Debug.WriteLine($"Total folders found: {allFolders.Count}");
-            
             // 移動対象自身と子フォルダーを除外
             var excludeIds = new HashSet<string>();
             CollectNodeIdsRecursive(excludeNode, excludeIds);
             
-            System.Diagnostics.Debug.WriteLine($"Excluding {excludeIds.Count} items");
-            
             var availableFolders = allFolders.Where(f => !excludeIds.Contains(f.Id)).ToList();
-            System.Diagnostics.Debug.WriteLine($"Available folders after exclusion: {availableFolders.Count}");
             
             return availableFolders;
-        }
-
-        private void CollectFoldersRecursive(ObservableCollection<ProjectNode> nodes, List<ProjectNode> folders)
-        {
-            foreach (var node in nodes)
-            {
-                if (node.IsFolder)
-                {
-                    folders.Add(node);
-                }
-                CollectFoldersRecursive(node.Children, folders);
-            }
         }
 
         private void CollectNodeIdsRecursive(ProjectNode node, HashSet<string> ids)
@@ -1637,8 +1747,8 @@ namespace ModernLauncher.ViewModels
 
         private void CreateTestFolders(object? parameter)
         {
-            var result = MessageBox.Show("Create test folders for debugging?\n\nThis will create:\n- Work Folder\n- Personal Folder\n- Development Folder", 
-                "Create Test Folders", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("デバッグ用のテストフォルダーを作成しますか？\n\n以下が作成されます：\n- Work Folder\n- Personal Folder\n- Development Folder", 
+                "テストフォルダー作成", MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
             {
@@ -1663,7 +1773,6 @@ namespace ModernLauncher.ViewModels
                         };
                         
                         Projects.Add(newFolder);
-                        System.Diagnostics.Debug.WriteLine($"Created test folder: {newFolder.Name} (ID: {newFolder.Id}, IsFolder: {newFolder.IsFolder})");
                     }
                     
                     var projectInfoList = Projects.Select(p => new ProjectInfo
@@ -1685,12 +1794,12 @@ namespace ModernLauncher.ViewModels
                     
                     BuildProjectHierarchy();
                     
-                    MessageBox.Show("Test folders created successfully!", "Success",
+                    MessageBox.Show("テストフォルダーが正常に作成されました！", "成功",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to create test folders: {ex.Message}", "Error",
+                    MessageBox.Show($"テストフォルダーの作成に失敗しました: {ex.Message}", "エラー",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -1893,6 +2002,13 @@ namespace ModernLauncher.ViewModels
             return string.Empty;
         }
 
+        private bool IsUrl(string path)
+        {
+            return !string.IsNullOrEmpty(path) && 
+                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+        }
+
         private bool IsOfficeUrl(string path)
         {
             if (!IsUrl(path)) return false;
@@ -1933,6 +2049,90 @@ namespace ModernLauncher.ViewModels
             };
 
             return officeExtensions.Contains(extension);
+        }
+
+        private string DetermineCategory(string path)
+        {
+            try
+            {
+                // URLの場合
+                if (IsUrl(path))
+                {
+                    var uri = new Uri(path);
+                    var host = uri.Host.ToLower();
+                    
+                    if (host.Contains("github.com"))
+                        return "GitHubURL";
+                    else if (host.Contains("gitlab.com"))
+                        return "GitLabURL";
+                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
+                        return "Googleドライブ";
+                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
+                        return "MicrosoftTeams";
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
+                        return "SharePoint";
+                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
+                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
+                        return "SharePoint"; // OneDriveもSharePointカテゴリに含める
+                    else
+                        return "Webサイト";
+                }
+
+                // ローカルパスの場合
+                if (System.IO.Directory.Exists(path))
+                {
+                    // G:ドライブの場合はGoogleドライブと判定
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Googleドライブ";
+                    }
+                    return "フォルダ";
+                }
+
+                if (System.IO.File.Exists(path))
+                {
+                    // G:ドライブ上のファイルもGoogleドライブと判定
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "Googleドライブ";
+                    }
+
+                    var extension = System.IO.Path.GetExtension(path).ToLower();
+                    
+                    return extension switch
+                    {
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "アプリケーション",
+                        ".txt" or ".rtf" => "ドキュメント",
+                        ".doc" or ".docx" => "Word",
+                        ".xls" or ".xlsx" => "Excel",
+                        ".ppt" or ".pptx" => "PowerPoint",
+                        ".pdf" => "PDF",
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "アーカイブ",
+                        ".lnk" => "ショートカット",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ドキュメント",
+                        _ => "ファイル"
+                    };
+                }
+
+                // パスが存在しない場合もG:で始まっていればGoogleドライブと判定
+                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Googleドライブ";
+                }
+
+                return "その他";
+            }
+            catch
+            {
+                return "その他";
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

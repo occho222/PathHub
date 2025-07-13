@@ -20,6 +20,10 @@ namespace ModernLauncher.Models
         private int orderIndex;
         private string groupNames = string.Empty;
 
+        // 新しいフィールド - フォルダパス表示用
+        private string projectName = string.Empty;
+        private string folderPath = string.Empty;
+
         public string Id
         {
             get => id;
@@ -92,6 +96,20 @@ namespace ModernLauncher.Models
         {
             get => groupNames;
             set => SetProperty(ref groupNames, value);
+        }
+
+        // 新しいプロパティ - 所属プロジェクト名
+        public string ProjectName
+        {
+            get => projectName;
+            set => SetProperty(ref projectName, value);
+        }
+
+        // 新しいプロパティ - フォルダパス
+        public string FolderPath
+        {
+            get => folderPath;
+            set => SetProperty(ref folderPath, value);
         }
 
         private void UpdateIconAndType()
