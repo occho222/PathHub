@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:ModernLauncher"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-        <!-- モダンなカラーパレット -->
+        <!-- モダンなカラーパレット（最初に定義） -->
         <SolidColorBrush x:Key="PrimaryBlue" Color="#0078D4"/>
         <SolidColorBrush x:Key="PrimaryBlueDark" Color="#106EBE"/>
         <SolidColorBrush x:Key="PrimaryBlueLight" Color="#40E0FF"/>
@@ -18,6 +18,24 @@
         <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
         <SolidColorBrush x:Key="WarningColor" Color="#F59E0B"/>
         <SolidColorBrush x:Key="DangerColor" Color="#EF4444"/>
+
+        <!-- グローバル絵文字サポートフォント設定 -->
+        <Style TargetType="Control">
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+        </Style>
+        
+        <Style TargetType="TextElement">
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+        </Style>
+        
+        <!-- TextBlockの基本スタイル（絵文字サポート付き） -->
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        </Style>
 
         <!-- モダンなスクロールバー -->
         <Style TargetType="ScrollBar">
@@ -60,13 +78,14 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
         </Style>
 
         <Style TargetType="TreeViewItem">
             <Setter Property="Padding" Value="6,4"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
@@ -82,7 +101,8 @@
                                 <ContentPresenter x:Name="PART_Header" 
                                                 ContentSource="Header"
                                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                             </Border>
                             <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
                                           Visibility="Collapsed" Margin="19,0,0,0"/>
@@ -107,7 +127,7 @@
         <!-- モダンなComboBoxスタイル -->
         <Style TargetType="ComboBox">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Padding" Value="10,6"/>
             <Setter Property="Background" Value="{StaticResource CardColor}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
@@ -118,7 +138,7 @@
         <Style TargetType="ComboBoxItem">
             <Setter Property="Padding" Value="10,6"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Style.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
                     <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
@@ -130,7 +150,7 @@
         <!-- モダンなButtonスタイル -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="MinHeight" Value="32"/>
             <Setter Property="Background" Value="{StaticResource CardColor}"/>
@@ -147,7 +167,8 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -173,6 +194,7 @@
             <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -182,7 +204,8 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -200,7 +223,7 @@
         <!-- モダンなTextBoxスタイル -->
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Background" Value="{StaticResource CardColor}"/>
@@ -233,17 +256,10 @@
             </Setter>
         </Style>
 
-        <!-- TextBlockスタイル -->
-        <Style TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-        </Style>
-
         <!-- モダンなListViewスタイル -->
         <Style TargetType="ListView">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Background" Value="{StaticResource CardColor}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderColorModern}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -251,7 +267,7 @@
 
         <Style TargetType="ListViewItem">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
@@ -264,7 +280,8 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
-                            <GridViewRowPresenter Content="{TemplateBinding Content}"/>
+                            <GridViewRowPresenter Content="{TemplateBinding Content}"
+                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -283,7 +300,7 @@
         <!-- モダンなGridViewColumnHeaderスタイル -->
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinHeight" Value="40"/>
@@ -300,7 +317,8 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="Center"/>
+                                            VerticalAlignment="Center"
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -310,7 +328,7 @@
         <!-- メニュー項目スタイル -->
         <Style TargetType="MenuItem">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Height" Value="32"/>
         </Style>
@@ -318,7 +336,7 @@
         <!-- ラベルスタイル -->
         <Style TargetType="Label">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
         </Style>
 
@@ -338,10 +356,12 @@
         <!-- セクションヘッダースタイル -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         </Style>
     </Application.Resources>
 </Application>

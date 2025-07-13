@@ -8,15 +8,55 @@
     {
       "Id": "all",
       "Name": "すべて",
-      "ItemCount": "",
+      "ItemCount": "3 アイテム",
       "OrderIndex": 0
     },
     {
       "Id": "d14192c4-d156-4b03-a808-49a8191c1088",
       "Name": "よく使う",
-      "ItemCount": "",
+      "ItemCount": "0 アイテム",
       "OrderIndex": 1
     }
   ],
-  "Items": []
+  "Items": [
+    {
+      "Id": "dca613c7-37bf-45d9-8b4a-2b18211c42f1",
+      "Name": "Models",
+      "Path": "C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Models",
+      "Description": "フォルダ: C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Models",
+      "Category": "フォルダ",
+      "GroupId": "",
+      "GroupIds": [],
+      "Icon": "DIR",
+      "ItemType": "Folder",
+      "OrderIndex": 0,
+      "GroupNames": ""
+    },
+    {
+      "Id": "edfb2224-eaae-433e-b27d-bbb635c138e2",
+      "Name": "Converters",
+      "Path": "C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Converters",
+      "Description": "フォルダ: C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Converters",
+      "Category": "フォルダ",
+      "GroupId": "",
+      "GroupIds": [],
+      "Icon": "DIR",
+      "ItemType": "Folder",
+      "OrderIndex": 1,
+      "GroupNames": ""
+    },
+    {
+      "Id": "c748d5ea-89e8-4637-978e-a75dea54757a",
+      "Name": "Services",
+      "Path": "C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Services",
+      "Description": "フォルダ: C:\\github\\AllAutoOfficePDF2\\AllAutoOfficePDF2\\Services",
+      "Category": "フォルダ",
+      "GroupId": "",
+      "GroupIds": [],
+      "Icon": "DIR",
+      "ItemType": "Folder",
+      "OrderIndex": 2,
+      "GroupNames": ""
+    }
+  ]
 }
