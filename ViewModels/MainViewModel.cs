@@ -49,6 +49,8 @@ namespace ModernLauncher.ViewModels
         public ICommand ImportProjectCommand { get; }
         public ICommand ShowHelpCommand { get; }
         public ICommand ShowColorSettingsCommand { get; }
+        public ICommand OpenWithVSCodeCommand { get; }
+        public ICommand OpenWithOfficeCommand { get; }
 
         public MainViewModel() : this(
             ServiceLocator.Instance.GetService<IProjectService>(), 
@@ -79,6 +81,8 @@ namespace ModernLauncher.ViewModels
             ImportProjectCommand = new RelayCommand(ImportProject);
             ShowHelpCommand = new RelayCommand(ShowHelp);
             ShowColorSettingsCommand = new RelayCommand(ShowColorSettings);
+            OpenWithVSCodeCommand = new RelayCommand(OpenWithVSCode, CanOpenWithVSCode);
+            OpenWithOfficeCommand = new RelayCommand(OpenWithOffice, CanOpenWithOffice);
 
             LoadProjects();
             InitializeUI();
@@ -1697,6 +1701,240 @@ namespace ModernLauncher.ViewModels
         private bool CanMoveProjectToFolder(object? parameter)
         {
             return SelectedProjectNode != null;
+        }
+
+        private void OpenWithVSCode(object? parameter)
+        {
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item != null)
+            {
+                try
+                {
+                    string path = item.Path;
+                    
+                    // VSCodeのパスを確認
+                    string vscodeCommand = FindVSCodePath();
+                    if (string.IsNullOrEmpty(vscodeCommand))
+                    {
+                        MessageBox.Show("Visual Studio Code が見つかりません。\nVS Codeがインストールされているか確認してください。", 
+                            "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // URLの場合はパス指定できないため、エラーメッセージを表示
+                    if (IsUrl(path))
+                    {
+                        MessageBox.Show("WebサイトのURLはVS Codeで開くことができません。", 
+                            "エラー", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    // ファイルまたはフォルダーが存在するか確認
+                    if (!System.IO.File.Exists(path) && !System.IO.Directory.Exists(path))
+                    {
+                        MessageBox.Show($"指定されたパスが見つかりません: {path}", 
+                            "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // VS Codeで開く
+                    var startInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = vscodeCommand,
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    System.Diagnostics.Process.Start(startInfo);
+                    StatusText = $"「{item.Name}」をVS Codeで開きました";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"VS Codeで開く際にエラーが発生しました: {ex.Message}", 
+                        "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private bool CanOpenWithVSCode(object? parameter)
+        {
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item == null) return false;
+
+            // URLの場合は無効
+            if (IsUrl(item.Path)) return false;
+
+            // ファイルまたはフォルダーが存在する場合のみ有効
+            return System.IO.File.Exists(item.Path) || System.IO.Directory.Exists(item.Path);
+        }
+
+        private void OpenWithOffice(object? parameter)
+        {
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item != null)
+            {
+                try
+                {
+                    string path = item.Path;
+
+                    // SharePointやOffice Online URLの場合は直接ブラウザで開く
+                    if (IsOfficeUrl(path))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = path,
+                            UseShellExecute = true
+                        });
+                        StatusText = $"「{item.Name}」をOfficeで開きました";
+                        return;
+                    }
+
+                    // ローカルファイルの場合
+                    if (System.IO.File.Exists(path))
+                    {
+                        string extension = System.IO.Path.GetExtension(path).ToLower();
+                        
+                        // Officeファイルかどうか確認
+                        if (IsOfficeFile(extension))
+                        {
+                            // 関連付けされたアプリケーションで開く（通常はOffice）
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = path,
+                                UseShellExecute = true
+                            });
+                            StatusText = $"「{item.Name}」をOfficeで開きました";
+                        }
+                        else
+                        {
+                            MessageBox.Show("このファイルはOfficeドキュメントではありません。", 
+                                "情報", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"ファイルが見つかりません: {path}", 
+                            "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Officeで開く際にエラーが発生しました: {ex.Message}", 
+                        "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private bool CanOpenWithOffice(object? parameter)
+        {
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item == null) return false;
+
+            string path = item.Path;
+
+            // SharePointやOffice Online URLの場合は有効
+            if (IsOfficeUrl(path)) return true;
+
+            // ローカルファイルの場合はOfficeファイルかどうか確認
+            if (System.IO.File.Exists(path))
+            {
+                string extension = System.IO.Path.GetExtension(path).ToLower();
+                return IsOfficeFile(extension);
+            }
+
+            return false;
+        }
+
+        private string FindVSCodePath()
+        {
+            // 一般的なVS Codeのインストールパスを確認
+            var possiblePaths = new[]
+            {
+                @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Microsoft VS Code\Code.exe",
+                @"C:\Program Files\Microsoft VS Code\Code.exe",
+                @"C:\Program Files (x86)\Microsoft VS Code\Code.exe",
+                "code" // PATH環境変数に登録されている場合
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (path == "code")
+                {
+                    // PATH環境変数での確認
+                    try
+                    {
+                        var startInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "where",
+                            Arguments = "code",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
+                        };
+                        var process = System.Diagnostics.Process.Start(startInfo);
+                        var output = process?.StandardOutput.ReadToEnd();
+                        process?.WaitForExit();
+                        
+                        if (process?.ExitCode == 0 && !string.IsNullOrWhiteSpace(output))
+                        {
+                            return "code";
+                        }
+                    }
+                    catch
+                    {
+                        // whereコマンドが失敗した場合は次へ
+                    }
+                }
+                else if (System.IO.File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private bool IsOfficeUrl(string path)
+        {
+            if (!IsUrl(path)) return false;
+
+            try
+            {
+                var uri = new Uri(path);
+                var host = uri.Host.ToLower();
+
+                return host.Contains("sharepoint.com") ||
+                       host.Contains("office365.sharepoint.com") ||
+                       host.Contains("onedrive.live.com") ||
+                       host.Contains("1drv.ms") ||
+                       host.Contains("office.com") ||
+                       host.Contains("outlook.office365.com") ||
+                       path.Contains("/_layouts/") ||
+                       path.Contains("/workbook/") ||
+                       path.Contains("/document/") ||
+                       path.Contains("/presentation/");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsOfficeFile(string extension)
+        {
+            var officeExtensions = new[]
+            {
+                ".doc", ".docx", ".docm",           // Word
+                ".xls", ".xlsx", ".xlsm", ".xlsb",  // Excel  
+                ".ppt", ".pptx", ".pptm",           // PowerPoint
+                ".vsd", ".vsdx",                    // Visio
+                ".mpp",                             // Project
+                ".pub",                             // Publisher
+                ".one"                              // OneNote
+            };
+
+            return officeExtensions.Contains(extension);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
