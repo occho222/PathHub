@@ -28,11 +28,6 @@
         <SolidColorBrush x:Key="SubTextColor" Color="#666666"/>
         <SolidColorBrush x:Key="BackgroundColor" Color="#FFFFFF"/>
         
-        <!-- Converters -->
-        <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
-        <local:CategoryColorConverter x:Key="CategoryColorConverter"/>
-        <local:CategoryColorIndicatorConverter x:Key="CategoryColorIndicatorConverter"/>
-        
         <!-- Project Tree View Style -->
         <Style x:Key="ProjectTreeViewStyle" TargetType="TreeView">
             <Setter Property="Background" Value="Transparent"/>
@@ -108,274 +103,51 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Modern Button Styles -->
-        <Style x:Key="ModernPrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#005A9E"/>
+        <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
+        <local:CategoryColorConverter x:Key="CategoryColorConverter"/>
+        <local:CategoryColorIndicatorConverter x:Key="CategoryColorIndicatorConverter"/>
+        
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" 
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#106EBE"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#005A9E"/>
-                                <Setter TargetName="border" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#0078D4" BlurRadius="8" ShadowDepth="0" Opacity="0.4"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#004578"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#CCCCCC"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#AAAAAA"/>
-                                <Setter Property="Foreground" Value="#666666"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E6F2FF"/>
+                    <Setter Property="BorderBrush" Value="#8CB4D8"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <Style x:Key="ModernSecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#F3F2F1"/>
-            <Setter Property="Foreground" Value="#323130"/>
-            <Setter Property="BorderBrush" Value="#C8C6C4"/>
+        <Style x:Key="ClassicButton" TargetType="Button">
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="10,6"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" 
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="5"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#EDEBE9"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#8A8886"/>
-                                <Setter TargetName="border" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#8A8886" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#E1DFDD"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#605E5C"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#F3F2F1"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#E1DFDD"/>
-                                <Setter Property="Foreground" Value="#A19F9D"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="SuccessCommandButton" TargetType="Button" BasedOn="{StaticResource ModernSecondaryButton}">
-            <Setter Property="Background" Value="#107C10"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#0B5A0B"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#0E6B0E"/>
-                    <Setter Property="BorderBrush" Value="#107C10"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#0B5A0B"/>
-                    <Setter Property="BorderBrush" Value="#094509"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
+                    <Setter Property="Background" Value="#E6F2FF"/>
+                    <Setter Property="BorderBrush" Value="#8CB4D8"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="DangerCommandButton" TargetType="Button" BasedOn="{StaticResource ModernSecondaryButton}">
-            <Setter Property="Background" Value="#D13438"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#A4262C"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#B22A2F"/>
-                    <Setter Property="BorderBrush" Value="#D13438"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#A4262C"/>
-                    <Setter Property="BorderBrush" Value="#8E1F23"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
-                </Trigger>
-            </Style.Triggers>
+        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource ClassicButton}">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="24"/>
+            <Setter Property="Height" Value="24"/>
         </Style>
 
-        <Style x:Key="VSCodeButton" TargetType="Button" BasedOn="{StaticResource ModernSecondaryButton}">
-            <Setter Property="Background" Value="#007ACC"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#005A9E"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1C97EA"/>
-                    <Setter Property="BorderBrush" Value="#007ACC"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#005A9E"/>
-                    <Setter Property="BorderBrush" Value="#004578"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="OfficeButton" TargetType="Button" BasedOn="{StaticResource ModernSecondaryButton}">
-            <Setter Property="Background" Value="#D24726"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#B23A1B"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E45A3A"/>
-                    <Setter Property="BorderBrush" Value="#D24726"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#B23A1B"/>
-                    <Setter Property="BorderBrush" Value="#9A3117"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="ModernSmallButton" TargetType="Button">
-            <Setter Property="Background" Value="#F3F2F1"/>
-            <Setter Property="Foreground" Value="#323130"/>
-            <Setter Property="BorderBrush" Value="#C8C6C4"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Width" Value="32"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" 
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#EDEBE9"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#8A8886"/>
-                                <Setter Property="Foreground" Value="#201F1E"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#E1DFDD"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#605E5C"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#F3F2F1"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#E1DFDD"/>
-                                <Setter Property="Foreground" Value="#A19F9D"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="AddSmallButton" TargetType="Button" BasedOn="{StaticResource ModernSmallButton}">
-            <Setter Property="Background" Value="#107C10"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#0B5A0B"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#0E6B0E"/>
-                    <Setter Property="BorderBrush" Value="#107C10"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#0B5A0B"/>
-                    <Setter Property="BorderBrush" Value="#094509"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="DeleteSmallButton" TargetType="Button" BasedOn="{StaticResource ModernSmallButton}">
-            <Setter Property="Background" Value="#D13438"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#A4262C"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#B22A2F"/>
-                    <Setter Property="BorderBrush" Value="#D13438"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#A4262C"/>
-                    <Setter Property="BorderBrush" Value="#8E1F23"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#CCCCCC"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="NeutralSmallButton" TargetType="Button" BasedOn="{StaticResource ModernSmallButton}"/>
-
-        <!-- Other Styles -->
         <Style x:Key="ClassicTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
@@ -392,6 +164,39 @@
             </Style.Triggers>
         </Style>
 
+        <!-- ProjectListBox Style -->
+        <Style x:Key="ProjectListBox" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+
+        <Style x:Key="ProjectListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextColor}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- GridView Column Header Style for Resizing -->
         <Style x:Key="GridViewColumnHeaderStyle" TargetType="GridViewColumnHeader">
             <Setter Property="Background" Value="{StaticResource PanelColor}"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
@@ -415,6 +220,7 @@
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 RecognizesAccessKey="True"/>
                             </Border>
+                            <!-- Resize Grip -->
                             <Thumb x:Name="PART_HeaderGripper" 
                                    HorizontalAlignment="Right" 
                                    Width="3" 
@@ -490,13 +296,11 @@
                 BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
             <DockPanel Margin="6,5">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Button Style="{StaticResource ModernPrimaryButton}" 
+                    <Button Style="{StaticResource ToolbarButton}" 
                             Command="{Binding AddItemCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[+]" FontSize="14" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=AddItem}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[+]" FontSize="14" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=AddItem}"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -521,6 +325,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <!-- Work Tray Label -->
@@ -530,114 +335,92 @@
                 
                 <!-- Item Operation Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource SuccessCommandButton}" 
+                    <Button Style="{StaticResource ClassicButton}" 
                             Command="{Binding EditItemCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="70">
+                            Margin="3,0" Height="32" MinWidth="60">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[Edit]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Edit}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[Edit]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Edit}"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource DangerCommandButton}"
+                    <Button Style="{StaticResource ClassicButton}"
                             Command="{Binding DeleteItemCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="70">
+                            Margin="3,0" Height="32" MinWidth="60">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[Del]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Delete}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[Del]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Delete}"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource ModernSecondaryButton}"
+                    <Button Style="{StaticResource ClassicButton}"
                             Command="{Binding MoveItemUpCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="60">
+                            Margin="3,0" Height="32" MinWidth="50">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[Up]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Up}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[Up]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Up}"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource ModernSecondaryButton}"
+                    <Button Style="{StaticResource ClassicButton}"
                             Command="{Binding MoveItemDownCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="60">
+                            Margin="3,0" Height="32" MinWidth="50">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[Down]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Down}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[Down]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Down}"/>
                         </StackPanel>
                     </Button>
-                    
-                    <!-- App Launch Buttons -->
-                    <Button Style="{StaticResource VSCodeButton}"
+                </StackPanel>
+
+                <!-- App Launch Buttons -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,20,0">
+                    <Button Style="{StaticResource ClassicButton}"
                             Command="{Binding OpenWithVSCodeCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="10,0,3,0" Height="32" MinWidth="90"
-                            ToolTip="Open with VS Code">
+                            Margin="3,0" Height="32" MinWidth="80"
+                            ToolTip="選択したアイテムをVS Codeで開く">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[VS]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="VSCode" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[VS]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="VSCode"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource OfficeButton}"
+                    <Button Style="{StaticResource ClassicButton}"
                             Command="{Binding OpenWithOfficeCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="90"
-                            ToolTip="Open with Office">
+                            Margin="3,0" Height="32" MinWidth="80"
+                            ToolTip="選択したアイテムをOfficeで開く（SharePointリンクやOfficeファイル）">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="[Off]" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="Office" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            <TextBlock Text="[Office]" FontSize="12" Margin="0,0,4,0"/>
+                            <TextBlock Text="Office"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
                 
                 <!-- Project Management Buttons -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource NeutralSmallButton}" 
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="[F]" Style="{StaticResource SmallButton}" 
                             Command="{Binding NewFolderCommand}" ToolTip="New Folder"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="[F]" FontSize="10" FontWeight="Bold"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource AddSmallButton}" 
+                            Width="26" Height="20" Margin="0,0,2,0" FontSize="10" Padding="2"/>
+                    <Button Content="[+]" Style="{StaticResource SmallButton}" 
                             Command="{Binding NewProjectCommand}" ToolTip="New Project"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="[+]" FontSize="10" FontWeight="Bold"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource NeutralSmallButton}" 
+                            Width="24" Height="20" Margin="0,0,2,0" FontSize="10" Padding="2"/>
+                    <Button Content="[Move]" Style="{StaticResource SmallButton}" 
                             Command="{Binding MoveToFolderCommand}" ToolTip="Move to Folder"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="[M]" FontSize="10" FontWeight="Bold"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource DeleteSmallButton}" 
+                            Width="30" Height="20" Margin="0,0,2,0" FontSize="8" Padding="2"/>
+                    <Button Content="[-]" Style="{StaticResource SmallButton}" 
                             Command="{Binding DeleteProjectCommand}" ToolTip="Delete"
-                            Margin="0,0,0,0">
-                        <TextBlock Text="[X]" FontSize="10" FontWeight="Bold"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
+                            Width="24" Height="20" Margin="0,0,0,0" FontSize="10" Padding="2"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -675,34 +458,26 @@
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Style="{StaticResource NeutralSmallButton}"
+                                <Button Content="[F]" Style="{StaticResource SmallButton}"
                                         Command="{Binding NewFolderCommand}" 
                                         ToolTip="New Folder"
-                                        Margin="0,0,3,0">
-                                    <TextBlock Text="[F]" FontSize="10" FontWeight="Bold"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                                </Button>
-                                <Button Style="{StaticResource AddSmallButton}"
+                                        Width="26" Height="20" Margin="0,0,2,0"
+                                        FontSize="10" Padding="2"/>
+                                <Button Content="[+]" Style="{StaticResource SmallButton}"
                                         Command="{Binding NewProjectCommand}" 
                                         ToolTip="New Project"
-                                        Margin="0,0,3,0">
-                                    <TextBlock Text="[+]" FontSize="10" FontWeight="Bold"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                                </Button>
-                                <Button Style="{StaticResource NeutralSmallButton}"
+                                        Width="24" Height="20" Margin="0,0,2,0"
+                                        FontSize="10" Padding="2"/>
+                                <Button Content="[Move]" Style="{StaticResource SmallButton}"
                                         Command="{Binding MoveToFolderCommand}" 
                                         ToolTip="Move to Folder"
-                                        Margin="0,0,3,0">
-                                    <TextBlock Text="[M]" FontSize="10" FontWeight="Bold"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                                </Button>
-                                <Button Style="{StaticResource DeleteSmallButton}"
+                                        Width="30" Height="20" Margin="0,0,2,0"
+                                        FontSize="8" Padding="2"/>
+                                <Button Content="[-]" Style="{StaticResource SmallButton}"
                                         Command="{Binding DeleteProjectCommand}" 
                                         ToolTip="Delete"
-                                        Margin="0,0,0,0">
-                                    <TextBlock Text="[X]" FontSize="10" FontWeight="Bold"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                                </Button>
+                                        Width="24" Height="20" Margin="0,0,0,0"
+                                        FontSize="10" Padding="2"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -771,13 +546,11 @@
                             <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=SmartFolders}" 
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"/>
-                            <Button Grid.Column="1" Style="{StaticResource AddSmallButton}"
+                            <Button Grid.Column="1" Content="[+]" Style="{StaticResource SmallButton}"
                                     Command="{Binding AddGroupCommand}" 
                                     ToolTip="{Binding Source={StaticResource Strings}, Path=AddGroup}"
-                                    Margin="0,0,0,0">
-                                <TextBlock Text="[+]" FontSize="10" FontWeight="Bold"
-                                         Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            </Button>
+                                    Width="24" Height="20" Margin="0,0,0,0"
+                                    FontSize="10" Padding="2"/>
                         </Grid>
                     </Border>
 

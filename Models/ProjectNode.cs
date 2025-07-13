@@ -39,7 +39,7 @@ namespace ModernLauncher.Models
                 if (IsFolder)
                 {
                     var childCount = GetDescendantProjectCount();
-                    return $"[+] {Name} ({childCount})";
+                    return $"?? {Name} ({childCount})";
                 }
                 else if (Project != null)
                 {
@@ -53,7 +53,7 @@ namespace ModernLauncher.Models
         public int Level => Parent?.Level + 1 ?? 0;
 
         // フォルダアイコンのみ
-        public string FolderIcon => IsFolder ? "[+]" : "";
+        public string FolderIcon => IsFolder ? "??" : "";
 
         // 項目数のみ
         public string ItemCountText

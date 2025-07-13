@@ -49,7 +49,7 @@ namespace ModernLauncher.Resources
         // Action buttons
         public string Up => "ã";
         public string Down => "‰º";
-        public string Edit => "•Ò";
+        public string Edit => "•ÒW";
         public string DeleteShort => "í";
 
         // Status bar
