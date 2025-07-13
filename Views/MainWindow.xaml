@@ -83,13 +83,14 @@
 
         <Style x:Key="ProjectTreeViewItemStyle" TargetType="TreeViewItem">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
             <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <EventSetter Event="Selected" Handler="ProjectTreeViewItem_Selected"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -103,8 +104,8 @@
                                     Padding="{TemplateBinding Padding}" CornerRadius="3" Margin="1,0">
                                 <ContentPresenter x:Name="PART_Header" 
                                                 ContentSource="Header"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 TextElement.Foreground="{TemplateBinding Foreground}"
                                                 TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                             </Border>

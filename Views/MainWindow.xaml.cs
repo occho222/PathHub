@@ -52,8 +52,20 @@ namespace ModernLauncher.Views
                 treeViewItem.DataContext is ProjectNode projectNode &&
                 DataContext is MainViewModel viewModel)
             {
+                // より詳細なデバッグログを追加
+                System.Diagnostics.Debug.WriteLine($"=== PROJECT SELECTION DEBUG ===");
+                System.Diagnostics.Debug.WriteLine($"Selected: {projectNode.Name}");
+                System.Diagnostics.Debug.WriteLine($"IsFolder: {projectNode.IsFolder}");
+                System.Diagnostics.Debug.WriteLine($"ID: {projectNode.Id}");
+                System.Diagnostics.Debug.WriteLine($"Previous Selection: {viewModel.SelectedProjectNode?.Name ?? "None"}");
+                System.Diagnostics.Debug.WriteLine($"Timestamp: {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine("================================");
+                
+                // ViewModelの選択ノードを更新
                 viewModel.SelectedProjectNode = projectNode;
-                e.Handled = true; // イベントのバブリングを停止
+                
+                // イベントの処理を停止して重複を防ぐ
+                e.Handled = true;
             }
         }
 

@@ -128,35 +128,70 @@ namespace ModernLauncher.ViewModels
             get => selectedProjectNode;
             set
             {
+                // プロジェクトノードが同じでも強制的に更新を行う
+                var previousNode = selectedProjectNode;
                 if (SetProperty(ref selectedProjectNode, value))
                 {
-                    if (value?.Project != null)
-                    {
-                        // 単一プロジェクトが選択された場合
-                        CurrentProject = value.Project;
-                        IsShowingAllProjects = false;
-                        currentDisplayedProjects.Clear();
-                        currentDisplayedProjects.Add(value.Project);
-                    }
-                    else if (value?.IsFolder == true)
-                    {
-                        // フォルダが選択された場合、子プロジェクトを収集して表示
-                        var childProjects = GetChildProjects(value);
-                        if (childProjects.Any())
-                        {
-                            CurrentProject = null; // フォルダ選択時はCurrentProjectはnull
-                            IsShowingAllProjects = true;
-                            currentDisplayedProjects.Clear();
-                            currentDisplayedProjects.AddRange(childProjects);
-                            ShowAllProjectsItems();
-                        }
-                    }
-                    else if (value == null)
-                    {
-                        // 何も選択されていない場合は全プロジェクト表示
-                        ShowAllProjectsGlobal();
-                    }
+                    HandleProjectNodeSelectionChange(value);
                 }
+                else if (value != null && previousNode == value)
+                {
+                    // 同じノードが選択された場合でも、強制的に切り替え処理を実行
+                    System.Diagnostics.Debug.WriteLine($"Force handling same node: {value.Name}");
+                    HandleProjectNodeSelectionChange(value);
+                }
+            }
+        }
+
+        private void HandleProjectNodeSelectionChange(ProjectNode? value)
+        {
+            if (value?.Project != null)
+            {
+                // 単一プロジェクトが選択された場合
+                System.Diagnostics.Debug.WriteLine($"Switching to project: {value.Project.Name}");
+                
+                // 状態をリセット
+                IsShowingAllProjects = false;
+                currentDisplayedProjects.Clear();
+                currentDisplayedProjects.Add(value.Project);
+                
+                // CurrentProjectを設定して、UIの更新をトリガー
+                CurrentProject = value.Project;
+                
+                // グループ選択をリセット
+                SelectedViewGroup = null;
+                
+                // アイテム表示を即座に更新
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    ShowAllItems();
+                    UpdateStatusText();
+                }), System.Windows.Threading.DispatcherPriority.Render);
+            }
+            else if (value?.IsFolder == true)
+            {
+                // フォルダが選択された場合、子プロジェクトを集めて表示
+                System.Diagnostics.Debug.WriteLine($"Switching to folder: {value.Name}");
+                var childProjects = GetChildProjects(value);
+                if (childProjects.Any())
+                {
+                    CurrentProject = null; // フォルダ選択時CurrentProjectはnull
+                    IsShowingAllProjects = true;
+                    currentDisplayedProjects.Clear();
+                    currentDisplayedProjects.AddRange(childProjects);
+                    
+                    // フォルダ表示を即座に更新
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                    {
+                        ShowAllProjectsItems();
+                    }), System.Windows.Threading.DispatcherPriority.Render);
+                }
+            }
+            else if (value == null)
+            {
+                // 何も選択されていない場合は全プロジェクト表示
+                System.Diagnostics.Debug.WriteLine("Switching to all projects");
+                ShowAllProjectsGlobal();
             }
         }
 
@@ -368,13 +403,20 @@ namespace ModernLauncher.ViewModels
 
         private void UpdateAfterProjectChange()
         {
-            if (!IsShowingAllProjects)
+            System.Diagnostics.Debug.WriteLine($"UpdateAfterProjectChange: CurrentProject = {CurrentProject?.Name ?? "null"}, IsShowingAllProjects = {IsShowingAllProjects}");
+            
+            if (!IsShowingAllProjects && CurrentProject != null)
             {
                 UpdateGroupList();
                 SelectedViewGroup = null;
-                ShowAllItems();
+                
+                // UI更新を確実に実行
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    ShowAllItems();
+                    UpdateStatusText();
+                }), System.Windows.Threading.DispatcherPriority.Render);
             }
-            UpdateStatusText();
             
             // プロジェクトノードの表示名を更新
             RefreshProjectNodeDisplayNames();
