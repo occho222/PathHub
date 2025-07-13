@@ -36,6 +36,7 @@ namespace ModernLauncher.Views
             Title = "アイテム編集";
             Width = 500;
             Height = 520; // 高さを増やしてグループ部分が見えるようにする
+            MinWidth = 420; // 最小幅を設定
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = new SolidColorBrush(Color.FromRgb(236, 233, 216));
 
@@ -182,26 +183,12 @@ namespace ModernLauncher.Views
             Grid.SetRow(groupsListBox, 9);
             grid.Children.Add(groupsListBox);
 
-            // Buttons - using Grid for proper layout
-            var buttonGrid = new Grid
+            // Buttons
+            var buttonPanel = new StackPanel
             {
-                Margin = new Thickness(0, 10, 0, 0)
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
             };
-            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            buttonGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            var cancelButton = new Button
-            {
-                Content = "キャンセル",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 0, 10, 0),
-                IsCancel = true
-            };
-            Grid.SetColumn(cancelButton, 1);
-            buttonGrid.Children.Add(cancelButton);
 
             var okButton = new Button
             {
@@ -209,14 +196,24 @@ namespace ModernLauncher.Views
                 Width = 80,
                 FontSize = 13,
                 Padding = new Thickness(8, 5, 8, 5),
-                IsDefault = true
+                Margin = new Thickness(0, 0, 5, 0)
             };
             okButton.Click += OkButton_Click;
-            Grid.SetColumn(okButton, 2);
-            buttonGrid.Children.Add(okButton);
 
-            Grid.SetRow(buttonGrid, 10);
-            grid.Children.Add(buttonGrid);
+            var cancelButton = new Button
+            {
+                Content = "キャンセル",
+                Width = 80,
+                FontSize = 13,
+                Padding = new Thickness(8, 5, 8, 5)
+            };
+            cancelButton.Click += (s, e) => DialogResult = false;
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            Grid.SetRow(buttonPanel, 10);
+            grid.Children.Add(buttonPanel);
 
             Content = grid;
 

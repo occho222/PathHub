@@ -17,8 +17,9 @@ namespace ModernLauncher.Views
         public TextInputDialog(string title, string prompt)
         {
             Title = title;
-            Width = 450;
+            Width = 480;
             Height = 220;
+            MinWidth = 400; // 最小幅を設定
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = new SolidColorBrush(Color.FromRgb(255, 255, 255));
 
@@ -55,8 +56,8 @@ namespace ModernLauncher.Views
                 Margin = new Thickness(0, 24, 0, 0)
             };
 
-            var okButton = CreateButton("グループ追加", true);
             var cancelButton = CreateButton("キャンセル", false);
+            var okButton = CreateButton("グループ追加", true);
 
             buttonPanel.Children.Add(cancelButton);
             buttonPanel.Children.Add(okButton);
@@ -86,7 +87,7 @@ namespace ModernLauncher.Views
             var button = new Button
             {
                 Content = content,
-                Width = 90,
+                Width = content == "グループ追加" ? 110 : 90, // グループ追加ボタンは幅を広げる
                 Height = 32,
                 Margin = new Thickness(6, 0, 0, 0),
                 FontSize = 13,
