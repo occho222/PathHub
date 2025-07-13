@@ -323,5 +323,10 @@ namespace ModernLauncher.Views
                 dropOverlay.Visibility = Visibility.Collapsed;
             }
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

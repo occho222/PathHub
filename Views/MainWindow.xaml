@@ -34,6 +34,15 @@
             <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         </Style>
         
+        <!-- Emoji TextBlock Style for proper emoji rendering -->
+        <Style x:Key="EmojiTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI Symbol, Segoe UI, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+        
         <Style TargetType="Button">
             <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
         </Style>
@@ -536,20 +545,20 @@
             <DockPanel Margin="6,5">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <Button Style="{StaticResource ModernPrimaryButton}" 
-                            Command="{Binding AddItemCommand}">
+                            Command="{Binding AddItemCommand}" Height="26" Width="137">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="➕" FontSize="14" Margin="0,0,6,0" FontWeight="Bold"
+                            <TextBlock Text="➕" FontSize="13" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=AddItem}" FontWeight="SemiBold"
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" Height="16" Width="26" VerticalAlignment="Bottom" TextAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding AddItem, Source={StaticResource Strings}}" FontWeight="SemiBold"
                                      FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="0,0,8,0">
-                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Search}" Foreground="{StaticResource TextColor}" 
+                    <TextBlock Text="検索:" Foreground="{StaticResource TextColor}" 
                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
                              VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
                     <TextBox Style="{StaticResource ClassicTextBox}"
@@ -572,7 +581,7 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- Work Tray Label -->
-                <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=WorkTray}" 
+                <TextBlock Grid.Column="0" Text="選択項目操作" 
                          Foreground="{StaticResource TextColor}" 
                          VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Margin="0,0,20,0"
                          FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
@@ -583,14 +592,14 @@
                             Command="{Binding EditItemCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="70">
+                            Margin="3,0" Height="32" MinWidth="70" Click="Button_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✏️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Edit}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="{Binding Edit, Source={StaticResource Strings}}" FontWeight="SemiBold"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" Height="19" Width="40" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
@@ -602,10 +611,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🗑️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Delete}" FontWeight="SemiBold"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                     
@@ -617,10 +626,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⬆️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Up}" FontWeight="SemiBold"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                     
@@ -632,10 +641,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⬇️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Down}" FontWeight="SemiBold"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                     
@@ -649,10 +658,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚡" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="VSCode" FontWeight="SemiBold"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                     
@@ -665,10 +674,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="Office" FontWeight="SemiBold"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -739,7 +748,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=Projects}" 
+                            <TextBlock Grid.Column="0" Text="プロジェクト" 
                                      FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"/>
@@ -850,7 +859,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding Source={StaticResource Strings}, Path=SmartFolders}" 
+                            <TextBlock Grid.Column="0" Text="グループ" 
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"
                                      FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>

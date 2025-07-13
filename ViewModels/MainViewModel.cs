@@ -264,16 +264,10 @@ namespace ModernLauncher.ViewModels
                     }
                 }
 
-                // ItemTypeの設定
-                if (string.IsNullOrEmpty(item.ItemType))
+                // ItemTypeとIconの設定 - LauncherItemの新しいメソッドを使用
+                if (string.IsNullOrEmpty(item.ItemType) || string.IsNullOrEmpty(item.Icon))
                 {
-                    item.ItemType = launcherService.GetItemType(item.Path);
-                }
-
-                // Iconの設定
-                if (string.IsNullOrEmpty(item.Icon))
-                {
-                    item.Icon = launcherService.GetIconForPath(item.Path);
+                    item.RefreshIconAndType();
                 }
 
                 // OrderIndexの初期化
@@ -648,8 +642,9 @@ namespace ModernLauncher.ViewModels
             {
                 var newItem = dialog.Result;
                 newItem.OrderIndex = CurrentProject.Items.Count;
-                newItem.ItemType = launcherService.GetItemType(newItem.Path);
-                newItem.Icon = launcherService.GetIconForPath(newItem.Path);
+                
+                // 新しいメソッドを使用してアイコンとタイプを設定
+                newItem.RefreshIconAndType();
                 
                 // グループ名を更新
                 UpdateItemGroupNames(newItem);
@@ -728,8 +723,9 @@ namespace ModernLauncher.ViewModels
                 if (dialog.ShowDialog() == true && dialog.Result != null)
                 {
                     var editedItem = dialog.Result;
-                    editedItem.ItemType = launcherService.GetItemType(editedItem.Path);
-                    editedItem.Icon = launcherService.GetIconForPath(editedItem.Path);
+                    
+                    // 新しいメソッドを使用してアイコンとタイプを設定
+                    editedItem.RefreshIconAndType();
                     
                     // グループ名を更新
                     UpdateItemGroupNames(editedItem);
@@ -1188,10 +1184,11 @@ namespace ModernLauncher.ViewModels
                     Description = description,
                     Category = category,
                     GroupIds = new List<string>(), // デフォルトグループなし
-                    OrderIndex = CurrentProject.Items.Count,
-                    ItemType = launcherService.GetItemType(path),
-                    Icon = launcherService.GetIconForPath(path)
+                    OrderIndex = CurrentProject.Items.Count
                 };
+
+                // アイコンとタイプを設定
+                newItem.RefreshIconAndType();
 
                 // グループ名を更新
                 UpdateItemGroupNames(newItem);
@@ -1306,8 +1303,9 @@ namespace ModernLauncher.ViewModels
                 {
                     var newItem = dialog.Result;
                     newItem.OrderIndex = CurrentProject.Items.Count;
-                    newItem.ItemType = launcherService.GetItemType(newItem.Path);
-                    newItem.Icon = launcherService.GetIconForPath(newItem.Path);
+                    
+                    // アイコンとタイプを設定
+                    newItem.RefreshIconAndType();
                     
                     // グループ名を更新
                     UpdateItemGroupNames(newItem);
