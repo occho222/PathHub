@@ -22,6 +22,9 @@
         <!-- グローバル絵文字サポートフォント設定 -->
         <Style TargetType="Control">
             <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         </Style>
         
         <Style TargetType="TextElement">
@@ -33,6 +36,15 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        </Style>
+
+        <!-- 絵文字表示専用スタイル -->
+        <Style x:Key="EmojiTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI Symbol, Segoe UI, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
             <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         </Style>
@@ -102,7 +114,9 @@
                                                 ContentSource="Header"
                                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                                TextOptions.TextFormattingMode="Display"
+                                                TextOptions.TextRenderingMode="ClearType"/>
                             </Border>
                             <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" 
                                           Visibility="Collapsed" Margin="19,0,0,0"/>
@@ -168,7 +182,9 @@
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                            TextOptions.TextFormattingMode="Display"
+                                            TextOptions.TextRenderingMode="ClearType"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -205,7 +221,9 @@
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                            TextOptions.TextFormattingMode="Display"
+                                            TextOptions.TextRenderingMode="ClearType"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -281,7 +299,9 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                             <GridViewRowPresenter Content="{TemplateBinding Content}"
-                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                                TextOptions.TextFormattingMode="Display"
+                                                TextOptions.TextRenderingMode="ClearType"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -318,7 +338,9 @@
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                             VerticalAlignment="Center"
-                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                            TextOptions.TextFormattingMode="Display"
+                                            TextOptions.TextRenderingMode="ClearType"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -360,6 +382,7 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="UseLayoutRounding" Value="True"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
             <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         </Style>

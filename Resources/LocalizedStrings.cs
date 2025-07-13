@@ -25,12 +25,12 @@ namespace ModernLauncher.Resources
         public string Search => "?? 検索:";
 
         // Project bar
-        public string WorkTray => "?? 選択項目操作";
+        public string WorkTray => "? 選択項目操作";
         public string New => "?? 新規";
         public string Import => "?? インポート";
 
         // Left panel
-        public string SmartFolders => "??? グループ";
+        public string SmartFolders => "?? グループ";
         public string Projects => "?? プロジェクト";
         public string NewFolder => "?? 新規フォルダー";
         public string NewProjectInFolder => "?? 新規プロジェクト";
@@ -38,11 +38,11 @@ namespace ModernLauncher.Resources
         public string MoveToFolder => "?? 移動";
 
         // ListView headers
-        public string Type => "?? 種類";
-        public string Category => "??? 分類";
+        public string Type => "??? 種類";
+        public string Category => "?? 分類";
         public string Name => "?? 名前";
-        public string Path => "?? パス";
-        public string Group => "??? グループ";
+        public string Path => "??? パス";
+        public string Group => "?? グループ";
         public string Description => "?? 説明";
         public string Actions => "? 操作";
 

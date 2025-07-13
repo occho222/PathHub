@@ -49,36 +49,90 @@ namespace ModernLauncher.Services
 
         public string GetIconForPath(string path)
         {
-            if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
-                return "Web";
-            else if (Directory.Exists(path))
-                return "DIR";
-            else if (File.Exists(path))
+            try
             {
-                var ext = Path.GetExtension(path).ToLower();
-                switch (ext)
+                if (string.IsNullOrEmpty(path))
+                    return "?";
+
+                // URLの場合
+                if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 {
-                    case ".exe": return "EXE";
-                    case ".txt": return "TXT";
-                    case ".doc":
-                    case ".docx": return "DOC";
-                    case ".xls":
-                    case ".xlsx": return "XLS";
-                    case ".pdf": return "PDF";
-                    case ".zip":
-                    case ".rar": return "ZIP";
-                    case ".jpg":
-                    case ".png":
-                    case ".gif": return "IMG";
-                    case ".mp3":
-                    case ".wav": return "SND";
-                    case ".mp4":
-                    case ".avi": return "VID";
-                    default: return "FILE";
+                    var uri = new Uri(path.StartsWith("www.") ? "http://" + path : path);
+                    var host = uri.Host.ToLower();
+                    
+                    if (host.Contains("github.com"))
+                        return "??";
+                    else if (host.Contains("gitlab.com"))
+                        return "??";
+                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
+                        return "??";
+                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
+                        return "??";
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
+                        return "???";
+                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
+                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
+                        return "??";
+                    else
+                        return "??";
                 }
+
+                // ディレクトリの場合
+                if (Directory.Exists(path))
+                {
+                    // G:ドライブの場合はGoogleドライブアイコン
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "??";
+                    }
+                    return "??";
+                }
+
+                // ファイルの場合
+                if (File.Exists(path))
+                {
+                    // G:ドライブのファイルもGoogleドライブアイコン
+                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "??";
+                    }
+
+                    var ext = Path.GetExtension(path).ToLower();
+                    return ext switch
+                    {
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "??",
+                        ".txt" or ".rtf" => "??",
+                        ".doc" or ".docx" => "??",
+                        ".xls" or ".xlsx" => "??",
+                        ".ppt" or ".pptx" => "??",
+                        ".pdf" => "??",
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "???",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "??",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "??",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "??",
+                        ".lnk" => "??",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "??",
+                        _ => "??"
+                    };
+                }
+
+                // G:で始まる存在しないパスもGoogleドライブアイコン
+                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "??";
+                }
+
+                // コマンドの場合
+                return "?";
             }
-            else
-                return "CMD"; // コマンド
+            catch (Exception)
+            {
+                return "?";
+            }
         }
 
         public string GetItemType(string path)
