@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:ModernLauncher.ViewModels"
         xmlns:res="clr-namespace:ModernLauncher.Resources"
         mc:Ignorable="d"
-        Title="??? PathHub" Height="800" Width="1400"
+        Title="🛣️ PathHub" Height="800" Width="1400"
         WindowStartupLocation="CenterScreen"
         Background="#ECE9D8"
         AllowDrop="True"
@@ -975,7 +975,7 @@
                             <StaticResource ResourceKey="GridViewColumnHeaderStyle"/>
                         </GridView.ColumnHeaderContainerStyle>
                         <GridViewColumn Width="60">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Type}" Tag="ItemType"/>
+                            <GridViewColumnHeader Content="種類" Tag="ItemType"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Icon}" FontSize="16" 
@@ -988,7 +988,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="130">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Category}" Tag="Category"/>
+                            <GridViewColumnHeader Content="分類" Tag="Category"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="6,2">
@@ -1006,7 +1006,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="240">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Name}" Tag="Name"/>
+                            <GridViewColumnHeader Content="名前" Tag="Name"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}" FontSize="13" 
@@ -1017,7 +1017,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="200">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Description}" Tag="Description"/>
+                            <GridViewColumnHeader Content="説明" Tag="Description"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Description}" FontSize="12" 
@@ -1029,7 +1029,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="280">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Path}" Tag="Path"/>
+                            <GridViewColumnHeader Content="パス" Tag="Path"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Path}" FontSize="12" 
@@ -1041,7 +1041,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Width="120">
-                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Group}" Tag="GroupNames"/>
+                            <GridViewColumnHeader Content="グループ" Tag="GroupNames"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding GroupNames}" FontSize="12" 
