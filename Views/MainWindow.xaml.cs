@@ -4,6 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Data;
 using ModernLauncher.ViewModels;
 using ModernLauncher.Models;
 
@@ -12,6 +14,8 @@ namespace ModernLauncher.Views
     public partial class MainWindow : Window
     {
         private Border? dropOverlay;
+        private string? _lastSortProperty;
+        private ListSortDirection _lastSortDirection = ListSortDirection.Ascending;
 
         public MainWindow()
         {
@@ -29,6 +33,9 @@ namespace ModernLauncher.Views
             DragOver += MainWindow_DragOver;
             DragLeave += MainWindow_DragLeave;
             Drop += MainWindow_Drop;
+
+            // GridViewColumnHeaderのClickイベントをウィンドウレベルでハンドル
+            AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ListViewColumnHeader_Click));
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -59,6 +66,56 @@ namespace ModernLauncher.Views
             {
                 viewModel.LaunchItemCommand.Execute(listView.SelectedItem);
             }
+        }
+
+        private void ListViewColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is GridViewColumnHeader header && header.Tag is string propertyName)
+            {
+                // メインListViewを探す
+                var listView = FindMainListView();
+                if (listView?.ItemsSource == null) return;
+
+                var view = CollectionViewSource.GetDefaultView(listView.ItemsSource);
+                if (view == null) return;
+
+                // ソート方向の切り替え
+                ListSortDirection direction = ListSortDirection.Ascending;
+                if (_lastSortProperty == propertyName && _lastSortDirection == ListSortDirection.Ascending)
+                {
+                    direction = ListSortDirection.Descending;
+                }
+                _lastSortProperty = propertyName;
+                _lastSortDirection = direction;
+
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription(propertyName, direction));
+                view.Refresh();
+            }
+        }
+
+        private ListView? FindMainListView()
+        {
+            // MainListViewを名前で直接検索
+            return FindName("MainListView") as ListView ?? FindListViewInVisualTree(this);
+        }
+
+        private ListView? FindListViewInVisualTree(DependencyObject parent)
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is ListView listView && listView.View is GridView)
+                {
+                    return listView;
+                }
+
+                var result = FindListViewInVisualTree(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
         }
 
         private void MainWindow_DragEnter(object sender, DragEventArgs e)

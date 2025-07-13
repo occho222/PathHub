@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Data;
+using System.Windows.Controls;
 using ModernLauncher.Commands;
 using ModernLauncher.Interfaces;
 using ModernLauncher.Models;
@@ -799,6 +801,9 @@ namespace ModernLauncher.ViewModels
                 var index = CurrentProject.Items.IndexOf(item);
                 if (index > 0)
                 {
+                    // ソートをクリアしてからアイテムを移動
+                    ClearListViewSort();
+                    
                     CurrentProject.Items.Move(index, index - 1);
                     UpdateItemOrderIndices();
                     SaveData();
@@ -829,6 +834,9 @@ namespace ModernLauncher.ViewModels
                 var index = CurrentProject.Items.IndexOf(item);
                 if (index < CurrentProject.Items.Count - 1)
                 {
+                    // ソートをクリアしてからアイテムを移動
+                    ClearListViewSort();
+                    
                     CurrentProject.Items.Move(index, index + 1);
                     UpdateItemOrderIndices();
                     SaveData();
@@ -849,6 +857,21 @@ namespace ModernLauncher.ViewModels
                 return index < CurrentProject.Items.Count - 1;
             }
             return false;
+        }
+
+        private void ClearListViewSort()
+        {
+            // メインListViewのソートをクリア
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var listView = mainWindow.FindName("MainListView") as ListView;
+                if (listView?.ItemsSource != null)
+                {
+                    var view = CollectionViewSource.GetDefaultView(listView.ItemsSource);
+                    view?.SortDescriptions.Clear();
+                    view?.Refresh();
+                }
+            }
         }
 
         private void UpdateItemOrderIndices()

@@ -590,7 +590,7 @@
                         ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"/>
 
             <!-- Main ListView with Drag and Drop -->
-            <ListView Grid.Column="2" Background="White" BorderThickness="0"
+            <ListView x:Name="MainListView" Grid.Column="2" Background="White" BorderThickness="0"
                     ItemsSource="{Binding DisplayedItems}"
                     SelectedItem="{Binding SelectedItem}"
                     FontSize="13"
@@ -629,7 +629,8 @@
                         <GridView.ColumnHeaderContainerStyle>
                             <StaticResource ResourceKey="GridViewColumnHeaderStyle"/>
                         </GridView.ColumnHeaderContainerStyle>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Type}" Width="60">
+                        <GridViewColumn Width="60">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Type}" Tag="ItemType"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Icon}" FontSize="14" 
@@ -637,17 +638,16 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Category}" Width="130">
+                        <GridViewColumn Width="130">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Category}" Tag="Category"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="6,2">
-                                        <!-- Color indicator -->
                                         <Border Width="16" Height="12" 
                                                 Background="{Binding Category, Converter={StaticResource CategoryColorIndicatorConverter}}"
                                                 BorderBrush="Gray" BorderThickness="1" 
                                                 CornerRadius="2" Margin="0,0,6,0"
                                                 VerticalAlignment="Center"/>
-                                        <!-- Category text -->
                                         <TextBlock Text="{Binding Category}" FontSize="12" 
                                                  Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
                                                  VerticalAlignment="Center"/>
@@ -655,7 +655,8 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Name}" Width="240">
+                        <GridViewColumn Width="240">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Name}" Tag="Name"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}" FontSize="13" 
@@ -664,7 +665,8 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Description}" Width="200">
+                        <GridViewColumn Width="200">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Description}" Tag="Description"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Description}" FontSize="12" 
@@ -674,7 +676,8 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Path}" Width="280">
+                        <GridViewColumn Width="280">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Path}" Tag="Path"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Path}" FontSize="12" 
@@ -684,7 +687,8 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="{Binding Source={StaticResource Strings}, Path=Group}" Width="120">
+                        <GridViewColumn Width="120">
+                            <GridViewColumnHeader Content="{Binding Source={StaticResource Strings}, Path=Group}" Tag="GroupNames"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding GroupNames}" FontSize="12" 
