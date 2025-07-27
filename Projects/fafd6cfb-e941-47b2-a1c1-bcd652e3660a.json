@@ -1,0 +1,22 @@
+﻿{
+  "Id": "fafd6cfb-e941-47b2-a1c1-bcd652e3660a",
+  "Name": "デフォルト",
+  "OrderIndex": 0,
+  "ParentId": null,
+  "IsFolder": false,
+  "Groups": [
+    {
+      "Id": "all",
+      "Name": "すべて",
+      "ItemCount": "",
+      "OrderIndex": 0
+    },
+    {
+      "Id": "197fdfb1-666e-4759-9520-5c8f1f4af0b5",
+      "Name": "よく使う",
+      "ItemCount": "",
+      "OrderIndex": 1
+    }
+  ],
+  "Items": []
+}

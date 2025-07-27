@@ -20,7 +20,7 @@ namespace ModernLauncher.Models
         private double leftPanelWidth = 400;
         private double smartLauncherHeight = 100;
         private double projectAreaHeight = 200;
-        private double groupAreaHeight = 60;
+        private double groupAreaHeight = 150; // デフォルト値を大きくし、比例設定に対応
         
         // GridView列幅の設定
         private Dictionary<string, double> columnWidths = new Dictionary<string, double>

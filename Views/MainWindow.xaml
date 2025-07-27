@@ -85,6 +85,16 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
         </Style>
+        
+        <!-- Group Tree View Style -->
+        <Style x:Key="GroupTreeViewStyle" TargetType="TreeView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
 
         <Style x:Key="ProjectTreeViewItemStyle" TargetType="TreeViewItem">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
@@ -155,6 +165,18 @@
                     <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Group Tree View Item Style -->
+        <Style x:Key="GroupTreeViewItemStyle" TargetType="TreeViewItem">
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- Style for SmartLauncher ListViewItem: white text when selected -->
@@ -982,7 +1004,7 @@
                         <RowDefinition Height="200" MinHeight="150" MaxHeight="300"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="150" MinHeight="100" MaxHeight="250"/>
+                        <RowDefinition Height="2*" MinHeight="50"/>
                     </Grid.RowDefinitions>
                     
                     <!-- SmartLauncher Section -->
@@ -1301,19 +1323,16 @@
                         </Grid>
                     </Border>
 
-                    <TreeView x:Name="GroupTreeView" Grid.Row="7" Background="Transparent" BorderThickness="0"
-                            FontSize="13" FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" Margin="4"
-                            ItemsSource="{Binding CurrentProject.Groups}"
-                            SelectedItemChanged="TreeView_SelectedItemChanged"
-                            AllowDrop="True">
+                    <TreeView x:Name="GroupTreeView" Grid.Row="7" 
+                             Style="{StaticResource GroupTreeViewStyle}"
+                             Margin="4"
+                             ItemsSource="{Binding CurrentProject.Groups}"
+                             SelectedItemChanged="TreeView_SelectedItemChanged"
+                             AllowDrop="True"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch">
                         <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="Padding" Value="2"/>
-                                <Setter Property="Margin" Value="0,1"/>
-                                <Setter Property="FontSize" Value="13"/>
-                                <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource GroupTreeViewItemStyle}">
                                 <Setter Property="ContextMenu">
                                     <Setter.Value>
                                         <ContextMenu>
@@ -1367,40 +1386,6 @@
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                         </ContextMenu>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="TreeViewItem">
-                                            <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}"
-                                                    ContextMenu="{TemplateBinding ContextMenu}">
-                                                <ContentPresenter x:Name="PART_Header" 
-                                                                ContentSource="Header"
-                                                                HorizontalAlignment="Left"
-                                                                VerticalAlignment="Center"
-                                                                TextElement.Foreground="{TemplateBinding Foreground}"
-                                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                    <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
-                                                </Trigger>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
-                                                </Trigger>
-                                                <MultiTrigger>
-                                                    <MultiTrigger.Conditions>
-                                                        <Condition Property="IsSelected" Value="True"/>
-                                                        <Condition Property="IsMouseOver" Value="True"/>
-                                                    </MultiTrigger.Conditions>
-                                                    <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                    <Setter TargetName="PART_Header" Property="TextElement.Foreground" Value="White"/>
-                                                </MultiTrigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
                             </Style>

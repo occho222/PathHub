@@ -118,22 +118,24 @@ namespace ModernLauncher.Services
             var leftPanel = window.FindName("LeftPanel") as Grid;
             if (leftPanel == null) return;
 
-            // SmartLauncherの高さを設定
+            // SmartLauncherの高さ設定
             if (leftPanel.RowDefinitions.Count > 1)
             {
                 leftPanel.RowDefinitions[1].Height = new GridLength(_windowLayoutSettings.SmartLauncherHeight);
             }
 
-            // プロジェクトエリアの高さを設定
+            // プロジェクトエリアの高さ設定
             if (leftPanel.RowDefinitions.Count > 4)
             {
                 leftPanel.RowDefinitions[4].Height = new GridLength(_windowLayoutSettings.ProjectAreaHeight);
             }
 
-            // グループエリアの高さを設定
+            // グループエリアの高さ設定 - 比例的なサイズ設定に変更
             if (leftPanel.RowDefinitions.Count > 7)
             {
-                leftPanel.RowDefinitions[7].Height = new GridLength(_windowLayoutSettings.GroupAreaHeight);
+                // 2*の比例設定を維持し、最小高さのみ動的に調整
+                leftPanel.RowDefinitions[7].Height = new GridLength(2, GridUnitType.Star);
+                leftPanel.RowDefinitions[7].MinHeight = Math.Max(50, _windowLayoutSettings.GroupAreaHeight * 0.3);
             }
         }
 
@@ -228,7 +230,8 @@ namespace ModernLauncher.Services
 
             if (leftPanel.RowDefinitions.Count > 7)
             {
-                _windowLayoutSettings.GroupAreaHeight = leftPanel.RowDefinitions[7].ActualHeight;
+                // グループエリアは比例設定なので実際の高さを保存
+                _windowLayoutSettings.GroupAreaHeight = Math.Max(50, leftPanel.RowDefinitions[7].ActualHeight);
             }
         }
 
