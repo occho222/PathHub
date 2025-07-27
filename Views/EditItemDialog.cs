@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,166 +8,42 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
 using ModernLauncher.Models;
+using ModernLauncher.Services;
 
 namespace ModernLauncher.Views
 {
-    public class EditItemDialog : Window
+    /// <summary>
+    /// EditItemDialog.xaml „ÅÆÁõ∏‰∫í‰ΩúÁî®„É≠„Ç∏„ÉÉ„ÇØ
+    /// </summary>
+    public partial class EditItemDialog : Window
     {
         public LauncherItem? Result { get; private set; }
         
-        private TextBox nameTextBox = null!;
-        private TextBox pathTextBox = null!;
-        private TextBox descriptionTextBox = null!;
-        private ComboBox categoryComboBox = null!;
-        private ListBox groupsListBox = null!;
         private readonly List<ItemGroup> availableGroups;
         private readonly LauncherItem originalItem;
+        private readonly CategoryService _categoryService;
 
         public EditItemDialog(LauncherItem item, List<ItemGroup> groups)
         {
+            InitializeComponent();
+            
             originalItem = item;
             availableGroups = groups;
-            InitializeComponent();
+            _categoryService = new CategoryService();
+            
+            InitializeControls();
             LoadItemData();
+            
+            // Set focus to name textbox
+            NameTextBox.Focus();
         }
 
-        private void InitializeComponent()
+        private void InitializeControls()
         {
-            Title = "ÉAÉCÉeÉÄï“èW";
-            Width = 500;
-            Height = 520; // çÇÇ≥ÇëùÇ‚ÇµÇƒÉOÉãÅ[Évïîï™Ç™å©Ç¶ÇÈÇÊÇ§Ç…Ç∑ÇÈ
-            MinWidth = 420; // ç≈è¨ïùÇê›íË
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            Background = new SolidColorBrush(Color.FromRgb(236, 233, 216));
+            // Initialize category ComboBox with all available categories
+            LoadCategories();
 
-            var grid = new Grid { Margin = new Thickness(20) };
-            
-            // Row definitions - ê≥ÇµÇ¢ç\ë¢Ç…èCê≥
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 0 - Name Label
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 1 - Name TextBox
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 2 - Path Label
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 3 - Path Panel
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 4 - Category Label
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 5 - Category ComboBox
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 6 - Description Label
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 7 - Description TextBox
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 8 - Groups Label
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(120, GridUnitType.Pixel) }); // Row 9 - Groups ListBox (å≈íËçÇÇ≥)
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Row 10 - Button panel
-
-            // Name
-            var nameLabel = new TextBlock
-            {
-                Text = "ñºëO:",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-            Grid.SetRow(nameLabel, 0);
-            grid.Children.Add(nameLabel);
-
-            nameTextBox = new TextBox
-            {
-                FontSize = 13,
-                Padding = new Thickness(6, 4, 6, 4),
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            Grid.SetRow(nameTextBox, 1);
-            grid.Children.Add(nameTextBox);
-
-            // Path
-            var pathLabel = new TextBlock
-            {
-                Text = "ÉpÉX:",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-            Grid.SetRow(pathLabel, 2);
-            grid.Children.Add(pathLabel);
-
-            var pathPanel = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
-            var browseButton = new Button
-            {
-                Content = "éQè∆...",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(5, 0, 0, 0)
-            };
-            browseButton.Click += BrowseButton_Click;
-            DockPanel.SetDock(browseButton, Dock.Right);
-
-            pathTextBox = new TextBox
-            {
-                FontSize = 13,
-                Padding = new Thickness(6, 4, 6, 4)
-            };
-            pathPanel.Children.Add(browseButton);
-            pathPanel.Children.Add(pathTextBox);
-            Grid.SetRow(pathPanel, 3);
-            grid.Children.Add(pathPanel);
-
-            // Category
-            var categoryLabel = new TextBlock
-            {
-                Text = "ï™óﬁ:",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-            Grid.SetRow(categoryLabel, 4);
-            grid.Children.Add(categoryLabel);
-
-            categoryComboBox = new ComboBox
-            {
-                FontSize = 13,
-                Padding = new Thickness(6, 4, 6, 4),
-                Margin = new Thickness(0, 0, 0, 10),
-                IsEditable = true
-            };
-            categoryComboBox.Items.Add("ÉAÉvÉäÉPÅ[ÉVÉáÉì");
-            categoryComboBox.Items.Add("ÉQÅ[ÉÄ");
-            categoryComboBox.Items.Add("ÉcÅ[Éã");
-            categoryComboBox.Items.Add("ÉhÉLÉÖÉÅÉìÉg");
-            categoryComboBox.Items.Add("ÇªÇÃëº");
-            Grid.SetRow(categoryComboBox, 5);
-            grid.Children.Add(categoryComboBox);
-
-            // Description
-            var descLabel = new TextBlock
-            {
-                Text = "ê‡ñæ:",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-            Grid.SetRow(descLabel, 6);
-            grid.Children.Add(descLabel);
-
-            descriptionTextBox = new TextBox
-            {
-                FontSize = 13,
-                Padding = new Thickness(6, 4, 6, 4),
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            Grid.SetRow(descriptionTextBox, 7);
-            grid.Children.Add(descriptionTextBox);
-
-            // Groups Label
-            var groupsLabel = new TextBlock
-            {
-                Text = "ÉOÉãÅ[Év:",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-            Grid.SetRow(groupsLabel, 8);
-            grid.Children.Add(groupsLabel);
-
-            // Groups ListBox
-            groupsListBox = new ListBox
-            {
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 15),
-                SelectionMode = SelectionMode.Multiple
-            };
-            
+            // Initialize groups ListBox
             foreach (var group in availableGroups.Where(g => g.Id != "all"))
             {
                 var checkBox = new CheckBox
@@ -177,60 +53,59 @@ namespace ModernLauncher.Views
                     FontSize = 13,
                     Margin = new Thickness(4, 2, 4, 2)
                 };
-                groupsListBox.Items.Add(checkBox);
+                GroupsListBox.Items.Add(checkBox);
             }
-            
-            Grid.SetRow(groupsListBox, 9);
-            grid.Children.Add(groupsListBox);
+        }
 
-            // Buttons
-            var buttonPanel = new StackPanel
+        private void LoadCategories()
+        {
+            var categories = _categoryService.GetCategories();
+            CategoryComboBox.Items.Clear();
+            foreach (var category in categories)
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-
-            var okButton = new Button
-            {
-                Content = "OK",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 0, 5, 0)
-            };
-            okButton.Click += OkButton_Click;
-
-            var cancelButton = new Button
-            {
-                Content = "ÉLÉÉÉìÉZÉã",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5)
-            };
-            cancelButton.Click += (s, e) => DialogResult = false;
-
-            buttonPanel.Children.Add(okButton);
-            buttonPanel.Children.Add(cancelButton);
-
-            Grid.SetRow(buttonPanel, 10);
-            grid.Children.Add(buttonPanel);
-
-            Content = grid;
-
-            nameTextBox.Focus();
+                CategoryComboBox.Items.Add(category);
+            }
         }
 
         private void LoadItemData()
         {
-            nameTextBox.Text = originalItem.Name;
-            pathTextBox.Text = originalItem.Path;
-            descriptionTextBox.Text = originalItem.Description ?? string.Empty;
-            categoryComboBox.Text = originalItem.Category ?? "ÇªÇÃëº";
+            NameTextBox.Text = originalItem.Name;
+            PathTextBox.Text = originalItem.Path;
+            DescriptionTextBox.Text = originalItem.Description ?? string.Empty;
+            
+            // Set category (select from existing items or set text)
+            bool categoryFound = false;
+            foreach (var item in CategoryComboBox.Items)
+            {
+                if (item.ToString() == originalItem.Category)
+                {
+                    CategoryComboBox.SelectedItem = item;
+                    categoryFound = true;
+                    break;
+                }
+            }
+            
+            if (!categoryFound)
+            {
+                CategoryComboBox.Text = originalItem.Category ?? "„Åù„ÅÆ‰ªñ";
+            }
+            
+            // VSCodeCheckBox„ÅåÂ≠òÂú®„Åô„ÇãÂ†¥Âêà„ÅÆ„ÅøË®≠ÂÆö
+            if (VSCodeCheckBox != null)
+            {
+                VSCodeCheckBox.IsChecked = originalItem.OpenWithVSCode;
+            }
+
+            // OfficeCheckBox„ÅåÂ≠òÂú®„Åô„ÇãÂ†¥Âêà„ÅÆ„ÅøË®≠ÂÆö
+            if (OfficeCheckBox != null)
+            {
+                OfficeCheckBox.IsChecked = originalItem.OpenWithOffice;
+            }
 
             // Set selected groups
             if (originalItem.GroupIds != null)
             {
-                foreach (CheckBox checkBox in groupsListBox.Items)
+                foreach (CheckBox checkBox in GroupsListBox.Items)
                 {
                     if (checkBox.Tag is ItemGroup group && originalItem.GroupIds.Contains(group.Id))
                     {
@@ -240,40 +115,68 @@ namespace ModernLauncher.Views
             }
         }
 
+        private void ManageCategoriesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CategoryManagementDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                var currentCategory = CategoryComboBox.Text;
+                LoadCategories();
+                
+                // Try to restore the previously selected category
+                if (!string.IsNullOrEmpty(currentCategory))
+                {
+                    bool found = false;
+                    foreach (var item in CategoryComboBox.Items)
+                    {
+                        if (item.ToString() == currentCategory)
+                        {
+                            CategoryComboBox.SelectedItem = item;
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!found)
+                    {
+                        CategoryComboBox.Text = currentCategory;
+                    }
+                }
+            }
+        }
+
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
             {
-                Title = "é¿çsÉtÉ@ÉCÉãÇëIë",
-                Filter = "é¿çsÉtÉ@ÉCÉã (*.exe)|*.exe|Ç∑Ç◊ÇƒÇÃÉtÉ@ÉCÉã (*.*)|*.*",
+                Title = "ÂÆüË°å„Éï„Ç°„Ç§„É´„ÇíÈÅ∏Êäû",
+                Filter = "ÂÆüË°å„Éï„Ç°„Ç§„É´ (*.exe)|*.exe|„Åô„Åπ„Å¶„ÅÆ„Éï„Ç°„Ç§„É´ (*.*)|*.*",
                 FilterIndex = 1,
-                FileName = pathTextBox.Text
+                FileName = PathTextBox.Text
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                pathTextBox.Text = openFileDialog.FileName;
+                PathTextBox.Text = openFileDialog.FileName;
             }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(nameTextBox.Text))
+            if (string.IsNullOrWhiteSpace(NameTextBox.Text))
             {
-                MessageBox.Show("ñºëOÇì¸óÕÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB", "ÉGÉâÅ[", MessageBoxButton.OK, MessageBoxImage.Warning);
-                nameTextBox.Focus();
+                ShowValidationError("ÂêçÂâç„ÇíÂÖ•Âäõ„Åó„Å¶„Åè„Å†„Åï„ÅÑ„ÄÇ", NameTextBox);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(pathTextBox.Text))
+            if (string.IsNullOrWhiteSpace(PathTextBox.Text))
             {
-                MessageBox.Show("ÉpÉXÇì¸óÕÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB", "ÉGÉâÅ[", MessageBoxButton.OK, MessageBoxImage.Warning);
-                pathTextBox.Focus();
+                ShowValidationError("„Éë„Çπ„ÇíÂÖ•Âäõ„Åó„Å¶„Åè„Å†„Åï„ÅÑ„ÄÇ", PathTextBox);
                 return;
             }
 
             var selectedGroups = new List<string>();
-            foreach (CheckBox checkBox in groupsListBox.Items)
+            foreach (CheckBox checkBox in GroupsListBox.Items)
             {
                 if (checkBox.IsChecked == true && checkBox.Tag is ItemGroup group)
                 {
@@ -284,15 +187,45 @@ namespace ModernLauncher.Views
             Result = new LauncherItem
             {
                 Id = originalItem.Id,
-                Name = nameTextBox.Text.Trim(),
-                Path = pathTextBox.Text.Trim(),
-                Description = descriptionTextBox.Text.Trim(),
-                Category = categoryComboBox.Text?.Trim() ?? "ÇªÇÃëº",
+                Name = NameTextBox.Text.Trim(),
+                Path = PathTextBox.Text.Trim(),
+                Description = DescriptionTextBox.Text.Trim(),
+                Category = CategoryComboBox.Text?.Trim() ?? "„Åù„ÅÆ‰ªñ",
                 GroupIds = selectedGroups,
-                OrderIndex = originalItem.OrderIndex
+                OrderIndex = originalItem.OrderIndex,
+                LastAccessed = originalItem.LastAccessed,
+                OpenWithVSCode = VSCodeCheckBox?.IsChecked == true,
+                OpenWithOffice = OfficeCheckBox?.IsChecked == true
             };
 
             DialogResult = true;
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+        }
+
+        private void ShowValidationError(string message, Control controlToFocus)
+        {
+            MessageBox.Show(message, "ÂÖ•Âäõ„Ç®„É©„Éº", MessageBoxButton.OK, MessageBoxImage.Warning);
+            controlToFocus.Focus();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && !e.Handled)
+            {
+                OkButton_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && !e.Handled)
+            {
+                CancelButton_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            
+            base.OnKeyDown(e);
         }
     }
 }

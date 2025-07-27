@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -19,8 +19,11 @@ namespace ModernLauncher.Models
         private string itemType = string.Empty;
         private int orderIndex;
         private string groupNames = string.Empty;
+        private DateTime lastAccessed = DateTime.MinValue;
+        private bool openWithVSCode = false;
+        private bool openWithOffice = false;
 
-        // �V�����t�B�[���h - �t�H���_�p�X�\���p
+        // 新しいフィールド - フォルダパス表示用
         private string projectName = string.Empty;
         private string folderPath = string.Empty;
 
@@ -43,7 +46,7 @@ namespace ModernLauncher.Models
             {
                 if (SetProperty(ref path, value))
                 {
-                    // �p�X���ύX���ꂽ���ɃA�C�R���ƃA�C�e���^�C�v���X�V
+                    // パスが変更された時にアイコンとアイテムタイプを更新
                     UpdateIconAndType();
                 }
             }
@@ -98,18 +101,39 @@ namespace ModernLauncher.Models
             set => SetProperty(ref groupNames, value);
         }
 
-        // �V�����v���p�e�B - �����v���W�F�N�g��
+        // 新しいプロパティ - 最終アクセス日時
+        public DateTime LastAccessed
+        {
+            get => lastAccessed;
+            set => SetProperty(ref lastAccessed, value);
+        }
+
+        // 新しいプロパティ - 所属プロジェクト名
         public string ProjectName
         {
             get => projectName;
             set => SetProperty(ref projectName, value);
         }
 
-        // �V�����v���p�e�B - �t�H���_�p�X
+        // 新しいプロパティ - フォルダパス
         public string FolderPath
         {
             get => folderPath;
             set => SetProperty(ref folderPath, value);
+        }
+
+        // 新しいプロパティ - VSCodeで開くオプション
+        public bool OpenWithVSCode
+        {
+            get => openWithVSCode;
+            set => SetProperty(ref openWithVSCode, value);
+        }
+
+        // 新しいプロパティ - Officeアプリで開くオプション
+        public bool OpenWithOffice
+        {
+            get => openWithOffice;
+            set => SetProperty(ref openWithOffice, value);
         }
 
         private void UpdateIconAndType()
@@ -126,14 +150,14 @@ namespace ModernLauncher.Models
                     }
                     else
                     {
-                        // �t�H�[���o�b�N: ��{�I�ȃA�C�R������
+                        // フォールバック: 基本的なアイコン判定
                         Icon = GetFallbackIcon(path);
                         ItemType = GetFallbackItemType(path);
                     }
                 }
                 catch
                 {
-                    // �G���[�����������ꍇ�̃t�H�[���o�b�N
+                    // エラーが発生した場合のフォールバック
                     Icon = GetFallbackIcon(path);
                     ItemType = GetFallbackItemType(path);
                 }
@@ -141,54 +165,103 @@ namespace ModernLauncher.Models
             else
             {
                 Icon = "?";
-                ItemType = "Unknown";
+                ItemType = "不明";
             }
         }
 
         private string GetFallbackIcon(string path)
         {
             if (string.IsNullOrEmpty(path))
-                return "?";
+                return "❓";
 
-            // URL�̏ꍇ
+            // URLの場合
             if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
-                return "??";
+                return "🌐";
 
-            // �f�B���N�g���̏ꍇ
+            // ディレクトリの場合
             if (System.IO.Directory.Exists(path))
-                return "??";
+                return "📁";
 
-            // �t�@�C���̏ꍇ
+            // ファイルの場合
             if (System.IO.File.Exists(path))
             {
                 var ext = System.IO.Path.GetExtension(path).ToLower();
                 return ext switch
                 {
-                    ".exe" or ".msi" or ".bat" or ".cmd" => "??",
-                    ".txt" or ".rtf" => "??",
-                    ".doc" or ".docx" => "??",
-                    ".xls" or ".xlsx" => "??",
-                    ".ppt" or ".pptx" => "??",
-                    ".pdf" => "??",
-                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "???",
-                    _ => "??"
+                    ".exe" or ".msi" or ".bat" or ".cmd" => "⚙️",
+                    ".txt" or ".rtf" => "📝",
+                    ".doc" or ".docx" => "📄",
+                    ".xls" or ".xlsx" => "📊",
+                    ".ppt" or ".pptx" => "📊",
+                    ".pdf" => "📄",
+                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "🖼️",
+                    _ => "📄"
                 };
             }
 
-            // �R�}���h�̏ꍇ
-            return "?";
+            // コマンドの場合
+            return "⚡";
         }
 
         private string GetFallbackItemType(string path)
         {
+            if (string.IsNullOrEmpty(path))
+                return "不明";
+
+            // URLの場合
             if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 return "Web";
-            else if (System.IO.Directory.Exists(path))
-                return "Folder";
-            else if (System.IO.File.Exists(path))
-                return "File";
-            else
-                return "Command";
+
+            // ディレクトリの場合
+            if (System.IO.Directory.Exists(path))
+            {
+                // G:ドライブの場合はGoogleドライブ
+                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Googleドライブ";
+                }
+                return "フォルダ";
+            }
+
+            // ファイルの場合
+            if (System.IO.File.Exists(path))
+            {
+                // G:ドライブのファイルもGoogleドライブ
+                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Googleドライブ";
+                }
+
+                var ext = System.IO.Path.GetExtension(path).ToLower();
+                return ext switch
+                {
+                    ".exe" or ".msi" or ".bat" or ".cmd" => "実行ファイル",
+                    ".txt" or ".rtf" => "テキスト",
+                    ".doc" or ".docx" => "Word文書",
+                    ".xls" or ".xlsx" => "Excel文書",
+                    ".ppt" or ".pptx" => "PowerPoint",
+                    ".pdf" => "PDF",
+                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
+                    ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
+                    ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
+                    ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "圧縮ファイル",
+                    ".lnk" => "ショートカット",
+                    ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "プログラム",
+                    _ => "ファイル"
+                };
+            }
+
+            // G:で始まる存在しないパスもGoogleドライブ
+            if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
+                path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Googleドライブ";
+            }
+
+            // コマンドの場合
+            return "コマンド";
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -207,7 +280,7 @@ namespace ModernLauncher.Models
         }
 
         /// <summary>
-        /// �A�C�R���ƃA�C�e���^�C�v�������I�ɍX�V���܂�
+        /// アイコンとアイテムタイプを強制的に更新します
         /// </summary>
         public void RefreshIconAndType()
         {

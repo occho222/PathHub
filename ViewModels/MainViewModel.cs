@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,6 +20,7 @@ namespace ModernLauncher.ViewModels
     {
         private readonly IProjectService projectService;
         private readonly ILauncherService launcherService;
+        private readonly ISmartLauncherService smartLauncherService;
         
         private ObservableCollection<Project> projects = new ObservableCollection<Project>();
         private ObservableCollection<ProjectNode> projectNodes = new ObservableCollection<ProjectNode>();
@@ -31,7 +32,12 @@ namespace ModernLauncher.ViewModels
         private string statusText = string.Empty;
         private readonly string appVersion = "1.4.0";
 
-        // ‘SƒvƒƒWƒFƒNƒg•\¦—p‚Ìƒtƒ‰ƒO‚ğ’Ç‰Á
+        // SmartLauncher properties
+        private ObservableCollection<SmartLauncherItem> smartLauncherItems = new ObservableCollection<SmartLauncherItem>();
+        private SmartLauncherItem? selectedSmartLauncherItem;
+        private bool isSmartLauncherMode = false;
+
+        // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºç”¨ã®ãƒ•ãƒ©ã‚°ã‚’è¿½åŠ 
         private bool isShowingAllProjects = false;
         public bool IsShowingAllProjects
         {
@@ -39,19 +45,48 @@ namespace ModernLauncher.ViewModels
             set => SetProperty(ref isShowingAllProjects, value);
         }
 
-        // Œ»İ•\¦’†‚ÌƒvƒƒWƒFƒNƒg‚ÌƒŠƒXƒgiƒtƒHƒ‹ƒ_“WŠJ—pj
+        // ç¾åœ¨è¡¨ç¤ºä¸­ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ãƒªã‚¹ãƒˆï¼ˆãƒ•ã‚©ãƒ«ãƒ€å±•é–‹æ™‚ç”¨ï¼‰
         private List<Project> currentDisplayedProjects = new List<Project>();
+
+        // SmartLauncher properties
+        public ObservableCollection<SmartLauncherItem> SmartLauncherItems
+        {
+            get => smartLauncherItems;
+            set => SetProperty(ref smartLauncherItems, value);
+        }
+
+        public SmartLauncherItem? SelectedSmartLauncherItem
+        {
+            get => selectedSmartLauncherItem;
+            set
+            {
+                if (SetProperty(ref selectedSmartLauncherItem, value))
+                {
+                    HandleSmartLauncherItemSelectionChange(value);
+                }
+            }
+        }
+
+        public bool IsSmartLauncherMode
+        {
+            get => isSmartLauncherMode;
+            set => SetProperty(ref isSmartLauncherMode, value);
+        }
 
         // Commands
         public ICommand NewProjectCommand { get; }
         public ICommand NewFolderCommand { get; }
         public ICommand DeleteProjectCommand { get; }
+        public ICommand EditProjectCommand { get; }
         public ICommand MoveToFolderCommand { get; }
         public ICommand CreateTestFoldersCommand { get; }
         public ICommand AddItemCommand { get; }
         public ICommand AddGroupCommand { get; }
+        public ICommand EditGroupCommand { get; }
+        public ICommand DeleteGroupCommand { get; }
         public ICommand SaveDataCommand { get; }
         public ICommand LaunchItemCommand { get; }
+        public ICommand LaunchGroupCommand { get; }
         public ICommand EditItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand MoveItemUpCommand { get; }
@@ -62,28 +97,54 @@ namespace ModernLauncher.ViewModels
         public ICommand ShowColorSettingsCommand { get; }
         public ICommand OpenWithVSCodeCommand { get; }
         public ICommand OpenWithOfficeCommand { get; }
+        public ICommand OpenInExplorerCommand { get; }
+        
+        // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ä¸¦ã³æ›¿ãˆã‚³ãƒãƒ³ãƒ‰
+        public ICommand MoveProjectUpCommand { get; }
+        public ICommand MoveProjectDownCommand { get; }
+        
+        // ã‚°ãƒ«ãƒ¼ãƒ—ã®ä¸¦ã³æ›¿ãˆã‚³ãƒãƒ³ãƒ‰
+        public ICommand MoveGroupUpCommand { get; }
+        public ICommand MoveGroupDownCommand { get; }
+
+        // SmartLauncher commands
+        public ICommand RefreshSmartLauncherCommand { get; }
+        
+        // ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚³ãƒãƒ³ãƒ‰
+        public ICommand FocusSearchCommand { get; }
+        public ICommand FocusProjectCommand { get; }
+        public ICommand FocusGroupCommand { get; }
+        public ICommand FocusMainListCommand { get; }
+        public ICommand FocusSmartLauncherCommand { get; }
+        public ICommand ClearSearchCommand { get; }
 
         public MainViewModel() : this(
             ServiceLocator.Instance.GetService<IProjectService>(), 
-            ServiceLocator.Instance.GetService<ILauncherService>())
+            ServiceLocator.Instance.GetService<ILauncherService>(),
+            ServiceLocator.Instance.GetService<ISmartLauncherService>())
         {
         }
 
-        public MainViewModel(IProjectService projectService, ILauncherService launcherService)
+        public MainViewModel(IProjectService projectService, ILauncherService launcherService, ISmartLauncherService smartLauncherService)
         {
             this.projectService = projectService;
             this.launcherService = launcherService;
+            this.smartLauncherService = smartLauncherService;
 
             // Commands initialization
             NewProjectCommand = new RelayCommand(NewProject);
             NewFolderCommand = new RelayCommand(NewFolder);
             DeleteProjectCommand = new RelayCommand(DeleteProjectOrFolder, CanDeleteProjectOrFolder);
+            EditProjectCommand = new RelayCommand(EditProjectOrFolder, CanEditProjectOrFolder);
             MoveToFolderCommand = new RelayCommand(MoveToFolder, CanMoveProjectToFolder);
             CreateTestFoldersCommand = new RelayCommand(CreateTestFolders);
             AddItemCommand = new RelayCommand(AddItem);
             AddGroupCommand = new RelayCommand(AddGroup);
+            EditGroupCommand = new RelayCommand(EditGroup, CanEditGroup);
+            DeleteGroupCommand = new RelayCommand(DeleteGroup, CanDeleteGroup);
             SaveDataCommand = new RelayCommand(_ => SaveData());
             LaunchItemCommand = new RelayCommand(LaunchItem, CanLaunchItem);
+            LaunchGroupCommand = new RelayCommand(LaunchGroup, CanLaunchGroup);
             EditItemCommand = new RelayCommand(EditItem, CanEditItem);
             DeleteItemCommand = new RelayCommand(DeleteItem, CanDeleteItem);
             MoveItemUpCommand = new RelayCommand(MoveItemUp, CanMoveItemUp);
@@ -94,9 +155,97 @@ namespace ModernLauncher.ViewModels
             ShowColorSettingsCommand = new RelayCommand(ShowColorSettings);
             OpenWithVSCodeCommand = new RelayCommand(OpenWithVSCode, CanOpenWithVSCode);
             OpenWithOfficeCommand = new RelayCommand(OpenWithOffice, CanOpenWithOffice);
+            OpenInExplorerCommand = new RelayCommand(OpenInExplorer, CanOpenInExplorer);
+            
+            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ä¸¦ã³æ›¿ãˆã‚³ãƒãƒ³ãƒ‰
+            MoveProjectUpCommand = new RelayCommand(MoveProjectUp, CanMoveProjectUp);
+            MoveProjectDownCommand = new RelayCommand(MoveProjectDown, CanMoveProjectDown);
+            
+            // ã‚°ãƒ«ãƒ¼ãƒ—ã®ä¸¦ã³æ›¿ãˆã‚³ãƒãƒ³ãƒ‰
+            MoveGroupUpCommand = new RelayCommand(MoveGroupUp, CanMoveGroupUp);
+            MoveGroupDownCommand = new RelayCommand(MoveGroupDown, CanMoveGroupDown);
+
+            // SmartLauncher commands
+            RefreshSmartLauncherCommand = new RelayCommand(RefreshSmartLauncher);
+            
+            // ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚³ãƒãƒ³ãƒ‰
+            FocusSearchCommand = new RelayCommand(FocusSearch);
+            FocusProjectCommand = new RelayCommand(FocusProject);
+            FocusGroupCommand = new RelayCommand(FocusGroup);
+            FocusMainListCommand = new RelayCommand(FocusMainList);
+            FocusSmartLauncherCommand = new RelayCommand(FocusSmartLauncher);
+            ClearSearchCommand = new RelayCommand(ClearSearch);
 
             LoadProjects();
+            LoadSmartLauncherItems();
             InitializeUI();
+            
+            // ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†æ™‚ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©ãƒ¼ã‚’è¨­å®š
+            if (Application.Current != null)
+            {
+                Application.Current.Exit += Application_Exit;
+            }
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            // ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†æ™‚ã«ãƒ‡ãƒ¼ã‚¿ã‚’ä¿å­˜
+            SaveData();
+        }
+
+        private void LoadSmartLauncherItems()
+        {
+            try
+            {
+                var smartItems = smartLauncherService.GetSmartLauncherItems(Projects);
+                SmartLauncherItems.Clear();
+                foreach (var item in smartItems)
+                {
+                    SmartLauncherItems.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading smart launcher items: {ex.Message}");
+            }
+        }
+
+        private void RefreshSmartLauncher(object? parameter)
+        {
+            LoadSmartLauncherItems();
+        }
+
+        private void HandleSmartLauncherItemSelectionChange(SmartLauncherItem? item)
+        {
+            if (item != null)
+            {
+                IsSmartLauncherMode = true;
+                IsShowingAllProjects = false;
+                CurrentProject = null;
+                SelectedProjectNode = null;
+                SelectedViewGroup = null;
+                
+                // Display the items from the selected smart launcher item
+                UpdateDisplayedItems(item.Items);
+                
+                // Update status text
+                StatusText = $"{item.DisplayName}: {item.ItemCount} items";
+                
+                System.Diagnostics.Debug.WriteLine($"Smart launcher item selected: {item.DisplayName}");
+            }
+        }
+
+        private void RecordItemAccess(LauncherItem item)
+        {
+            try
+            {
+                var projectName = item.ProjectName ?? CurrentProject?.Name ?? "Unknown";
+                smartLauncherService.RecordPathAccess(item.Path, item.Name, item.Category, projectName);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error recording item access: {ex.Message}");
+            }
         }
 
         public ObservableCollection<Project> Projects
@@ -128,16 +277,13 @@ namespace ModernLauncher.ViewModels
             get => selectedProjectNode;
             set
             {
-                // ƒvƒƒWƒFƒNƒgƒm[ƒh‚ª“¯‚¶‚Å‚à‹­§“I‚ÉXV‚ğs‚¤
                 var previousNode = selectedProjectNode;
-                if (SetProperty(ref selectedProjectNode, value))
+                var nodeChanged = SetProperty(ref selectedProjectNode, value);
+                
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ãŒå¤‰æ›´ã•ã‚ŒãŸå ´åˆã€ã¾ãŸã¯åŒã˜ãƒãƒ¼ãƒ‰ã§ã‚‚å¼·åˆ¶çš„ã«æ›´æ–°ã‚’è¡Œã†
+                if (nodeChanged || (value != null && previousNode == value))
                 {
-                    HandleProjectNodeSelectionChange(value);
-                }
-                else if (value != null && previousNode == value)
-                {
-                    // “¯‚¶ƒm[ƒh‚ª‘I‘ğ‚³‚ê‚½ê‡‚Å‚àA‹­§“I‚ÉØ‚è‘Ö‚¦ˆ—‚ğÀs
-                    System.Diagnostics.Debug.WriteLine($"Force handling same node: {value.Name}");
+                    System.Diagnostics.Debug.WriteLine($"Handling project node selection: {value?.Name ?? "null"}");
                     HandleProjectNodeSelectionChange(value);
                 }
             }
@@ -147,21 +293,23 @@ namespace ModernLauncher.ViewModels
         {
             if (value?.Project != null)
             {
-                // ’PˆêƒvƒƒWƒFƒNƒg‚ª‘I‘ğ‚³‚ê‚½ê‡
+                // å˜ä¸€ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒé¸æŠã•ã‚ŒãŸå ´åˆ
                 System.Diagnostics.Debug.WriteLine($"Switching to project: {value.Project.Name}");
                 
-                // ó‘Ô‚ğƒŠƒZƒbƒg
+                // çŠ¶æ…‹ã‚’ãƒªã‚»ãƒƒãƒˆ
+                IsSmartLauncherMode = false;
+                SelectedSmartLauncherItem = null;
                 IsShowingAllProjects = false;
                 currentDisplayedProjects.Clear();
                 currentDisplayedProjects.Add(value.Project);
                 
-                // CurrentProject‚ğİ’è‚µ‚ÄAUI‚ÌXV‚ğƒgƒŠƒK[
+                // CurrentProjectã‚’è¨­å®šã—ã¦ã€UIã®æ›´æ–°ã‚’ãƒˆãƒªã‚¬ãƒ¼
                 CurrentProject = value.Project;
                 
-                // ƒOƒ‹[ƒv‘I‘ğ‚ğƒŠƒZƒbƒg
+                // ã‚°ãƒ«ãƒ¼ãƒ—é¸æŠã‚’ãƒªã‚»ãƒƒãƒˆ
                 SelectedViewGroup = null;
                 
-                // ƒAƒCƒeƒ€•\¦‚ğ‘¦À‚ÉXV
+                // ã‚¢ã‚¤ãƒ†ãƒ è¡¨ç¤ºã‚’å³åº§ã«æ›´æ–°
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
                 {
                     ShowAllItems();
@@ -170,17 +318,22 @@ namespace ModernLauncher.ViewModels
             }
             else if (value?.IsFolder == true)
             {
-                // ƒtƒHƒ‹ƒ_‚ª‘I‘ğ‚³‚ê‚½ê‡AqƒvƒƒWƒFƒNƒg‚ğW‚ß‚Ä•\¦
+                // ãƒ•ã‚©ãƒ«ãƒ€ãŒé¸æŠã•ã‚ŒãŸå ´åˆã€å­ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é›†ã‚ã¦è¡¨ç¤º
                 System.Diagnostics.Debug.WriteLine($"Switching to folder: {value.Name}");
+                
+                // SmartLauncher mode ã‚’ç„¡åŠ¹ã«ã™ã‚‹
+                IsSmartLauncherMode = false;
+                SelectedSmartLauncherItem = null;
+                
                 var childProjects = GetChildProjects(value);
                 if (childProjects.Any())
                 {
-                    CurrentProject = null; // ƒtƒHƒ‹ƒ_‘I‘ğCurrentProject‚Ínull
+                    CurrentProject = null; // ãƒ•ã‚©ãƒ«ãƒ€é¸æŠæ™‚CurrentProjectã¯null
                     IsShowingAllProjects = true;
                     currentDisplayedProjects.Clear();
                     currentDisplayedProjects.AddRange(childProjects);
                     
-                    // ƒtƒHƒ‹ƒ_•\¦‚ğ‘¦À‚ÉXV
+                    // ãƒ•ã‚©ãƒ«ãƒ€è¡¨ç¤ºã‚’å³åº§ã«æ›´æ–°
                     System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
                     {
                         ShowAllProjectsItems();
@@ -189,8 +342,13 @@ namespace ModernLauncher.ViewModels
             }
             else if (value == null)
             {
-                // ‰½‚à‘I‘ğ‚³‚ê‚Ä‚¢‚È‚¢ê‡‚Í‘SƒvƒƒWƒFƒNƒg•\¦
+                // ä½•ã‚‚é¸æŠã•ã‚Œã¦ã„ãªã„å ´åˆã¯å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤º
                 System.Diagnostics.Debug.WriteLine("Switching to all projects");
+                
+                // SmartLauncher mode ã‚’ç„¡åŠ¹ã«ã™ã‚‹
+                IsSmartLauncherMode = false;
+                SelectedSmartLauncherItem = null;
+                
                 ShowAllProjectsGlobal();
             }
         }
@@ -266,7 +424,7 @@ namespace ModernLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"ƒvƒƒWƒFƒNƒg‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                MessageBox.Show($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 CreateDefaultProject();
                 BuildProjectHierarchy();
@@ -277,12 +435,12 @@ namespace ModernLauncher.ViewModels
         {
             var defaultProject = new Project
             {
-                Name = "ƒfƒtƒHƒ‹ƒg",
+                Name = "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ",
                 Id = Guid.NewGuid().ToString(),
                 OrderIndex = 0
             };
-            defaultProject.Groups.Add(new ItemGroup { Name = "‚·‚×‚Ä", Id = "all", OrderIndex = 0 });
-            defaultProject.Groups.Add(new ItemGroup { Name = "‚æ‚­g‚¤", Id = Guid.NewGuid().ToString(), OrderIndex = 1 });
+            defaultProject.Groups.Add(new ItemGroup { Name = "ã™ã¹ã¦", Id = "all", OrderIndex = 0 });
+            defaultProject.Groups.Add(new ItemGroup { Name = "ã‚ˆãä½¿ã†", Id = Guid.NewGuid().ToString(), OrderIndex = 1 });
             
             Projects.Add(defaultProject);
             
@@ -302,13 +460,13 @@ namespace ModernLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ƒfƒtƒHƒ‹ƒgƒvƒƒWƒFƒNƒg•Û‘¶ƒGƒ‰[: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¿å­˜ã‚¨ãƒ©ãƒ¼: {ex.Message}");
             }
         }
 
         private void UpdateProjectCompatibility(Project project)
         {
-            // ƒOƒ‹[ƒv‚ÌOrderIndex‰Šú‰»
+            // ã‚°ãƒ«ãƒ¼ãƒ—ã®OrderIndexåˆæœŸåŒ–
             if (project.Groups != null)
             {
                 for (int i = 0; i < project.Groups.Count; i++)
@@ -322,7 +480,7 @@ namespace ModernLauncher.ViewModels
 
             foreach (var item in project.Items)
             {
-                // ‹ŒŒ`®‚©‚ç‚Ì•ÏŠ·
+                // æ—§å½¢å¼ã‹ã‚‰ã®å¤‰æ›
                 if (item.GroupIds == null || item.GroupIds.Count == 0)
                 {
                     item.GroupIds = new List<string>();
@@ -332,35 +490,35 @@ namespace ModernLauncher.ViewModels
                     }
                 }
 
-                // ItemType‚ÆIcon‚Ìİ’è - LauncherItem‚ÌV‚µ‚¢ƒƒ\ƒbƒh‚ğg—p
+                // ItemTypeã¨Iconã®è¨­å®š - LauncherItemã®æ–°ã—ã„ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ä½¿ç”¨
                 if (string.IsNullOrEmpty(item.ItemType) || string.IsNullOrEmpty(item.Icon))
                 {
                     item.RefreshIconAndType();
                 }
 
-                // OrderIndex‚Ì‰Šú‰»
+                // OrderIndexã®åˆæœŸåŒ–
                 if (item.OrderIndex == 0)
                 {
                     item.OrderIndex = project.Items.IndexOf(item);
                 }
 
-                // Category‚Ì‰Šú‰»
+                // Categoryã®åˆæœŸåŒ–
                 if (string.IsNullOrEmpty(item.Category))
                 {
-                    item.Category = "‚»‚Ì‘¼";
+                    item.Category = "ãã®ä»–";
                 }
 
-                // Description‚Ì‰Šú‰»
+                // Descriptionã®åˆæœŸåŒ–
                 if (item.Description == null)
                 {
                     item.Description = string.Empty;
                 }
 
-                // ƒOƒ‹[ƒv–¼‚ÌXV
+                // ã‚°ãƒ«ãƒ¼ãƒ—åã®æ›´æ–°
                 UpdateItemGroupNames(item);
             }
 
-            // ƒAƒCƒeƒ€‚ğOrderIndex‚Åƒ\[ƒg
+            // ã‚¢ã‚¤ãƒ†ãƒ ã‚’OrderIndexã§ã‚½ãƒ¼ãƒˆ
             var sortedItems = project.Items.OrderBy(i => i.OrderIndex).ToList();
             project.Items.Clear();
             foreach (var item in sortedItems)
@@ -384,13 +542,13 @@ namespace ModernLauncher.ViewModels
         {
             if (Projects.Count > 0)
             {
-                // Å‰‚Ì”ñƒtƒHƒ‹ƒ_[ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ
+                // æœ€åˆã®éãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠ
                 var firstProject = Projects.FirstOrDefault(p => !p.IsFolder);
                 if (firstProject != null)
                 {
                     CurrentProject = firstProject;
                     
-                    // ‘Î‰‚·‚éProjectNode‚ğ‘I‘ğ
+                    // å¯¾å¿œã™ã‚‹ProjectNodeã‚’é¸æŠ
                     var projectNode = FindProjectNode(firstProject.Id);
                     if (projectNode != null)
                     {
@@ -410,7 +568,7 @@ namespace ModernLauncher.ViewModels
                 UpdateGroupList();
                 SelectedViewGroup = null;
                 
-                // UIXV‚ğŠmÀ‚ÉÀs
+                // UIæ›´æ–°ã‚’ç¢ºå®Ÿã«å®Ÿè¡Œ
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
                 {
                     ShowAllItems();
@@ -418,7 +576,7 @@ namespace ModernLauncher.ViewModels
                 }), System.Windows.Threading.DispatcherPriority.Render);
             }
             
-            // ƒvƒƒWƒFƒNƒgƒm[ƒh‚Ì•\¦–¼‚ğXV
+            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã®è¡¨ç¤ºåã‚’æ›´æ–°
             RefreshProjectNodeDisplayNames();
         }
 
@@ -440,12 +598,12 @@ namespace ModernLauncher.ViewModels
                 {
                     if (group.Id == "all")
                     {
-                        group.ItemCount = $"{CurrentProject.Items.Count} ƒAƒCƒeƒ€";
+                        group.ItemCount = $"{CurrentProject.Items.Count} ã‚¢ã‚¤ãƒ†ãƒ ";
                     }
                     else
                     {
                         var count = CurrentProject.Items.Count(i => i.GroupIds != null && i.GroupIds.Contains(group.Id));
-                        group.ItemCount = $"{count} ƒAƒCƒeƒ€";
+                        group.ItemCount = $"{count} ã‚¢ã‚¤ãƒ†ãƒ ";
                     }
                     CurrentProject.Groups.Add(group);
                 }
@@ -460,7 +618,7 @@ namespace ModernLauncher.ViewModels
             
             if (IsShowingAllProjects)
             {
-                // ‘SƒvƒƒWƒFƒNƒg•\¦‚ÍƒOƒ‹[ƒvƒtƒBƒ‹ƒ^ƒŠƒ“ƒO‚ğs‚í‚È‚¢
+                // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºæ™‚ã¯ã‚°ãƒ«ãƒ¼ãƒ—ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã‚ãªã„
                 items = GetAllItemsFromDisplayedProjects();
             }
             else if (CurrentProject != null && group != null)
@@ -480,7 +638,7 @@ namespace ModernLauncher.ViewModels
                 items = new List<LauncherItem>();
             }
 
-            // ŒŸõƒtƒBƒ‹ƒ^‚ğ“K—p
+            // æ¤œç´¢ãƒ•ã‚£ãƒ«ã‚¿ã‚’é©ç”¨
             if (!string.IsNullOrEmpty(SearchText))
             {
                 items = FilterItems(items, SearchText);
@@ -510,6 +668,8 @@ namespace ModernLauncher.ViewModels
 
         private void ShowAllProjectsGlobal()
         {
+            IsSmartLauncherMode = false;
+            SelectedSmartLauncherItem = null;
             IsShowingAllProjects = true;
             CurrentProject = null;
             currentDisplayedProjects.Clear();
@@ -521,7 +681,7 @@ namespace ModernLauncher.ViewModels
         {
             var allItems = GetAllItemsFromDisplayedProjects();
 
-            // ŒŸõƒtƒBƒ‹ƒ^‚ğ“K—p
+            // æ¤œç´¢ãƒ•ã‚£ãƒ«ã‚¿ã‚’é©ç”¨
             if (!string.IsNullOrEmpty(SearchText))
             {
                 allItems = FilterItems(allItems, SearchText);
@@ -529,7 +689,7 @@ namespace ModernLauncher.ViewModels
 
             var sortedItems = allItems.OrderBy(item => 
             {
-                // ƒvƒƒWƒFƒNƒg–¼‚Åƒ\[ƒgA‚»‚ÌŒãOrderIndex‚Åƒ\[ƒg
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆåã§ã‚½ãƒ¼ãƒˆã€ãã®å¾ŒOrderIndexã§ã‚½ãƒ¼ãƒˆ
                 var project = currentDisplayedProjects.FirstOrDefault(p => p.Items.Contains(item));
                 return project?.Name ?? "";
             })
@@ -546,7 +706,7 @@ namespace ModernLauncher.ViewModels
             {
                 foreach (var item in project.Items)
                 {
-                    // ƒAƒCƒeƒ€‚ÉƒvƒƒWƒFƒNƒgî•ñ‚ğİ’èiƒtƒHƒ‹ƒ_ƒpƒX•\¦—pj
+                    // ã‚¢ã‚¤ãƒ†ãƒ ã«ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±ã‚’è¨­å®šï¼ˆãƒ•ã‚©ãƒ«ãƒ€ãƒ‘ã‚¹è¡¨ç¤ºç”¨ï¼‰
                     item.ProjectName = project.Name;
                     item.FolderPath = GetProjectFolderPath(project);
                     allItems.Add(item);
@@ -574,7 +734,7 @@ namespace ModernLauncher.ViewModels
                 }
             }
             
-            return pathParts.Count > 0 ? string.Join(" > ", pathParts) : "ƒ‹[ƒg";
+            return pathParts.Count > 0 ? string.Join(" > ", pathParts) : "ãƒ«ãƒ¼ãƒˆ";
         }
 
         private void UpdateDisplayedItems(IEnumerable<LauncherItem> items)
@@ -588,13 +748,30 @@ namespace ModernLauncher.ViewModels
 
         private IEnumerable<LauncherItem> FilterItems(IEnumerable<LauncherItem> items, string searchText)
         {
-            var lowerSearch = searchText.ToLower();
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return items;
+            }
+
+            // ã‚¹ãƒšãƒ¼ã‚¹ã§åˆ†å‰²ã—ã¦ANDæ¤œç´¢ã‚’å®Ÿè¡Œ
+            var searchTerms = searchText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                       .Select(term => term.Trim().ToLower())
+                                       .Where(term => !string.IsNullOrEmpty(term))
+                                       .ToArray();
+
+            if (searchTerms.Length == 0)
+            {
+                return items;
+            }
+
             return items.Where(item =>
-                item.Name.ToLower().Contains(lowerSearch) ||
-                item.Path.ToLower().Contains(lowerSearch) ||
-                (item.Category?.ToLower().Contains(lowerSearch) ?? false) ||
-                (item.Description?.ToLower().Contains(lowerSearch) ?? false) ||
-                (item.GroupNames?.ToLower().Contains(lowerSearch) ?? false));
+            {
+                // æ¤œç´¢å¯¾è±¡ã®ãƒ†ã‚­ã‚¹ãƒˆã‚’çµåˆ
+                var searchableText = $"{item.Name} {item.Path} {item.Category ?? ""} {item.Description ?? ""} {item.GroupNames ?? ""}".ToLower();
+                
+                // ã™ã¹ã¦ã®æ¤œç´¢èªãŒãƒ†ã‚­ã‚¹ãƒˆã«å«ã¾ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ï¼ˆANDæ¤œç´¢ï¼‰
+                return searchTerms.All(term => searchableText.Contains(term));
+            });
         }
 
         private void ApplySearch()
@@ -615,19 +792,23 @@ namespace ModernLauncher.ViewModels
 
         private void UpdateStatusText()
         {
-            if (IsShowingAllProjects)
+            if (IsSmartLauncherMode && SelectedSmartLauncherItem != null)
+            {
+                StatusText = $"{SelectedSmartLauncherItem.DisplayName}: {SelectedSmartLauncherItem.ItemCount} items";
+            }
+            else if (IsShowingAllProjects)
             {
                 var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
                 var projectCount = currentDisplayedProjects.Count;
-                StatusText = $"{totalItems} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg ({projectCount} ƒvƒƒWƒFƒNƒg)";
+                StatusText = $"{totalItems} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ ({projectCount} ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ)";
             }
             else if (CurrentProject != null)
             {
-                StatusText = $"{CurrentProject.Items.Count} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg";
+                StatusText = $"{CurrentProject.Items.Count} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ";
             }
             else
             {
-                StatusText = "ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢";
+                StatusText = "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„";
             }
         }
 
@@ -635,12 +816,22 @@ namespace ModernLauncher.ViewModels
         {
             try
             {
+                // ç¾åœ¨ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯ä¿å­˜
                 if (CurrentProject != null)
                 {
                     projectService.SaveProject(CurrentProject);
                 }
                 
-                // ƒvƒƒWƒFƒNƒgî•ñƒŠƒXƒg‚ğXV
+                // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºæ™‚ã¯ã€è¡¨ç¤ºä¸­ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ã™ã¹ã¦ä¿å­˜
+                if (IsShowingAllProjects)
+                {
+                    foreach (var project in currentDisplayedProjects)
+                    {
+                        projectService.SaveProject(project);
+                    }
+                }
+                
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±ãƒªã‚¹ãƒˆã‚’æ›´æ–°
                 var projectInfoList = Projects.Select(p => new ProjectInfo
                 {
                     Id = p.Id,
@@ -654,7 +845,7 @@ namespace ModernLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                MessageBox.Show($"ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -691,12 +882,12 @@ namespace ModernLauncher.ViewModels
             {
                 if (child.IsFolder)
                 {
-                    // qƒtƒHƒ‹ƒ_‚Ìê‡‚ÍÄ‹A“I‚É’Tõ
+                    // å­ãƒ•ã‚©ãƒ«ãƒ€ã®å ´åˆã¯å†å¸°çš„ã«æ¢ç´¢
                     CollectChildProjectsRecursive(child, projects);
                 }
                 else if (child.Project != null)
                 {
-                    // ƒvƒƒWƒFƒNƒg‚Ìê‡‚ÍƒŠƒXƒg‚É’Ç‰Á
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å ´åˆã¯ãƒªã‚¹ãƒˆã«è¿½åŠ 
                     projects.Add(child.Project);
                 }
             }
@@ -704,10 +895,13 @@ namespace ModernLauncher.ViewModels
 
         private void BuildProjectHierarchy()
         {
+            // ç¾åœ¨é¸æŠã•ã‚Œã¦ã„ã‚‹ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®IDã‚’ä¿å­˜
+            var currentSelectedProjectId = SelectedProjectNode?.Id;
+            
             ProjectNodes.Clear();
             var nodeMap = new Dictionary<string, ProjectNode>();
 
-            // ‚·‚×‚Ä‚ÌƒvƒƒWƒFƒNƒg‚ÆƒtƒHƒ‹ƒ_[‚©‚çƒm[ƒh‚ğì¬
+            // ã™ã¹ã¦ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã¨ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‹ã‚‰ãƒãƒ¼ãƒ‰ã‚’ä½œæˆ
             foreach (var project in Projects.OrderBy(p => p.OrderIndex))
             {
                 var node = new ProjectNode
@@ -717,12 +911,15 @@ namespace ModernLauncher.ViewModels
                     IsFolder = project.IsFolder,
                     OrderIndex = project.OrderIndex,
                     ParentId = project.ParentId,
-                    Project = project.IsFolder ? null : project
+                    Project = project.IsFolder ? null : project // ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã®å ´åˆã¯nullã€ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å ´åˆã¯å®Ÿéš›ã®Projectã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¨­å®š
                 };
                 nodeMap[project.Id] = node;
+                
+                // ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ­ã‚°ã‚’è¿½åŠ 
+                System.Diagnostics.Debug.WriteLine($"BuildProjectHierarchy: Created node {project.Name} (IsFolder: {project.IsFolder}, ItemCount: {(project.IsFolder ? 0 : project.Items?.Count ?? 0)})");
             }
 
-            // eqŠÖŒW‚ğ\’z
+            // è¦ªå­é–¢ä¿‚ã‚’æ§‹ç¯‰
             foreach (var node in nodeMap.Values)
             {
                 if (!string.IsNullOrEmpty(node.ParentId) && nodeMap.ContainsKey(node.ParentId))
@@ -731,23 +928,39 @@ namespace ModernLauncher.ViewModels
                 }
                 else
                 {
-                    // e‚ª‚È‚¢ê‡‚Íƒ‹[ƒgƒŒƒxƒ‹‚É’Ç‰Á
+                    // è¦ªãŒãªã„å ´åˆã¯ãƒ«ãƒ¼ãƒˆãƒ¬ãƒ™ãƒ«ã«è¿½åŠ 
                     ProjectNodes.Add(node);
                 }
             }
 
-            // ƒ\[ƒg
+            // ã‚½ãƒ¼ãƒˆ
             SortProjectNodes(ProjectNodes);
             
-            // ‚·‚×‚Ä‚Ìƒm[ƒh‚ÌDisplayName‚ğXV
+            // ã™ã¹ã¦ã®ãƒãƒ¼ãƒ‰ã®DisplayNameã‚’æ›´æ–°
             RefreshAllNodeDisplayNames(ProjectNodes);
+            
+            // ä»¥å‰ã«é¸æŠã•ã‚Œã¦ã„ãŸãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Œã°å†é¸æŠ
+            if (!string.IsNullOrEmpty(currentSelectedProjectId))
+            {
+                var nodeToSelect = FindProjectNode(currentSelectedProjectId);
+                if (nodeToSelect != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Re-selecting project node: {nodeToSelect.Name}");
+                    SelectedProjectNode = nodeToSelect;
+                }
+            }
         }
 
         private void RefreshAllNodeDisplayNames(ObservableCollection<ProjectNode> nodes)
         {
             foreach (var node in nodes)
             {
+                // ãƒãƒ¼ãƒ‰ã®çŠ¶æ…‹ã‚’ãƒ‡ãƒãƒƒã‚°å‡ºåŠ›
+                System.Diagnostics.Debug.WriteLine($"RefreshAllNodeDisplayNames: Node '{node.Name}', IsFolder: {node.IsFolder}, Project is null: {node.Project == null}");
+                
+                // DisplayNameã¨ItemCountTextã®æ›´æ–°ã‚’å¼·åˆ¶å®Ÿè¡Œ
                 node.RefreshDisplayName();
+                
                 if (node.Children.Count > 0)
                 {
                     RefreshAllNodeDisplayNames(node.Children);
@@ -773,16 +986,16 @@ namespace ModernLauncher.ViewModels
         {
             if (CurrentProject == null && !IsShowingAllProjects)
             {
-                MessageBox.Show("ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", "ƒGƒ‰[",
+                MessageBox.Show("ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // ‘SƒvƒƒWƒFƒNƒg•\¦‚ÍÅ‰‚ÌƒvƒƒWƒFƒNƒg‚É’Ç‰Á
+            // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºæ™‚ã¯æœ€åˆã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã«è¿½åŠ 
             var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
             if (targetProject == null)
             {
-                MessageBox.Show("ƒAƒCƒeƒ€‚ğ’Ç‰Á‚·‚éƒvƒƒWƒFƒNƒg‚ª‚ ‚è‚Ü‚¹‚ñ", "ƒGƒ‰[",
+                MessageBox.Show("ã‚¢ã‚¤ãƒ†ãƒ ã‚’è¿½åŠ ã™ã‚‹ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Šã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -794,21 +1007,21 @@ namespace ModernLauncher.ViewModels
 
             try
             {
-                // Šù‘¶‚ÌƒAƒCƒeƒ€‚Å“¯‚¶ƒpƒX‚ª‚È‚¢‚©ƒ`ƒFƒbƒN
+                // æ—¢å­˜ã®ã‚¢ã‚¤ãƒ†ãƒ ã§åŒã˜ãƒ‘ã‚¹ãŒãªã„ã‹ãƒã‚§ãƒƒã‚¯
                 if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show($"u{path}v‚ÍŠù‚É’Ç‰Á‚³‚ê‚Ä‚¢‚Ü‚·B", "î•ñ",
+                    MessageBox.Show($"ã€Œ{path}ã€ã¯æ—¢ã«è¿½åŠ ã•ã‚Œã¦ã„ã¾ã™ã€‚", "æƒ…å ±",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // ƒtƒ@ƒCƒ‹–¼‚©‚ç–¼‘O‚ğ¶¬
+                // ãƒ•ã‚¡ã‚¤ãƒ«åã‹ã‚‰åå‰ã‚’ç”Ÿæˆ
                 string name;
                 string description;
 
                 if (IsUrl(path))
                 {
-                    // URL‚Ìê‡‚ÍƒhƒƒCƒ“–¼‚ğ–¼‘O‚Æ‚µ‚Äg—p
+                    // URLã®å ´åˆã¯ãƒ‰ãƒ¡ã‚¤ãƒ³åã‚’åå‰ã¨ã—ã¦ä½¿ç”¨
                     try
                     {
                         var uri = new Uri(path);
@@ -817,28 +1030,28 @@ namespace ModernLauncher.ViewModels
                         {
                             name = name.Substring(4);
                         }
-                        description = $"WebƒTƒCƒg: {path}";
+                        description = $"Webã‚µã‚¤ãƒˆ: {path}";
                     }
                     catch
                     {
-                        name = "WebƒTƒCƒg";
-                        description = $"WebƒTƒCƒg: {path}";
+                        name = "Webã‚µã‚¤ãƒˆ";
+                        description = $"Webã‚µã‚¤ãƒˆ: {path}";
                     }
                 }
                 else if (System.IO.Directory.Exists(path))
                 {
                     name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
-                    description = $"ƒtƒHƒ‹ƒ_: {path}";
+                    description = $"ãƒ•ã‚©ãƒ«ãƒ€: {path}";
                 }
                 else if (System.IO.File.Exists(path))
                 {
                     name = System.IO.Path.GetFileNameWithoutExtension(path);
-                    description = $"ƒtƒ@ƒCƒ‹: {System.IO.Path.GetFileName(path)}";
+                    description = $"ãƒ•ã‚¡ã‚¤ãƒ«: {System.IO.Path.GetFileName(path)}";
                 }
                 else
                 {
                     name = System.IO.Path.GetFileName(path);
-                    description = $"ƒhƒ‰ƒbƒO&ƒhƒƒbƒv‚Å’Ç‰Á: {name}";
+                    description = $"ãƒ‰ãƒ©ãƒƒã‚°&ãƒ‰ãƒ­ãƒƒãƒ—ã§è¿½åŠ : {name}";
                 }
 
                 if (string.IsNullOrWhiteSpace(name))
@@ -846,10 +1059,10 @@ namespace ModernLauncher.ViewModels
                     name = path;
                 }
 
-                // •ª—Ş‚ğ©“®”»’è
+                // åˆ†é¡ã‚’è‡ªå‹•åˆ¤å®š
                 string category = DetermineCategory(path);
 
-                // V‚µ‚¢ƒAƒCƒeƒ€‚ğì¬
+                // æ–°ã—ã„ã‚¢ã‚¤ãƒ†ãƒ ã‚’ä½œæˆ
                 var newItem = new LauncherItem
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -857,22 +1070,23 @@ namespace ModernLauncher.ViewModels
                     Path = path,
                     Description = description,
                     Category = category,
-                    GroupIds = new List<string>(), // ƒfƒtƒHƒ‹ƒgƒOƒ‹[ƒv‚È‚µ
+                    GroupIds = new List<string>(), // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚°ãƒ«ãƒ¼ãƒ—ãªã—
                     OrderIndex = targetProject.Items.Count,
+                    LastAccessed = DateTime.MinValue, // æ–°ã—ã„ã‚¢ã‚¤ãƒ†ãƒ ãªã®ã§æœªã‚¢ã‚¯ã‚»ã‚¹çŠ¶æ…‹
                     ProjectName = targetProject.Name,
                     FolderPath = GetProjectFolderPath(targetProject)
                 };
 
-                // ƒAƒCƒRƒ“‚Æƒ^ƒCƒv‚ğİ’è
+                // ã‚¢ã‚¤ã‚³ãƒ³ã¨ã‚¿ã‚¤ãƒ—ã‚’è¨­å®š
                 newItem.RefreshIconAndType();
 
-                // ƒOƒ‹[ƒv–¼‚ğXV
+                // ã‚°ãƒ«ãƒ¼ãƒ—åã‚’æ›´æ–°
                 if (CurrentProject != null)
                 {
                     UpdateItemGroupNames(newItem);
                 }
 
-                // ƒvƒƒWƒFƒNƒg‚É’Ç‰Á
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã«è¿½åŠ 
                 targetProject.Items.Add(newItem);
                 
                 if (CurrentProject != null)
@@ -880,7 +1094,7 @@ namespace ModernLauncher.ViewModels
                     UpdateGroupList();
                 }
 
-                // •\¦‚ğXV
+                // è¡¨ç¤ºã‚’æ›´æ–°
                 if (IsShowingAllProjects)
                 {
                     ShowAllProjectsItems();
@@ -894,26 +1108,29 @@ namespace ModernLauncher.ViewModels
                     ShowAllItems();
                 }
 
-                // ƒvƒƒWƒFƒNƒgƒm[ƒh‚Ì•\¦–¼‚ğXV
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã®è¡¨ç¤ºåã‚’æ›´æ–°
                 RefreshProjectNodeDisplayNames();
 
-                // ƒf[ƒ^‚ğ•Û‘¶
+                // ãƒ‡ãƒ¼ã‚¿ã‚’ä¿å­˜
                 SaveData();
 
-                // ¬Œ÷ƒƒbƒZ[ƒWiƒIƒvƒVƒ‡ƒ“j
+                // SmartLauncheré …ç›®ã‚’æ›´æ–°
+                LoadSmartLauncherItems();
+
+                // æˆåŠŸãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰
                 if (IsShowingAllProjects)
                 {
                     var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
-                    StatusText = $"u{name}v‚ğ{targetProject.Name}‚É’Ç‰Á‚µ‚Ü‚µ‚½ ({totalItems} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg)";
+                    StatusText = $"ã€Œ{name}ã€ã‚’{targetProject.Name}ã«è¿½åŠ ã—ã¾ã—ãŸ ({totalItems} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)";
                 }
                 else
                 {
-                    StatusText = $"u{name}v‚ğ’Ç‰Á‚µ‚Ü‚µ‚½ ({targetProject.Items.Count} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg)";
+                    StatusText = $"ã€Œ{name}ã€ã‚’è¿½åŠ ã—ã¾ã—ãŸ ({targetProject.Items.Count} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)";
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒAƒCƒeƒ€‚Ì’Ç‰Á‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ã‚¢ã‚¤ãƒ†ãƒ ã®è¿½åŠ ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -921,16 +1138,16 @@ namespace ModernLauncher.ViewModels
         {
             if (CurrentProject == null && !IsShowingAllProjects)
             {
-                MessageBox.Show("ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", "ƒGƒ‰[",
+                MessageBox.Show("ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // ‘SƒvƒƒWƒFƒNƒg•\¦‚ÍÅ‰‚ÌƒvƒƒWƒFƒNƒg‚É’Ç‰Á
+            // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºæ™‚ã¯æœ€åˆã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã«è¿½åŠ 
             var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
             if (targetProject == null)
             {
-                MessageBox.Show("ƒAƒCƒeƒ€‚ğ’Ç‰Á‚·‚éƒvƒƒWƒFƒNƒg‚ª‚ ‚è‚Ü‚¹‚ñ", "ƒGƒ‰[",
+                MessageBox.Show("ã‚¢ã‚¤ãƒ†ãƒ ã‚’è¿½åŠ ã™ã‚‹ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Šã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -942,24 +1159,24 @@ namespace ModernLauncher.ViewModels
 
             try
             {
-                // Šù‘¶‚ÌƒAƒCƒeƒ€‚Å“¯‚¶ƒpƒX‚ª‚È‚¢‚©ƒ`ƒFƒbƒN
+                // æ—¢å­˜ã®ã‚¢ã‚¤ãƒ†ãƒ ã§åŒã˜ãƒ‘ã‚¹ãŒãªã„ã‹ãƒã‚§ãƒƒã‚¯
                 if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show($"u{path}v‚ÍŠù‚É’Ç‰Á‚³‚ê‚Ä‚¢‚Ü‚·B", "î•ñ",
+                    MessageBox.Show($"ã€Œ{path}ã€ã¯æ—¢ã«è¿½åŠ ã•ã‚Œã¦ã„ã¾ã™ã€‚", "æƒ…å ±",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // AddItemDialog‚É–‘Oî•ñ‚ğİ’è‚µ‚Ä•\¦
+                // AddItemDialogã«äº‹å‰æƒ…å ±ã‚’è¨­å®šã—ã¦è¡¨ç¤º
                 var dialog = new AddItemDialog(targetProject.Groups.ToList());
                 
-                // ƒtƒ@ƒCƒ‹–¼‚©‚ç–¼‘O‚ğ¶¬
+                // ãƒ•ã‚¡ã‚¤ãƒ«åã‹ã‚‰åå‰ã‚’ç”Ÿæˆ
                 string name;
                 string description;
                 
                 if (IsUrl(path))
                 {
-                    // URL‚Ìê‡‚ÍƒhƒƒCƒ“–¼‚ğ–¼‘O‚Æ‚µ‚Äg—p
+                    // URLã®å ´åˆã¯ãƒ‰ãƒ¡ã‚¤ãƒ³åã‚’åå‰ã¨ã—ã¦ä½¿ç”¨
                     try
                     {
                         var uri = new Uri(path);
@@ -968,28 +1185,28 @@ namespace ModernLauncher.ViewModels
                         {
                             name = name.Substring(4);
                         }
-                        description = $"WebƒTƒCƒg: {path}";
+                        description = $"Webã‚µã‚¤ãƒˆ: {path}";
                     }
                     catch
                     {
-                        name = "WebƒTƒCƒg";
-                        description = $"WebƒTƒCƒg: {path}";
+                        name = "Webã‚µã‚¤ãƒˆ";
+                        description = $"Webã‚µã‚¤ãƒˆ: {path}";
                     }
                 }
                 else if (System.IO.Directory.Exists(path))
                 {
                     name = System.IO.Path.GetFileName(path.TrimEnd('\\', '/'));
-                    description = $"ƒtƒHƒ‹ƒ_: {path}";
+                    description = $"ãƒ•ã‚©ãƒ«ãƒ€: {path}";
                 }
                 else if (System.IO.File.Exists(path))
                 {
                     name = System.IO.Path.GetFileNameWithoutExtension(path);
-                    description = $"ƒtƒ@ƒCƒ‹: {System.IO.Path.GetFileName(path)}";
+                    description = $"ãƒ•ã‚¡ã‚¤ãƒ«: {System.IO.Path.GetFileName(path)}";
                 }
                 else
                 {
                     name = System.IO.Path.GetFileName(path);
-                    description = $"ƒhƒ‰ƒbƒO&ƒhƒƒbƒv‚Å’Ç‰Á: {name}";
+                    description = $"ãƒ‰ãƒ©ãƒƒã‚°&ãƒ‰ãƒ­ãƒƒãƒ—ã§è¿½åŠ : {name}";
                 }
 
                 if (string.IsNullOrWhiteSpace(name))
@@ -997,11 +1214,11 @@ namespace ModernLauncher.ViewModels
                     name = path;
                 }
 
-                // •ª—Ş‚ğ©“®”»’è
+                // åˆ†é¡ã‚’è‡ªå‹•åˆ¤å®š
                 string category = DetermineCategory(path);
 
-                // ƒ_ƒCƒAƒƒO‚É‰Šú’l‚ğİ’è
-                dialog.SetInitialValues(name, path, category, description);
+                // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã«åˆæœŸå€¤ã‚’è¨­å®š
+                dialog.SetInitialValues(name, path, category, description, false);
 
                 if (dialog.ShowDialog() == true && dialog.Result != null)
                 {
@@ -1010,10 +1227,10 @@ namespace ModernLauncher.ViewModels
                     newItem.ProjectName = targetProject.Name;
                     newItem.FolderPath = GetProjectFolderPath(targetProject);
                     
-                    // ƒAƒCƒRƒ“‚Æƒ^ƒCƒv‚ğİ’è
+                    // ã‚¢ã‚¤ã‚³ãƒ³ã¨ã‚¿ã‚¤ãƒ—ã‚’è¨­å®š
                     newItem.RefreshIconAndType();
                     
-                    // ƒOƒ‹[ƒv–¼‚ğXV
+                    // ã‚°ãƒ«ãƒ¼ãƒ—åã‚’æ›´æ–°
                     if (CurrentProject != null)
                     {
                         UpdateItemGroupNames(newItem);
@@ -1026,7 +1243,7 @@ namespace ModernLauncher.ViewModels
                         UpdateGroupList();
                     }
                     
-                    // •\¦‚ğXV
+                    // è¡¨ç¤ºã‚’æ›´æ–°
                     if (IsShowingAllProjects)
                     {
                         ShowAllProjectsItems();
@@ -1042,21 +1259,21 @@ namespace ModernLauncher.ViewModels
                     
                     SaveData();
                     
-                    // ¬Œ÷ƒƒbƒZ[ƒW
+                    // æˆåŠŸãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
                     if (IsShowingAllProjects)
                     {
                         var totalItems = currentDisplayedProjects.Sum(p => p.Items.Count);
-                        StatusText = $"u{newItem.Name}v‚ğ{targetProject.Name}‚É’Ç‰Á‚µ‚Ü‚µ‚½ ({totalItems} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg)";
+                        StatusText = $"ã€Œ{newItem.Name}ã€ã‚’{targetProject.Name}ã«è¿½åŠ ã—ã¾ã—ãŸ ({totalItems} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)";
                     }
                     else
                     {
-                        StatusText = $"u{newItem.Name}v‚ğ’Ç‰Á‚µ‚Ü‚µ‚½ ({targetProject.Items.Count} ŒÂ‚ÌƒIƒuƒWƒFƒNƒg)";
+                        StatusText = $"ã€Œ{newItem.Name}ã€ã‚’è¿½åŠ ã—ã¾ã—ãŸ ({targetProject.Items.Count} å€‹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ)";
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒAƒCƒeƒ€‚Ì’Ç‰Á‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ã‚¢ã‚¤ãƒ†ãƒ ã®è¿½åŠ ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -1064,16 +1281,16 @@ namespace ModernLauncher.ViewModels
         {
             if (CurrentProject == null && !IsShowingAllProjects)
             {
-                MessageBox.Show("ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", "ƒGƒ‰[",
+                MessageBox.Show("ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // ‘SƒvƒƒWƒFƒNƒg•\¦‚ÍÅ‰‚ÌƒvƒƒWƒFƒNƒg‚É’Ç‰Á
+            // å…¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºæ™‚ã¯æœ€åˆã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã«è¿½åŠ 
             var targetProject = CurrentProject ?? currentDisplayedProjects.FirstOrDefault();
             if (targetProject == null)
             {
-                MessageBox.Show("ƒAƒCƒeƒ€‚ğ’Ç‰Á‚·‚éƒvƒƒWƒFƒNƒg‚ª‚ ‚è‚Ü‚¹‚ñ", "ƒGƒ‰[",
+                MessageBox.Show("ã‚¢ã‚¤ãƒ†ãƒ ã‚’è¿½åŠ ã™ã‚‹ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Šã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1086,10 +1303,10 @@ namespace ModernLauncher.ViewModels
                 newItem.ProjectName = targetProject.Name;
                 newItem.FolderPath = GetProjectFolderPath(targetProject);
                 
-                // V‚µ‚¢ƒƒ\ƒbƒh‚ğg—p‚µ‚ÄƒAƒCƒRƒ“‚Æƒ^ƒCƒv‚ğİ’è
+                // æ–°ã—ã„ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ä½¿ç”¨ã—ã¦ã‚¢ã‚¤ã‚³ãƒ³ã¨ã‚¿ã‚¤ãƒ—ã‚’è¨­å®š
                 newItem.RefreshIconAndType();
                 
-                // ƒOƒ‹[ƒv–¼‚ğXV
+                // ã‚°ãƒ«ãƒ¼ãƒ—åã‚’æ›´æ–°
                 if (CurrentProject != null)
                 {
                     UpdateItemGroupNames(newItem);
@@ -1102,7 +1319,7 @@ namespace ModernLauncher.ViewModels
                     UpdateGroupList();
                 }
                 
-                // •\¦‚ğXV
+                // è¡¨ç¤ºã‚’æ›´æ–°
                 if (IsShowingAllProjects)
                 {
                     ShowAllProjectsItems();
@@ -1116,83 +1333,257 @@ namespace ModernLauncher.ViewModels
                     ShowAllItems();
                 }
                 
-                // ƒvƒƒWƒFƒNƒgƒm[ƒh‚Ì•\¦–¼‚ğXV
+                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã®è¡¨ç¤ºåã‚’æ›´æ–°
                 RefreshProjectNodeDisplayNames();
                 
                 SaveData();
+                
+                // SmartLauncheré …ç›®ã‚’æ›´æ–°
+                LoadSmartLauncherItems();
             }
+        }
+
+        private void AddGroup(object? parameter)
+        {
+            if (CurrentProject == null)
+            {
+                MessageBox.Show("ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new TextInputDialog("æ–°è¦ã‚°ãƒ«ãƒ¼ãƒ—", "ã‚°ãƒ«ãƒ¼ãƒ—åã‚’å…¥åŠ›ã—ã¦ãã ã•ã„:");
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.InputText))
+            {
+                var newGroup = new ItemGroup
+                {
+                    Name = dialog.InputText,
+                    Id = Guid.NewGuid().ToString(),
+                    OrderIndex = CurrentProject.Groups.Count
+                };
+                CurrentProject.Groups.Add(newGroup);
+                UpdateGroupList();
+                SaveData();
+            }
+        }
+
+        private void EditGroup(object? parameter)
+        {
+            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‹ã‚‰ã‚°ãƒ«ãƒ¼ãƒ—ã‚’å–å¾—ã™ã‚‹ã‹ã€ç¾åœ¨é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚°ãƒ«ãƒ¼ãƒ—ã‚’ä½¿ç”¨
+            var groupToEdit = parameter as ItemGroup ?? SelectedViewGroup;
+
+            if (CurrentProject == null || groupToEdit == null)
+            {
+                MessageBox.Show("ç·¨é›†ã™ã‚‹ã‚°ãƒ«ãƒ¼ãƒ—ã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã¯ç·¨é›†ä¸å¯
+            if (groupToEdit.Id == "all")
+            {
+                MessageBox.Show("ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã¯ç·¨é›†ã§ãã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new TextInputDialog("ã‚°ãƒ«ãƒ¼ãƒ—ç·¨é›†", "ã‚°ãƒ«ãƒ¼ãƒ—åã‚’å…¥åŠ›ã—ã¦ãã ã•ã„:", groupToEdit.Name);
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.InputText))
+            {
+                var currentGroup = CurrentProject.Groups.FirstOrDefault(g => g.Id == groupToEdit.Id);
+                if (currentGroup != null)
+                {
+                    currentGroup.Name = dialog.InputText;
+                    UpdateGroupList();
+                    
+                    // é–¢é€£ã™ã‚‹ã‚¢ã‚¤ãƒ†ãƒ ã®GroupNamesã‚’æ›´æ–°
+                    foreach (var item in CurrentProject.Items.Where(i => i.GroupIds?.Contains(currentGroup.Id) == true))
+                    {
+                        UpdateItemGroupNames(item);
+                    }
+                    
+                    // è¡¨ç¤ºã‚’æ›´æ–°
+                    if (SelectedViewGroup != null)
+                    {
+                        ShowGroupItems(SelectedViewGroup);
+                    }
+                    else
+                    {
+                        ShowAllItems();
+                    }
+                    
+                    SaveData();
+                }
+            }
+        }
+
+        private bool CanEditGroup(object? parameter)
+        {
+            var groupToCheck = parameter as ItemGroup ?? SelectedViewGroup;
+            return CurrentProject != null && groupToCheck != null && groupToCheck.Id != "all";
+        }
+
+        private void DeleteGroup(object? parameter)
+        {
+            // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‹ã‚‰ã‚°ãƒ«ãƒ¼ãƒ—ã‚’å–å¾—ã™ã‚‹ã‹ã€ç¾åœ¨é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚°ãƒ«ãƒ¼ãƒ—ã‚’ä½¿ç”¨
+            var groupToDelete = parameter as ItemGroup ?? SelectedViewGroup;
+
+            if (CurrentProject == null || groupToDelete == null)
+            {
+                MessageBox.Show("å‰Šé™¤ã™ã‚‹ã‚°ãƒ«ãƒ¼ãƒ—ã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã¯å‰Šé™¤ä¸å¯
+            if (groupToDelete.Id == "all")
+            {
+                MessageBox.Show("ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã¯å‰Šé™¤ã§ãã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var currentGroup = CurrentProject.Groups.FirstOrDefault(g => g.Id == groupToDelete.Id);
+            if (currentGroup != null)
+            {
+                var result = MessageBox.Show($"ã‚°ãƒ«ãƒ¼ãƒ—ã€Œ{currentGroup.Name}ã€ã‚’å‰Šé™¤ã—ã¾ã™ã‹ï¼Ÿ\n\nâ€»ã‚°ãƒ«ãƒ¼ãƒ—ã«å±ã™ã‚‹ã‚¢ã‚¤ãƒ†ãƒ ã¯å‰Šé™¤ã•ã‚Œã¾ã›ã‚“ãŒã€ã“ã®ã‚°ãƒ«ãƒ¼ãƒ—ã¸ã®æ‰€å±ãŒè§£é™¤ã•ã‚Œã¾ã™ã€‚", 
+                    "ç¢ºèª", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                
+                if (result == MessageBoxResult.Yes)
+                {
+                    // ã“ã®ã‚°ãƒ«ãƒ¼ãƒ—ã«å±ã™ã‚‹ã‚¢ã‚¤ãƒ†ãƒ ã‹ã‚‰ã‚°ãƒ«ãƒ¼ãƒ—IDã‚’å‰Šé™¤
+                    foreach (var item in CurrentProject.Items.Where(i => i.GroupIds?.Contains(currentGroup.Id) == true))
+                    {
+                        item.GroupIds?.Remove(currentGroup.Id);
+                        UpdateItemGroupNames(item);
+                    }
+                    
+                    // ã‚°ãƒ«ãƒ¼ãƒ—ã‚’å‰Šé™¤
+                    CurrentProject.Groups.Remove(currentGroup);
+                    UpdateGroupList();
+                    
+                    // é¸æŠã‚’ã‚¯ãƒªã‚¢
+                    SelectedViewGroup = null;
+                    ShowAllItems();
+                    
+                    SaveData();
+                }
+            }
+        }
+
+        private bool CanDeleteGroup(object? parameter)
+        {
+            var groupToCheck = parameter as ItemGroup ?? SelectedViewGroup;
+            return CurrentProject != null && groupToCheck != null && groupToCheck.Id != "all";
         }
 
         // Command implementations
         private void NewProject(object? parameter)
         {
-            // —˜—p‰Â”\‚ÈƒtƒHƒ‹ƒ_ƒm[ƒh‚ğæ“¾
-            var availableFolders = new List<ProjectNode>();
-            CollectFoldersRecursive(ProjectNodes, availableFolders);
-
-            var dialog = new NewProjectDialog(availableFolders);
-            dialog.Owner = Application.Current.MainWindow;
-            
-            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ProjectName))
+            try
             {
-                var parentId = dialog.SelectedFolder?.Id; // null‚Ìê‡‚Íƒ‹[ƒgƒŒƒxƒ‹
+                // åˆ©ç”¨å¯èƒ½ãªãƒ•ã‚©ãƒ«ãƒ€ãƒãƒ¼ãƒ‰ã‚’å–å¾—
+                var availableFolders = new List<ProjectNode>();
+                CollectFoldersRecursive(ProjectNodes, availableFolders);
+
+                var dialog = new NewProjectDialog(availableFolders);
                 
-                var newProject = new Project
-                {
-                    Name = dialog.ProjectName,
-                    Id = Guid.NewGuid().ToString(),
-                    OrderIndex = Projects.Count,
-                    ParentId = parentId,
-                    IsFolder = false
-                };
-                newProject.Groups.Add(new ItemGroup { Name = "‚·‚×‚Ä", Id = "all", OrderIndex = 0 });
-                newProject.Groups.Add(new ItemGroup { Name = "‚æ‚­g‚¤", Id = Guid.NewGuid().ToString(), OrderIndex = 1 });
-                
-                Projects.Add(newProject);
-                
+                // Ownerè¨­å®šã‚’å®‰å…¨ã«å®Ÿè¡Œ
                 try
                 {
-                    projectService.SaveProject(newProject);
-                    
-                    var projectInfoList = Projects.Select(p => new ProjectInfo
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        OrderIndex = p.OrderIndex,
-                        ParentId = p.ParentId,
-                        IsFolder = p.IsFolder
-                    }).ToList();
-                    
-                    projectService.SaveProjectList(projectInfoList);
-                    BuildProjectHierarchy();
-                    
-                    // V‚µ‚­ì¬‚³‚ê‚½ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ
-                    var newNode = FindProjectNode(newProject.Id);
-                    if (newNode != null)
-                    {
-                        SelectedProjectNode = newNode;
-                        
-                        // ƒvƒƒWƒFƒNƒg‚ªì¬‚³‚ê‚½ƒtƒHƒ‹ƒ_‚ğ“WŠJ
-                        if (dialog.SelectedFolder != null)
-                        {
-                            var parentNode = FindProjectNode(dialog.SelectedFolder.Id);
-                            if (parentNode != null)
-                            {
-                                parentNode.IsExpanded = true;
-                            }
-                        }
-                    }
-                    
-                    // ¬Œ÷ƒƒbƒZ[ƒW
-                    var folderName = dialog.SelectedFolder?.Name ?? "ƒ‹[ƒg";
-                    MessageBox.Show($"ƒvƒƒWƒFƒNƒgu{newProject.Name}v‚ğu{folderName}v‚Éì¬‚µ‚Ü‚µ‚½B", "ƒvƒƒWƒFƒNƒgì¬Š®—¹",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    dialog.Owner = Application.Current.MainWindow;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"ƒvƒƒWƒFƒNƒg‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Diagnostics.Debug.WriteLine($"Failed to set dialog owner: {ex.Message}");
                 }
+                
+                if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ProjectName))
+                {
+                    var parentId = dialog.SelectedFolder?.Id; // nullã®å ´åˆã¯ãƒ«ãƒ¼ãƒˆãƒ¬ãƒ™ãƒ«
+                    
+                    var newProject = new Project
+                    {
+                        Name = dialog.ProjectName,
+                        Id = Guid.NewGuid().ToString(),
+                        OrderIndex = Projects.Count,
+                        ParentId = parentId,
+                        IsFolder = false
+                    };
+                    newProject.Groups.Add(new ItemGroup { Name = "ã™ã¹ã¦", Id = "all", OrderIndex = 0 });
+                    newProject.Groups.Add(new ItemGroup { Name = "ã‚ˆãä½¿ã†", Id = Guid.NewGuid().ToString(), OrderIndex = 1 });
+                    
+                    Projects.Add(newProject);
+                    
+                    try
+                    {
+                        projectService.SaveProject(newProject);
+                        
+                        var projectInfoList = Projects.Select(p => new ProjectInfo
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            OrderIndex = p.OrderIndex,
+                            ParentId = p.ParentId,
+                            IsFolder = p.IsFolder
+                        }).ToList();
+                        
+                        projectService.SaveProjectList(projectInfoList);
+                        
+                        // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
+                        BuildProjectHierarchy();
+                        
+                        // æ–°ã—ãä½œæˆã•ã‚ŒãŸãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠ
+                        var newNode = FindProjectNode(newProject.Id);
+                        if (newNode != null)
+                        {
+                            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã‚’é¸æŠ
+                            SelectedProjectNode = newNode;
+                            
+                            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒä½œæˆã•ã‚ŒãŸãƒ•ã‚©ãƒ«ãƒ€ã‚’å±•é–‹
+                            if (dialog.SelectedFolder != null)
+                            {
+                                var parentNode = FindProjectNode(dialog.SelectedFolder.Id);
+                                if (parentNode != null)
+                                {
+                                    parentNode.IsExpanded = true;
+                                }
+                            }
+                            
+                            // UIè¡¨ç¤ºã‚’å¼·åˆ¶çš„ã«æ›´æ–°
+                            System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                            {
+                                CurrentProject = newProject;
+                                UpdateGroupList();
+                                SelectedViewGroup = null;
+                                ShowAllItems();
+                                UpdateStatusText();
+                                RefreshProjectNodeDisplayNames();
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+                        }
+                        
+                        // SmartLauncheré …ç›®ã‚’æ›´æ–°
+                        LoadSmartLauncherItems();
+                        
+                        // æˆåŠŸãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+                        var folderName = dialog.SelectedFolder?.Name ?? "Root";
+                        MessageBox.Show($"Project '{newProject.Name}' created successfully in '{folderName}'.", 
+                            "Project Created", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Project save error: {ex.Message}");
+                        MessageBox.Show($"Failed to save project: {ex.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"NewProject error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                MessageBox.Show($"Failed to create new project: {ex.Message}\n\nPlease try again.", 
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1230,14 +1621,23 @@ namespace ModernLauncher.ViewModels
                     }).ToList();
                     
                     projectService.SaveProjectList(projectInfoList);
+                    
+                    // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
                     BuildProjectHierarchy();
                     
-                    // V‚µ‚­ì¬‚³‚ê‚½ƒtƒHƒ‹ƒ_[‚ğ‘I‘ğ
+                    // æ–°ã—ãä½œæˆã•ã‚ŒãŸãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’é¸æŠ
                     var newNode = FindProjectNode(newFolder.Id);
                     if (newNode != null)
                     {
                         SelectedProjectNode = newNode;
                         newNode.IsExpanded = true;
+                        
+                        // UIè¡¨ç¤ºã‚’å¼·åˆ¶çš„ã«æ›´æ–°
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                        {
+                            RefreshProjectNodeDisplayNames();
+                            UpdateStatusText();
+                        }), System.Windows.Threading.DispatcherPriority.Render);
                     }
                     
                     MessageBox.Show($"Folder '{newFolder.Name}' created successfully.", "Success",
@@ -1251,30 +1651,6 @@ namespace ModernLauncher.ViewModels
             }
         }
 
-        private void AddGroup(object? parameter)
-        {
-            if (CurrentProject == null)
-            {
-                MessageBox.Show("ƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", "ƒGƒ‰[",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var dialog = new TextInputDialog("V‹KƒOƒ‹[ƒv", "ƒOƒ‹[ƒv–¼‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢:");
-            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.InputText))
-            {
-                var newGroup = new ItemGroup
-                {
-                    Name = dialog.InputText,
-                    Id = Guid.NewGuid().ToString(),
-                    OrderIndex = CurrentProject.Groups.Count
-                };
-                CurrentProject.Groups.Add(newGroup);
-                UpdateGroupList();
-                SaveData();
-            }
-        }
-
         private void LaunchItem(object? parameter)
         {
             var item = parameter as LauncherItem ?? SelectedItem;
@@ -1282,11 +1658,31 @@ namespace ModernLauncher.ViewModels
             {
                 try
                 {
+                    // ã‚¢ã‚¤ãƒ†ãƒ ã®æ‰€å±ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ç‰¹å®š
+                    var itemProject = FindProjectContainingItem(item);
+                    
+                    // Record the access before launching
+                    RecordItemAccess(item);
+                    
                     launcherService.LaunchItem(item);
+                    
+                    // æœ€çµ‚ã‚¢ã‚¯ã‚»ã‚¹æ™‚åˆ»ã‚’æ›´æ–°ã—ãŸå¾Œã€è©²å½“ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ä¿å­˜
+                    if (itemProject != null)
+                    {
+                        projectService.SaveProject(itemProject);
+                    }
+                    else
+                    {
+                        // ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ï¼šé€šå¸¸ã®ä¿å­˜ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ä½¿ç”¨
+                        SaveData();
+                    }
+                    
+                    // Refresh smart launcher items after launching
+                    LoadSmartLauncherItems();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(ex.Message, "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -1294,6 +1690,119 @@ namespace ModernLauncher.ViewModels
         private bool CanLaunchItem(object? parameter)
         {
             return parameter is LauncherItem || SelectedItem != null;
+        }
+
+        private void LaunchGroup(object? parameter)
+        {
+            var group = parameter as ItemGroup ?? SelectedViewGroup;
+            if (group == null || CurrentProject == null)
+            {
+                MessageBox.Show("ã‚°ãƒ«ãƒ¼ãƒ—ã‚’é¸æŠã—ã¦ãã ã•ã„", "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ãŒé¸æŠã•ã‚ŒãŸå ´åˆ
+            IEnumerable<LauncherItem> itemsToLaunch;
+            if (group.Id == "all")
+            {
+                itemsToLaunch = CurrentProject.Items;
+            }
+            else
+            {
+                itemsToLaunch = CurrentProject.Items.Where(i => i.GroupIds != null && i.GroupIds.Contains(group.Id));
+            }
+
+            var itemList = itemsToLaunch.ToList();
+            
+            if (itemList.Count == 0)
+            {
+                MessageBox.Show($"ã‚°ãƒ«ãƒ¼ãƒ—ã€Œ{group.Name}ã€ã«ã¯èµ·å‹•å¯èƒ½ãªã‚¢ã‚¤ãƒ†ãƒ ãŒã‚ã‚Šã¾ã›ã‚“", "æƒ…å ±", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // ç¢ºèªãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
+            var result = MessageBox.Show($"ã‚°ãƒ«ãƒ¼ãƒ—ã€Œ{group.Name}ã€ã®{itemList.Count}å€‹ã®ã‚¢ã‚¤ãƒ†ãƒ ã‚’ä¸€æ‹¬èµ·å‹•ã—ã¾ã™ã‹ï¼Ÿ", 
+                "ç¢ºèª", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                int successCount = 0;
+                int errorCount = 0;
+                var errors = new List<string>();
+
+                foreach (var item in itemList)
+                {
+                    try
+                    {
+                        // ã‚¢ã‚¤ãƒ†ãƒ ã®æ‰€å±ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ç‰¹å®š
+                        var itemProject = FindProjectContainingItem(item);
+                        
+                        // Record the access before launching
+                        RecordItemAccess(item);
+                        
+                        launcherService.LaunchItem(item);
+                        
+                        // æœ€çµ‚ã‚¢ã‚¯ã‚»ã‚¹æ™‚åˆ»ã‚’æ›´æ–°ã—ãŸå¾Œã€è©²å½“ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ä¿å­˜
+                        if (itemProject != null)
+                        {
+                            projectService.SaveProject(itemProject);
+                        }
+                        
+                        successCount++;
+                        
+                        // å„ã‚¢ã‚¤ãƒ†ãƒ ã®èµ·å‹•é–“éš”ã‚’è¨­ã‘ã‚‹ï¼ˆã‚·ã‚¹ãƒ†ãƒ ã«è² è·ã‚’ã‹ã‘ã™ããªã„ãŸã‚ï¼‰
+                        System.Threading.Thread.Sleep(100);
+                    }
+                    catch (Exception ex)
+                    {
+                        errorCount++;
+                        errors.Add($"ã€Œ{item.Name}ã€: {ex.Message}");
+                    }
+                }
+
+                // çµæœã‚’è¡¨ç¤º
+                if (errorCount == 0)
+                {
+                    StatusText = $"ã‚°ãƒ«ãƒ¼ãƒ—ã€Œ{group.Name}ã€ã®{successCount}å€‹ã®ã‚¢ã‚¤ãƒ†ãƒ ã‚’ä¸€æ‹¬èµ·å‹•ã—ã¾ã—ãŸ";
+                }
+                else
+                {
+                    var message = $"ã‚°ãƒ«ãƒ¼ãƒ—ä¸€æ‹¬èµ·å‹•å®Œäº†\næˆåŠŸ: {successCount}å€‹\nå¤±æ•—: {errorCount}å€‹";
+                    if (errors.Count > 0 && errors.Count <= 5)
+                    {
+                        message += "\n\nã‚¨ãƒ©ãƒ¼è©³ç´°:\n" + string.Join("\n", errors);
+                    }
+                    else if (errors.Count > 5)
+                    {
+                        message += "\n\nã‚¨ãƒ©ãƒ¼è©³ç´°:\n" + string.Join("\n", errors.Take(5)) + $"\n...ä»–{errors.Count - 5}ä»¶";
+                    }
+                    
+                    MessageBox.Show(message, "ä¸€æ‹¬èµ·å‹•çµæœ", MessageBoxButton.OK, MessageBoxImage.Information);
+                    StatusText = $"ã‚°ãƒ«ãƒ¼ãƒ—ã€Œ{group.Name}ã€ã®ä¸€æ‹¬èµ·å‹•å®Œäº†ï¼ˆæˆåŠŸ: {successCount}å€‹ã€å¤±æ•—: {errorCount}å€‹ï¼‰";
+                }
+
+                // SmartLauncheré …ç›®ã‚’æ›´æ–°
+                LoadSmartLauncherItems();
+            }
+        }
+
+        private bool CanLaunchGroup(object? parameter)
+        {
+            var group = parameter as ItemGroup ?? SelectedViewGroup;
+            return group != null && CurrentProject != null;
+        }
+
+        private Project? FindProjectContainingItem(LauncherItem item)
+        {
+            foreach (var project in Projects)
+            {
+                if (project.Items.Contains(item))
+                {
+                    return project;
+                }
+            }
+            return null;
         }
 
         private void EditItem(object? parameter)
@@ -1306,13 +1815,13 @@ namespace ModernLauncher.ViewModels
                 {
                     var editedItem = dialog.Result;
                     
-                    // V‚µ‚¢ƒƒ\ƒbƒh‚ğg—p‚µ‚ÄƒAƒCƒRƒ“‚Æƒ^ƒCƒv‚ğİ’è
+                    // æ–°ã—ã„ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ä½¿ç”¨ã—ã¦ã‚¢ã‚¤ã‚³ãƒ³ã¨ã‚¿ã‚¤ãƒ—ã‚’è¨­å®š
                     editedItem.RefreshIconAndType();
                     
-                    // ƒOƒ‹[ƒv–¼‚ğXV
+                    // ã‚°ãƒ«ãƒ¼ãƒ—åã‚’æ›´æ–°
                     UpdateItemGroupNames(editedItem);
                     
-                    // Œ³‚ÌƒAƒCƒeƒ€‚Æ’u‚«Š·‚¦
+                    // å…ƒã®ã‚¢ã‚¤ãƒ†ãƒ ã¨ç½®ãæ›ãˆ
                     var index = CurrentProject.Items.IndexOf(item);
                     if (index >= 0)
                     {
@@ -1321,7 +1830,7 @@ namespace ModernLauncher.ViewModels
                     
                     UpdateGroupList();
                     
-                    // •\¦‚ğXV
+                    // è¡¨ç¤ºã‚’æ›´æ–°
                     if (SelectedViewGroup != null)
                     {
                         ShowGroupItems(SelectedViewGroup);
@@ -1346,7 +1855,7 @@ namespace ModernLauncher.ViewModels
             var item = parameter as LauncherItem ?? SelectedItem;
             if (item != null && CurrentProject != null)
             {
-                var result = MessageBox.Show($"u{item.Name}v‚ğíœ‚µ‚Ü‚·‚©H", "Šm”F",
+                var result = MessageBox.Show($"ã€Œ{item.Name}ã€ã‚’å‰Šé™¤ã—ã¾ã™ã‹ï¼Ÿ", "ç¢ºèª",
                     MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
@@ -1362,7 +1871,7 @@ namespace ModernLauncher.ViewModels
                         ShowAllItems();
                     }
                     
-                    // ƒvƒƒWƒFƒNƒgƒm[ƒh‚Ì•\¦–¼‚ğXV
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã®è¡¨ç¤ºåã‚’æ›´æ–°
                     RefreshProjectNodeDisplayNames();
                     
                     SaveData();
@@ -1383,7 +1892,7 @@ namespace ModernLauncher.ViewModels
                 var index = CurrentProject.Items.IndexOf(item);
                 if (index > 0)
                 {
-                    // ƒ\[ƒg‚ğƒNƒŠƒA‚µ‚Ä‚©‚çƒAƒCƒeƒ€‚ğˆÚ“®
+                    // ã‚½ãƒ¼ãƒˆã‚’ã‚¯ãƒªã‚¢ã—ã¦ã‹ã‚‰ã‚¢ã‚¤ãƒ†ãƒ ã‚’ç§»å‹•
                     ClearListViewSort();
                     
                     CurrentProject.Items.Move(index, index - 1);
@@ -1391,7 +1900,7 @@ namespace ModernLauncher.ViewModels
                     SaveData();
                     RefreshItemsView();
                     
-                    // ‘I‘ğó‘Ô‚ğˆÛ
+                    // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
                     SelectedItem = item;
                 }
             }
@@ -1416,7 +1925,7 @@ namespace ModernLauncher.ViewModels
                 var index = CurrentProject.Items.IndexOf(item);
                 if (index < CurrentProject.Items.Count - 1)
                 {
-                    // ƒ\[ƒg‚ğƒNƒŠƒA‚µ‚Ä‚©‚çƒAƒCƒeƒ€‚ğˆÚ“®
+                    // ã‚½ãƒ¼ãƒˆã‚’ã‚¯ãƒªã‚¢ã—ã¦ã‹ã‚‰ã‚¢ã‚¤ãƒ†ãƒ ã‚’ç§»å‹•
                     ClearListViewSort();
                     
                     CurrentProject.Items.Move(index, index + 1);
@@ -1424,7 +1933,7 @@ namespace ModernLauncher.ViewModels
                     SaveData();
                     RefreshItemsView();
                     
-                    // ‘I‘ğó‘Ô‚ğˆÛ
+                    // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
                     SelectedItem = item;
                 }
             }
@@ -1443,7 +1952,7 @@ namespace ModernLauncher.ViewModels
 
         private void ClearListViewSort()
         {
-            // ƒƒCƒ“ListView‚Ìƒ\[ƒg‚ğƒNƒŠƒA
+            // ãƒ¡ã‚¤ãƒ³ListViewã®ã‚½ãƒ¼ãƒˆã‚’ã‚¯ãƒªã‚¢
             if (Application.Current.MainWindow is MainWindow mainWindow)
             {
                 var listView = mainWindow.FindName("MainListView") as ListView;
@@ -1483,7 +1992,7 @@ namespace ModernLauncher.ViewModels
         {
             if (CurrentProject == null)
             {
-                MessageBox.Show("ƒGƒNƒXƒ|[ƒg‚·‚éƒvƒƒWƒFƒNƒg‚ª‚ ‚è‚Ü‚¹‚ñ", "ƒGƒ‰[",
+                MessageBox.Show("ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆã™ã‚‹ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Šã¾ã›ã‚“", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1492,21 +2001,21 @@ namespace ModernLauncher.ViewModels
             {
                 var saveFileDialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title = "ƒvƒƒWƒFƒNƒg‚ğƒGƒNƒXƒ|[ƒg",
-                    Filter = "JSONƒtƒ@ƒCƒ‹ (*.json)|*.json|‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹ (*.*)|*.*",
+                    Title = "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆ",
+                    Filter = "JSONãƒ•ã‚¡ã‚¤ãƒ« (*.json)|*.json|ã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ« (*.*)|*.*",
                     FileName = $"{CurrentProject.Name}.json"
                 };
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
                     projectService.ExportProject(CurrentProject, saveFileDialog.FileName);
-                    MessageBox.Show($"ƒvƒƒWƒFƒNƒgu{CurrentProject.Name}v‚ğƒGƒNƒXƒ|[ƒg‚µ‚Ü‚µ‚½", "Š®—¹",
+                    MessageBox.Show($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã€Œ{CurrentProject.Name}ã€ã‚’ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆã—ã¾ã—ãŸ", "å®Œäº†",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"ƒGƒNƒXƒ|[ƒg‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                MessageBox.Show($"ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1522,8 +2031,8 @@ namespace ModernLauncher.ViewModels
             {
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = "ƒvƒƒWƒFƒNƒg‚ğƒCƒ“ƒ|[ƒg",
-                    Filter = "JSONƒtƒ@ƒCƒ‹ (*.json)|*.json|‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹ (*.*)|*.*"
+                    Title = "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ã‚¤ãƒ³ãƒãƒ¼ãƒˆ",
+                    Filter = "JSONãƒ•ã‚¡ã‚¤ãƒ« (*.json)|*.json|ã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ« (*.*)|*.*"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
@@ -1531,16 +2040,23 @@ namespace ModernLauncher.ViewModels
                     var importedProject = projectService.ImportProject(openFileDialog.FileName);
                     if (importedProject != null)
                     {
-                        // ID‚Ìd•¡‚ğ”ğ‚¯‚é
+                        // ãƒ‡ãƒãƒƒã‚°æƒ…å ±ã‚’å‡ºåŠ›
+                        System.Diagnostics.Debug.WriteLine($"ImportProject: Imported project '{importedProject.Name}' with {importedProject.Items?.Count ?? 0} items");
+                        
+                        // IDã®é‡è¤‡ã‚’é¿ã‘ã‚‹
                         importedProject.Id = Guid.NewGuid().ToString();
                         importedProject.OrderIndex = Projects.Count;
                         
-                        // ŒİŠ·«ƒ`ƒFƒbƒN
+                        // äº’æ›æ€§ãƒã‚§ãƒƒã‚¯
                         UpdateProjectCompatibility(importedProject);
                         
-                        Projects.Add(importedProject);
-                        CurrentProject = importedProject;
+                        // ãƒ‡ãƒãƒƒã‚°: äº’æ›æ€§ãƒã‚§ãƒƒã‚¯å¾Œã®ã‚¢ã‚¤ãƒ†ãƒ æ•°ã‚’ç¢ºèª
+                        System.Diagnostics.Debug.WriteLine($"ImportProject: After compatibility check - project '{importedProject.Name}' has {importedProject.Items?.Count ?? 0} items");
                         
+                        // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã«è¿½åŠ 
+                        Projects.Add(importedProject);
+                        
+                        // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±ãƒªã‚¹ãƒˆã‚’ä¿å­˜
                         var projectInfoList = Projects.Select(p => new ProjectInfo
                         {
                             Id = p.Id,
@@ -1553,14 +2069,58 @@ namespace ModernLauncher.ViewModels
                         projectService.SaveProjectList(projectInfoList);
                         projectService.SaveProject(importedProject);
                         
-                        MessageBox.Show($"ƒvƒƒWƒFƒNƒgu{importedProject.Name}v‚ğƒCƒ“ƒ|[ƒg‚µ‚Ü‚µ‚½", "Š®—¹",
+                        // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
+                        BuildProjectHierarchy();
+                        
+                        // ã‚¤ãƒ³ãƒãƒ¼ãƒˆã—ãŸãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’å³åº§ã«é¸æŠè¡¨ç¤º
+                        var importedNode = FindProjectNode(importedProject.Id);
+                        if (importedNode != null)
+                        {
+                            // ãƒ‡ãƒãƒƒã‚°: ãƒãƒ¼ãƒ‰ã®çŠ¶æ…‹ã‚’ç¢ºèª
+                            System.Diagnostics.Debug.WriteLine($"ImportProject: Found imported node '{importedNode.Name}', Project is null: {importedNode.Project == null}");
+                            if (importedNode.Project != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"ImportProject: Node's project has {importedNode.Project.Items?.Count ?? 0} items");
+                            }
+                            
+                            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã‚’é¸æŠ
+                            SelectedProjectNode = importedNode;
+                            
+                            // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ç¾åœ¨ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã¨ã—ã¦è¨­å®š
+                            CurrentProject = importedProject;
+                
+                            // UIè¡¨ç¤ºã‚’å¼·åˆ¶çš„ã«æ›´æ–°
+                            System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                            {
+                                // ã‚°ãƒ«ãƒ¼ãƒ—ãƒªã‚¹ãƒˆã‚’æ›´æ–°
+                                UpdateGroupList();
+                                
+                                // ã‚¢ã‚¤ãƒ†ãƒ è¡¨ç¤ºã‚’æ›´æ–°  
+                                SelectedViewGroup = null;
+                                ShowAllItems();
+                                UpdateStatusText();
+                                
+                                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒãƒ¼ãƒ‰ã®è¡¨ç¤ºåã‚’æ›´æ–°
+                                RefreshProjectNodeDisplayNames();
+                                
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"ImportProject: Could not find imported node for project '{importedProject.Name}'");
+                        }
+                        
+                        // SmartLauncheré …ç›®ã‚’æ›´æ–°
+                        LoadSmartLauncherItems();
+                        
+                        MessageBox.Show($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã€Œ{importedProject.Name}ã€ã‚’ã‚¤ãƒ³ãƒãƒ¼ãƒˆã—ã¾ã—ãŸ", "å®Œäº†",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"ƒCƒ“ƒ|[ƒg‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                MessageBox.Show($"ã‚¤ãƒ³ãƒãƒ¼ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1582,36 +2142,36 @@ namespace ModernLauncher.ViewModels
         {
             if (SelectedProjectNode == null) return;
 
-            var itemType = SelectedProjectNode.IsFolder ? "ƒtƒHƒ‹ƒ_[" : "ƒvƒƒWƒFƒNƒg";
-            var result = MessageBox.Show($"{itemType}u{SelectedProjectNode.Name}v‚ğíœ‚µ‚Ü‚·‚©H\n\n¦q—v‘f‚àˆê‚Éíœ‚³‚ê‚Ü‚·B", 
-                "Šm”F", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var itemType = SelectedProjectNode.IsFolder ? "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼" : "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ";
+            var result = MessageBox.Show($"{itemType}ã€Œ{SelectedProjectNode.Name}ã€ã‚’å‰Šé™¤ã—ã¾ã™ã‹ï¼Ÿ\n\nâ€»å­è¦ç´ ã‚‚ä¸€ç·’ã«å‰Šé™¤ã•ã‚Œã¾ã™ã€‚", 
+                "ç¢ºèª", MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
             {
                 try
                 {
-                    // íœ‘ÎÛ‚ÌIDƒŠƒXƒg‚ğûWiq—v‘f‚ğŠÜ‚Şj
+                    // å‰Šé™¤å¯¾è±¡ã®IDãƒªã‚¹ãƒˆã‚’åé›†ï¼ˆå­è¦ç´ ã‚’å«ã‚€ï¼‰
                     var idsToDelete = new List<string>();
                     CollectNodeIds(SelectedProjectNode, idsToDelete);
 
-                    // ƒvƒƒWƒFƒNƒgƒRƒŒƒNƒVƒ‡ƒ“‚©‚çíœ
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã‹ã‚‰å‰Šé™¤
                     var projectsToRemove = Projects.Where(p => idsToDelete.Contains(p.Id)).ToList();
                     foreach (var project in projectsToRemove)
                     {
                         Projects.Remove(project);
                         
-                        // ƒtƒ@ƒCƒ‹‚©‚ç‚àíœ
+                        // ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚‚å‰Šé™¤
                         try
                         {
                             projectService.DeleteProject(project.Id);
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"ƒvƒƒWƒFƒNƒgƒtƒ@ƒCƒ‹íœƒGƒ‰[: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ•ã‚¡ã‚¤ãƒ«å‰Šé™¤ã‚¨ãƒ©ãƒ¼: {ex.Message}");
                         }
                     }
 
-                    // ƒvƒƒWƒFƒNƒgˆê——‚ğ•Û‘¶
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±ãƒªã‚¹ãƒˆã‚’æ›´æ–°
                     var projectInfoList = Projects.Select(p => new ProjectInfo
                     {
                         Id = p.Id,
@@ -1623,14 +2183,14 @@ namespace ModernLauncher.ViewModels
                     
                     projectService.SaveProjectList(projectInfoList);
 
-                    // ŠK‘w\‘¢‚ğÄ\’z
+                    // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
                     BuildProjectHierarchy();
 
-                    // c‚è‚ÌƒvƒƒWƒFƒNƒg‚ª‚ ‚éê‡‚ÍÅ‰‚ÌƒvƒƒWƒFƒNƒg‚ğ‘I‘ğ
+                    // æ®‹ã‚Šã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚‹å ´åˆã¯æœ€åˆã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’é¸æŠ
                     var firstProject = ProjectNodes.FirstOrDefault(n => !n.IsFolder);
                     if (firstProject == null)
                     {
-                        // ƒtƒHƒ‹ƒ_[“à‚ÌÅ‰‚ÌƒvƒƒWƒFƒNƒg‚ğ’T‚·
+                        // ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼å†…ã®æœ€åˆã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¢ã™
                         firstProject = FindFirstProjectRecursive(ProjectNodes);
                     }
                     
@@ -1640,7 +2200,7 @@ namespace ModernLauncher.ViewModels
                     }
                     else
                     {
-                        // ƒvƒƒWƒFƒNƒg‚ª‘S‚­‚È‚¢ê‡‚ÍƒfƒtƒHƒ‹ƒgƒvƒƒWƒFƒNƒg‚ğì¬
+                        // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãŒå…¨ããªã„å ´åˆã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ä½œæˆ
                         CurrentProject = null;
                         CreateDefaultProject();
                         BuildProjectHierarchy();
@@ -1648,7 +2208,7 @@ namespace ModernLauncher.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"íœ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                    MessageBox.Show($"å‰Šé™¤ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -1657,6 +2217,127 @@ namespace ModernLauncher.ViewModels
         private bool CanDeleteProjectOrFolder(object? parameter)
         {
             return SelectedProjectNode != null;
+        }
+
+        private void EditProjectOrFolder(object? parameter)
+        {
+            if (SelectedProjectNode == null) return;
+
+            try
+            {
+                // åˆ©ç”¨å¯èƒ½ãªãƒ•ã‚©ãƒ«ãƒ€ãƒãƒ¼ãƒ‰ã‚’å–å¾—
+                var availableFolders = new List<ProjectNode>();
+                CollectFoldersRecursive(ProjectNodes, availableFolders);
+
+                var dialog = new EditProjectDialog(SelectedProjectNode, availableFolders);
+                dialog.Owner = Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.ProjectName))
+                {
+                    var selectedParentId = dialog.SelectedFolder?.Id;
+                    
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã¾ãŸã¯ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’æ›´æ–°
+                    var project = Projects.FirstOrDefault(p => p.Id == SelectedProjectNode.Id);
+                    if (project != null)
+                    {
+                        var oldName = project.Name;
+                        project.Name = dialog.ProjectName;
+                        project.ParentId = selectedParentId;
+                        
+                        projectService.SaveProject(project);
+                        
+                        var projectInfoList = Projects.Select(p => new ProjectInfo
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            OrderIndex = p.OrderIndex,
+                            ParentId = p.ParentId,
+                            IsFolder = p.IsFolder
+                        }).ToList();
+                        
+                        projectService.SaveProjectList(projectInfoList);
+                        
+                        // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
+                        BuildProjectHierarchy();
+                        
+                        // ç·¨é›†ã•ã‚ŒãŸãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’å†é¸æŠ
+                        var editedNode = FindProjectNode(project.Id);
+                        if (editedNode != null)
+                        {
+                            SelectedProjectNode = editedNode;
+                            
+                            // ç§»å‹•å…ˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’å±•é–‹
+                            if (selectedParentId != null)
+                            {
+                                var parentNode = FindProjectNode(selectedParentId);
+                                if (parentNode != null)
+                                {
+                                    parentNode.IsExpanded = true;
+                                }
+                            }
+                            
+                            // UIè¡¨ç¤ºã‚’å¼·åˆ¶çš„ã«æ›´æ–°
+                            System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
+                            {
+                                // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å ´åˆã¯è©³ç´°è¡¨ç¤ºã‚‚æ›´æ–°
+                                if (!project.IsFolder)
+                                {
+                                    CurrentProject = project;
+                                    UpdateGroupList();
+                                    SelectedViewGroup = null;
+                                    ShowAllItems();
+                                }
+                                
+                                RefreshProjectNodeDisplayNames();
+                                UpdateStatusText();
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+                        }
+                        
+                        var itemType = project.IsFolder ? "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼" : "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ";
+                        StatusText = $"é …ç›®ã€Œ{oldName}ã€ãŒã€Œ{project.Name}ã€ã«æ›´æ–°ã•ã‚Œã¾ã—ãŸ";
+                        MessageBox.Show($"{itemType}ãŒæ­£å¸¸ã«æ›´æ–°ã•ã‚Œã¾ã—ãŸã€‚", "æ›´æ–°å®Œäº†", 
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"ç·¨é›†ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool CanEditProjectOrFolder(object? parameter)
+        {
+            return SelectedProjectNode != null;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        // ä¸è¶³ã—ã¦ã„ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰ã‚’è¿½åŠ 
+        private void CollectFoldersRecursive(ObservableCollection<ProjectNode> nodes, List<ProjectNode> folders)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.IsFolder)
+                {
+                    folders.Add(node);
+                }
+                CollectFoldersRecursive(node.Children, folders);
+            }
         }
 
         private void CollectNodeIds(ProjectNode node, List<string> ids)
@@ -1686,34 +2367,22 @@ namespace ModernLauncher.ViewModels
             return null;
         }
 
-        private void CollectFoldersRecursive(ObservableCollection<ProjectNode> nodes, List<ProjectNode> folders)
-        {
-            foreach (var node in nodes)
-            {
-                if (node.IsFolder)
-                {
-                    folders.Add(node);
-                }
-                CollectFoldersRecursive(node.Children, folders);
-            }
-        }
-
         private void MoveToFolder(object? parameter)
         {
             if (SelectedProjectNode == null) return;
 
-            // —˜—p‰Â”\‚ÈƒtƒHƒ‹ƒ_[‚ğæ“¾iˆÚ“®‘ÎÛ©g‚ÆqƒtƒHƒ‹ƒ_[‚ÍœŠOj
+            // åˆ©ç”¨å¯èƒ½ãªãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’å–å¾—ï¼ˆç§»å‹•å¯¾è±¡è‡ªèº«ã¨å­ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã¯é™¤å¤–ï¼‰
             var availableFolders = GetAvailableFolders(SelectedProjectNode);
             
             if (availableFolders.Count == 0)
             {
-                MessageBox.Show("ˆÚ“®æ‚Æ‚µ‚Ä—˜—p‰Â”\‚ÈƒtƒHƒ‹ƒ_[‚ª‚ ‚è‚Ü‚¹‚ñBæ‚ÉƒtƒHƒ‹ƒ_[‚ğì¬‚µ‚Ä‚­‚¾‚³‚¢B", 
-                    "ƒtƒHƒ‹ƒ_[‚È‚µ", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("ç§»å‹•å…ˆã¨ã—ã¦åˆ©ç”¨å¯èƒ½ãªãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãŒã‚ã‚Šã¾ã›ã‚“ã€‚å…ˆã«ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’ä½œæˆã—ã¦ãã ã•ã„ã€‚", 
+                    "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãªã—", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             
             var dialog = new FolderSelectionDialog(availableFolders, 
-                $"'{SelectedProjectNode.Name}'‚ÌˆÚ“®æƒtƒHƒ‹ƒ_[‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢");
+                $"'{SelectedProjectNode.Name}'ã®ç§»å‹•å…ˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’é¸æŠã—ã¦ãã ã•ã„");
             dialog.Owner = Application.Current.MainWindow;
             
             if (dialog.ShowDialog() == true)
@@ -1721,27 +2390,27 @@ namespace ModernLauncher.ViewModels
                 try
                 {
                     var targetFolder = dialog.SelectedFolder;
-                    var targetParentId = targetFolder?.Id; // null‚Ìê‡‚Íƒ‹[ƒgƒŒƒxƒ‹
+                    var targetParentId = targetFolder?.Id; // nullã®å ´åˆã¯ãƒ«ãƒ¼ãƒˆãƒ¬ãƒ™ãƒ«
 
-                    // ƒvƒƒWƒFƒNƒg‚ÌeID‚ğXV
+                    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®è¦ªIDã‚’æ›´æ–°
                     var project = Projects.FirstOrDefault(p => p.Id == SelectedProjectNode.Id);
                     if (project != null)
                     {
                         project.ParentId = targetParentId;
                         
-                        // ƒf[ƒ^‚ğ•Û‘¶
+                        // ãƒ‡ãƒ¼ã‚¿ã‚’ä¿å­˜
                         SaveData();
                         
-                        // ŠK‘w\‘¢‚ğÄ\’z
+                        // éšå±¤æ§‹é€ ã‚’å†æ§‹ç¯‰
                         BuildProjectHierarchy();
                         
-                        // ˆÚ“®‚µ‚½ƒvƒƒWƒFƒNƒg‚ğÄ‘I‘ğ
+                        // ç§»å‹•ã—ãŸãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’å†é¸æŠ
                         var movedNode = FindProjectNode(SelectedProjectNode.Id);
                         if (movedNode != null)
                         {
                             SelectedProjectNode = movedNode;
                             
-                            // ˆÚ“®æƒtƒHƒ‹ƒ_[‚ğ“WŠJ
+                            // ç§»å‹•å…ˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’å±•é–‹
                             if (targetFolder != null)
                             {
                                 var targetNode = FindProjectNode(targetFolder.Id);
@@ -1752,16 +2421,21 @@ namespace ModernLauncher.ViewModels
                             }
                         }
                         
-                        MessageBox.Show("ˆÚ“®‚ªŠ®—¹‚µ‚Ü‚µ‚½B", "ˆÚ“®Š®—¹", 
+                        MessageBox.Show("ç§»å‹•ãŒå®Œäº†ã—ã¾ã—ãŸã€‚", "ç§»å‹•å®Œäº†", 
                             MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"ˆÚ“®‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                    MessageBox.Show($"ç§»å‹•ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private bool CanMoveProjectToFolder(object? parameter)
+        {
+            return SelectedProjectNode != null;
         }
 
         private List<ProjectNode> GetAvailableFolders(ProjectNode excludeNode)
@@ -1769,7 +2443,7 @@ namespace ModernLauncher.ViewModels
             var allFolders = new List<ProjectNode>();
             CollectFoldersRecursive(ProjectNodes, allFolders);
             
-            // ˆÚ“®‘ÎÛ©g‚ÆqƒtƒHƒ‹ƒ_[‚ğœŠO
+            // ç§»å‹•å¯¾è±¡è‡ªèº«ã¨å­ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’é™¤å¤–
             var excludeIds = new HashSet<string>();
             CollectNodeIdsRecursive(excludeNode, excludeIds);
             
@@ -1789,8 +2463,8 @@ namespace ModernLauncher.ViewModels
 
         private void CreateTestFolders(object? parameter)
         {
-            var result = MessageBox.Show("ƒfƒoƒbƒO—p‚ÌƒeƒXƒgƒtƒHƒ‹ƒ_[‚ğì¬‚µ‚Ü‚·‚©H\n\nˆÈ‰º‚ªì¬‚³‚ê‚Ü‚·F\n- Work Folder\n- Personal Folder\n- Development Folder", 
-                "ƒeƒXƒgƒtƒHƒ‹ƒ_[ì¬", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("ãƒ‡ãƒãƒƒã‚°ç”¨ã®ãƒ†ã‚¹ãƒˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’ä½œæˆã—ã¾ã™ã‹ï¼Ÿ\n\nä»¥ä¸‹ãŒä½œæˆã•ã‚Œã¾ã™ï¼š\n- Work Folder\n- Personal Folder\n- Development Folder", 
+                "ãƒ†ã‚¹ãƒˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ä½œæˆ", MessageBoxButton.YesNo, MessageBoxImage.Question);
             
             if (result == MessageBoxResult.Yes)
             {
@@ -1828,7 +2502,7 @@ namespace ModernLauncher.ViewModels
                     
                     projectService.SaveProjectList(projectInfoList);
                     
-                    // ƒtƒHƒ‹ƒ_[‚à•Û‘¶
+                    // ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚‚ä¿å­˜
                     foreach (var project in Projects.Where(p => p.IsFolder))
                     {
                         projectService.SaveProject(project);
@@ -1836,20 +2510,89 @@ namespace ModernLauncher.ViewModels
                     
                     BuildProjectHierarchy();
                     
-                    MessageBox.Show("ƒeƒXƒgƒtƒHƒ‹ƒ_[‚ª³í‚Éì¬‚³‚ê‚Ü‚µ‚½I", "¬Œ÷",
+                    MessageBox.Show("ãƒ†ã‚¹ãƒˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãŒæ­£å¸¸ã«ä½œæˆã•ã‚Œã¾ã—ãŸï¼", "æˆåŠŸ",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"ƒeƒXƒgƒtƒHƒ‹ƒ_[‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", "ƒGƒ‰[",
+                    MessageBox.Show($"ãƒ†ã‚¹ãƒˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", "ã‚¨ãƒ©ãƒ¼",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
-        private bool CanMoveProjectToFolder(object? parameter)
+        private bool IsUrl(string path)
         {
-            return SelectedProjectNode != null;
+            return !string.IsNullOrEmpty(path) && 
+                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                    path.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private string DetermineCategory(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path))
+                    return "ãã®ä»–";
+
+                if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
+                {
+                    var uri = new Uri(path.StartsWith("www.") ? "http://" + path : path);
+                    var host = uri.Host.ToLower();
+                    var lowerPath = path.ToLower();
+                    
+                    if (host.Contains("github.com"))
+                        return "GitHubURL";
+                    else if (host.Contains("gitlab.com") || lowerPath.Contains("gitlab"))
+                        return "GitLabURL";
+                    else if (lowerPath.Contains("redmine"))
+                        return "RedmineURL";
+                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
+                        return "Googleãƒ‰ãƒ©ã‚¤ãƒ–";
+                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
+                        return "MicrosoftTeams";
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
+                        return "SharePoint";
+                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
+                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
+                        return "OneDrive";
+                    else
+                        return "Webã‚µã‚¤ãƒˆ";
+                }
+
+                if (System.IO.Directory.Exists(path))
+                {
+                    return "ãƒ•ã‚©ãƒ«ãƒ€";
+                }
+
+                if (System.IO.File.Exists(path))
+                {
+                    var ext = System.IO.Path.GetExtension(path).ToLower();
+                    return ext switch
+                    {
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³",
+                        ".txt" or ".rtf" => "ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ",
+                        ".doc" or ".docx" => "Word",
+                        ".xls" or ".xlsx" => "Excel",
+                        ".ppt" or ".pptx" => "PowerPoint",
+                        ".pdf" => "PDF",
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "ç”»åƒ",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "éŸ³æ¥½",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "å‹•ç”»",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ã‚¢ãƒ¼ã‚«ã‚¤ãƒ–",
+                        ".lnk" => "ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆ",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ãƒ—ãƒ­ã‚°ãƒ©ãƒ ",
+                        _ => "ãƒ•ã‚¡ã‚¤ãƒ«"
+                    };
+                }
+
+                return "ã‚³ãƒãƒ³ãƒ‰";
+            }
+            catch (Exception)
+            {
+                return "ãã®ä»–";
+            }
         }
 
         private void OpenWithVSCode(object? parameter)
@@ -1861,32 +2604,32 @@ namespace ModernLauncher.ViewModels
                 {
                     string path = item.Path;
                     
-                    // VSCode‚ÌƒpƒX‚ğŠm”F
+                    // VSCodeã®ãƒ‘ã‚¹ã‚’ç¢ºèª
                     string vscodeCommand = FindVSCodePath();
                     if (string.IsNullOrEmpty(vscodeCommand))
                     {
-                        MessageBox.Show("Visual Studio Code ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB\nVS Code‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚é‚©Šm”F‚µ‚Ä‚­‚¾‚³‚¢B", 
-                            "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Visual Studio Code ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚\nVS CodeãŒã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã—ã¦ãã ã•ã„ã€‚", 
+                            "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
-                    // URL‚Ìê‡‚ÍƒpƒXw’è‚Å‚«‚È‚¢‚½‚ßAƒGƒ‰[ƒƒbƒZ[ƒW‚ğ•\¦
+                    // URLã®å ´åˆã¯ãƒ‘ã‚¹æŒ‡å®šã§ããªã„ãŸã‚ã€ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º
                     if (IsUrl(path))
                     {
-                        MessageBox.Show("WebƒTƒCƒg‚ÌURL‚ÍVS Code‚ÅŠJ‚­‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñB", 
-                            "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("Webã‚µã‚¤ãƒˆã®URLã¯VS Codeã§é–‹ãã“ã¨ãŒã§ãã¾ã›ã‚“ã€‚", 
+                            "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Information);
                         return;
                     }
 
-                    // ƒtƒ@ƒCƒ‹‚Ü‚½‚ÍƒtƒHƒ‹ƒ_[‚ª‘¶İ‚·‚é‚©Šm”F
+                    // ãƒ•ã‚¡ã‚¤ãƒ«ã¾ãŸã¯ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèª
                     if (!System.IO.File.Exists(path) && !System.IO.Directory.Exists(path))
                     {
-                        MessageBox.Show($"w’è‚³‚ê‚½ƒpƒX‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: {path}", 
-                            "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"æŒ‡å®šã•ã‚ŒãŸãƒ‘ã‚¹ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: {path}", 
+                            "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
-                    // VS Code‚ÅŠJ‚­
+                    // VS Codeã§é–‹ã
                     var startInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = vscodeCommand,
@@ -1896,12 +2639,12 @@ namespace ModernLauncher.ViewModels
                     };
 
                     System.Diagnostics.Process.Start(startInfo);
-                    StatusText = $"u{item.Name}v‚ğVS Code‚ÅŠJ‚«‚Ü‚µ‚½";
+                    StatusText = $"ã€Œ{item.Name}ã€ã‚’VS Codeã§é–‹ãã¾ã—ãŸ";
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"VS Code‚ÅŠJ‚­Û‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: {ex.Message}", 
-                        "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"VS Codeã§é–‹ãéš›ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ: {ex.Message}", 
+                        "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -1911,106 +2654,29 @@ namespace ModernLauncher.ViewModels
             var item = parameter as LauncherItem ?? SelectedItem;
             if (item == null) return false;
 
-            // URL‚Ìê‡‚Í–³Œø
+            // URLã®å ´åˆã¯ç„¡åŠ¹
             if (IsUrl(item.Path)) return false;
 
-            // ƒtƒ@ƒCƒ‹‚Ü‚½‚ÍƒtƒHƒ‹ƒ_[‚ª‘¶İ‚·‚éê‡‚Ì‚İ—LŒø
+            // ãƒ•ã‚¡ã‚¤ãƒ«ã¾ãŸã¯ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ãŒå­˜åœ¨ã™ã‚‹å ´åˆã®ã¿æœ‰åŠ¹
             return System.IO.File.Exists(item.Path) || System.IO.Directory.Exists(item.Path);
-        }
-
-        private void OpenWithOffice(object? parameter)
-        {
-            var item = parameter as LauncherItem ?? SelectedItem;
-            if (item != null)
-            {
-                try
-                {
-                    string path = item.Path;
-
-                    // SharePoint‚âOffice Online URL‚Ìê‡‚Í’¼Úƒuƒ‰ƒEƒU‚ÅŠJ‚­
-                    if (IsOfficeUrl(path))
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = path,
-                            UseShellExecute = true
-                        });
-                        StatusText = $"u{item.Name}v‚ğOffice‚ÅŠJ‚«‚Ü‚µ‚½";
-                        return;
-                    }
-
-                    // ƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹‚Ìê‡
-                    if (System.IO.File.Exists(path))
-                    {
-                        string extension = System.IO.Path.GetExtension(path).ToLower();
-                        
-                        // Officeƒtƒ@ƒCƒ‹‚©‚Ç‚¤‚©Šm”F
-                        if (IsOfficeFile(extension))
-                        {
-                            // ŠÖ˜A•t‚¯‚³‚ê‚½ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ÅŠJ‚­i’Êí‚ÍOfficej
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                            {
-                                FileName = path,
-                                UseShellExecute = true
-                            });
-                            StatusText = $"u{item.Name}v‚ğOffice‚ÅŠJ‚«‚Ü‚µ‚½";
-                        }
-                        else
-                        {
-                            MessageBox.Show("‚±‚Ìƒtƒ@ƒCƒ‹‚ÍOfficeƒhƒLƒ…ƒƒ“ƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB", 
-                                "î•ñ", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show($"ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: {path}", 
-                            "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Office‚ÅŠJ‚­Û‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: {ex.Message}", 
-                        "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private bool CanOpenWithOffice(object? parameter)
-        {
-            var item = parameter as LauncherItem ?? SelectedItem;
-            if (item == null) return false;
-
-            string path = item.Path;
-
-            // SharePoint‚âOffice Online URL‚Ìê‡‚Í—LŒø
-            if (IsOfficeUrl(path)) return true;
-
-            // ƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹‚Ìê‡‚ÍOfficeƒtƒ@ƒCƒ‹‚©‚Ç‚¤‚©Šm”F
-            if (System.IO.File.Exists(path))
-            {
-                string extension = System.IO.Path.GetExtension(path).ToLower();
-                return IsOfficeFile(extension);
-            }
-
-            return false;
         }
 
         private string FindVSCodePath()
         {
-            // ˆê”Ê“I‚ÈVS Code‚ÌƒCƒ“ƒXƒg[ƒ‹ƒpƒX‚ğŠm”F
+            // ä¸€èˆ¬çš„ãªVS Codeã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ãƒ‘ã‚¹ã‚’ç¢ºèª
             var possiblePaths = new[]
             {
                 @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Microsoft VS Code\Code.exe",
                 @"C:\Program Files\Microsoft VS Code\Code.exe",
                 @"C:\Program Files (x86)\Microsoft VS Code\Code.exe",
-                "code" // PATHŠÂ‹«•Ï”‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡
+                "code" // PATHç’°å¢ƒå¤‰æ•°ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆ
             };
 
             foreach (var path in possiblePaths)
             {
                 if (path == "code")
                 {
-                    // PATHŠÂ‹«•Ï”‚Å‚ÌŠm”F
+                    // PATHç’°å¢ƒå¤‰æ•°ã§ã®ç¢ºèª
                     try
                     {
                         var startInfo = new System.Diagnostics.ProcessStartInfo
@@ -2032,7 +2698,7 @@ namespace ModernLauncher.ViewModels
                     }
                     catch
                     {
-                        // whereƒRƒ}ƒ“ƒh‚ª¸”s‚µ‚½ê‡‚ÍŸ‚Ö
+                        // whereã‚³ãƒãƒ³ãƒ‰ãŒå¤±æ•—ã—ãŸå ´åˆã¯æ¬¡ã¸
                     }
                 }
                 else if (System.IO.File.Exists(path))
@@ -2044,11 +2710,71 @@ namespace ModernLauncher.ViewModels
             return string.Empty;
         }
 
-        private bool IsUrl(string path)
+        private void OpenWithOffice(object? parameter)
         {
-            return !string.IsNullOrEmpty(path) && 
-                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
-                    path.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item != null)
+            {
+                try
+                {
+                    // ã‚¢ã‚¤ãƒ†ãƒ ã®æ‰€å±ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ç‰¹å®š
+                    var itemProject = FindProjectContainingItem(item);
+                    
+                    // Record the access before launching
+                    RecordItemAccess(item);
+                    
+                    // LauncherServiceã®Officeæ©Ÿèƒ½ã‚’ä½¿ç”¨
+                    launcherService.LaunchItemWithOffice(item);
+                    
+                    // æœ€çµ‚ã‚¢ã‚¯ã‚»ã‚¹æ™‚åˆ»ã‚’æ›´æ–°ã—ãŸå¾Œã€è©²å½“ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ä¿å­˜
+                    if (itemProject != null)
+                    {
+                        projectService.SaveProject(itemProject);
+                    }
+                    else
+                    {
+                        // ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ï¼šé€šå¸¸ã®ä¿å­˜ãƒ¡ã‚½ãƒƒãƒ‰ã‚’ä½¿ç”¨
+                        SaveData();
+                    }
+                    
+                    // Refresh smart launcher items after launching
+                    LoadSmartLauncherItems();
+                    
+                    StatusText = $"ã€Œ{item.Name}ã€ã‚’Officeã‚¢ãƒ—ãƒªã§é–‹ãã¾ã—ãŸ";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private bool CanOpenWithOffice(object? parameter)
+        {
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item == null) return false;
+
+            string path = item.Path;
+
+            // SharePointã‚„Office Online URLã®å ´åˆã¯æœ‰åŠ¹
+            if (IsOfficeUrl(path)) return true;
+
+            // ãƒ­ãƒ¼ã‚«ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã®å ´åˆã¯Officeãƒ•ã‚¡ã‚¤ãƒ«ã‹ã©ã†ã‹ç¢ºèª
+            if (System.IO.File.Exists(path))
+            {
+                string extension = System.IO.Path.GetExtension(path).ToLower();
+                return IsOfficeFile(extension);
+            }
+
+            // Google Docsã®URLã‚‚å¯¾å¿œ
+            if (IsUrl(path) && path.Contains("docs.google.com"))
+            {
+                return path.Contains("/spreadsheets/") || 
+                       path.Contains("/document/") || 
+                       path.Contains("/presentation/");
+            }
+
+            return false;
         }
 
         private bool IsOfficeUrl(string path)
@@ -2062,14 +2788,19 @@ namespace ModernLauncher.ViewModels
 
                 return host.Contains("sharepoint.com") ||
                        host.Contains("office365.sharepoint.com") ||
+                       host.Contains("-my.sharepoint.com") ||
                        host.Contains("onedrive.live.com") ||
                        host.Contains("1drv.ms") ||
                        host.Contains("office.com") ||
                        host.Contains("outlook.office365.com") ||
+                       host.Contains("outlook.office.com") ||
                        path.Contains("/_layouts/") ||
                        path.Contains("/workbook/") ||
                        path.Contains("/document/") ||
-                       path.Contains("/presentation/");
+                       path.Contains("/presentation/") ||
+                       path.Contains(":x:") ||
+                       path.Contains(":w:") ||
+                       path.Contains(":p:");
             }
             catch
             {
@@ -2093,103 +2824,421 @@ namespace ModernLauncher.ViewModels
             return officeExtensions.Contains(extension);
         }
 
-        private string DetermineCategory(string path)
+        private void OpenInExplorer(object? parameter)
         {
-            try
+            var item = parameter as LauncherItem ?? SelectedItem;
+            if (item != null)
             {
-                // URL‚Ìê‡
-                if (IsUrl(path))
+                try
                 {
-                    var uri = new Uri(path);
-                    var host = uri.Host.ToLower();
-                    
-                    if (host.Contains("github.com"))
-                        return "GitHubURL";
-                    else if (host.Contains("gitlab.com"))
-                        return "GitLabURL";
-                    else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
-                        return "Googleƒhƒ‰ƒCƒu";
-                    else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
-                        return "MicrosoftTeams";
-                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
-                             host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
-                        return "SharePoint";
-                    else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
-                             host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
-                        return "SharePoint"; // OneDrive‚àSharePointƒJƒeƒSƒŠ‚ÉŠÜ‚ß‚é
-                    else
-                        return "WebƒTƒCƒg";
-                }
+                    string path = item.Path;
 
-                // ƒ[ƒJƒ‹ƒpƒX‚Ìê‡
-                if (System.IO.Directory.Exists(path))
-                {
-                    // G:ƒhƒ‰ƒCƒu‚Ìê‡‚ÍGoogleƒhƒ‰ƒCƒu‚Æ”»’è
-                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    // URLã®å ´åˆã¯ãƒ–ãƒ©ã‚¦ã‚¶ã§é–‹ã
+                    if (IsUrl(path))
                     {
-                        return "Googleƒhƒ‰ƒCƒu";
-                    }
-                    return "ƒtƒHƒ‹ƒ_";
-                }
-
-                if (System.IO.File.Exists(path))
-                {
-                    // G:ƒhƒ‰ƒCƒuã‚Ìƒtƒ@ƒCƒ‹‚àGoogleƒhƒ‰ƒCƒu‚Æ”»’è
-                    if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                        path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Googleƒhƒ‰ƒCƒu";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = path,
+                            UseShellExecute = true
+                        });
+                        StatusText = $"ã€Œ{item.Name}ã€ã‚’ãƒ–ãƒ©ã‚¦ã‚¶ãƒ¼ã§é–‹ãã¾ã—ãŸ";
+                        return;
                     }
 
-                    var extension = System.IO.Path.GetExtension(path).ToLower();
-                    
-                    return extension switch
+                    // ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã®å ´åˆã¯ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ã
+                    if (System.IO.Directory.Exists(path))
                     {
-                        ".exe" or ".msi" or ".bat" or ".cmd" => "ƒAƒvƒŠƒP[ƒVƒ‡ƒ“",
-                        ".txt" or ".rtf" => "ƒhƒLƒ…ƒƒ“ƒg",
-                        ".doc" or ".docx" => "Word",
-                        ".xls" or ".xlsx" => "Excel",
-                        ".ppt" or ".pptx" => "PowerPoint",
-                        ".pdf" => "PDF",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "‰æ‘œ",
-                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "‰¹Šy",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "“®‰æ",
-                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ƒA[ƒJƒCƒu",
-                        ".lnk" => "ƒVƒ‡[ƒgƒJƒbƒg",
-                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ƒhƒLƒ…ƒƒ“ƒg",
-                        _ => "ƒtƒ@ƒCƒ‹"
-                    };
-                }
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"\"{path}\"",
+                            UseShellExecute = false
+                        });
+                        StatusText = $"ã€Œ{item.Name}ã€ã‚’ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ãã¾ã—ãŸ";
+                        return;
+                    }
 
-                // ƒpƒX‚ª‘¶İ‚µ‚È‚¢ê‡‚àG:‚Ån‚Ü‚Á‚Ä‚¢‚ê‚ÎGoogleƒhƒ‰ƒCƒu‚Æ”»’è
-                if (path.StartsWith("G:", StringComparison.OrdinalIgnoreCase) || 
-                    path.StartsWith("G\\", StringComparison.OrdinalIgnoreCase))
+                    // ãƒ•ã‚¡ã‚¤ãƒ«ã®å ´åˆã¯è¦ªãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ã„ã¦ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é¸æŠ
+                    if (System.IO.File.Exists(path))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"/select,\"{path}\"",
+                            UseShellExecute = false
+                        });
+                        StatusText = $"ã€Œ{item.Name}ã€ã®å ´æ‰€ã‚’ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ãã¾ã—ãŸ";
+                        return;
+                    }
+
+                    // ãƒ‘ã‚¹ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯è¦ªãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’é–‹ã
+                    var parentDir = System.IO.Path.GetDirectoryName(path);
+                    if (!string.IsNullOrEmpty(parentDir) && System.IO.Directory.Exists(parentDir))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"\"{parentDir}\"",
+                            UseShellExecute = false
+                        });
+                        StatusText = $"ã€Œ{item.Name}ã€ã®è¦ªãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‚’ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ãã¾ã—ãŸ";
+                        return;
+                    }
+
+                    MessageBox.Show($"ãƒ‘ã‚¹ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: {path}", "ã‚¨ãƒ©ãƒ¼",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                catch (Exception ex)
                 {
-                    return "Googleƒhƒ‰ƒCƒu";
+                    MessageBox.Show($"ã‚¨ã‚¯ã‚¹ãƒ—ãƒ­ãƒ¼ãƒ©ãƒ¼ã§é–‹ãéš›ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ: {ex.Message}", 
+                        "ã‚¨ãƒ©ãƒ¼", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                return "‚»‚Ì‘¼";
-            }
-            catch
-            {
-                return "‚»‚Ì‘¼";
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        private bool CanOpenInExplorer(object? parameter)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var item = parameter as LauncherItem ?? SelectedItem;
+            return item != null && !string.IsNullOrEmpty(item.Path);
         }
 
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¸¦ã³æ›¿ãˆãƒ¡ã‚½ãƒƒãƒ‰
+        private void MoveProjectUp(object? parameter)
         {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
+            if (SelectedProjectNode == null) return;
+            
+            var projectId = SelectedProjectNode.Id;
+            var project = Projects.FirstOrDefault(p => p.Id == projectId);
+            if (project == null) return;
+
+            var siblings = GetSiblingProjects(project);
+            var currentIndex = siblings.IndexOf(project);
+            
+            if (currentIndex > 0)
+            {
+                var targetProject = siblings[currentIndex - 1];
+                SwapProjectOrder(project, targetProject);
+                UpdateProjectOrderIndices();
+                SaveData();
+                BuildProjectHierarchy();
+                
+                // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
+                var movedNode = FindProjectNode(projectId);
+                if (movedNode != null)
+                {
+                    SelectedProjectNode = movedNode;
+                }
+            }
+        }
+
+        private bool CanMoveProjectUp(object? parameter)
+        {
+            if (SelectedProjectNode == null) return false;
+            
+            var project = Projects.FirstOrDefault(p => p.Id == SelectedProjectNode.Id);
+            if (project == null) return false;
+
+            var siblings = GetSiblingProjects(project);
+            var currentIndex = siblings.IndexOf(project);
+            
+            return currentIndex > 0;
+        }
+
+        private void MoveProjectDown(object? parameter)
+        {
+            if (SelectedProjectNode == null) return;
+            
+            var projectId = SelectedProjectNode.Id;
+            var project = Projects.FirstOrDefault(p => p.Id == projectId);
+            if (project == null) return;
+
+            var siblings = GetSiblingProjects(project);
+            var currentIndex = siblings.IndexOf(project);
+            
+            if (currentIndex < siblings.Count - 1)
+            {
+                var targetProject = siblings[currentIndex + 1];
+                SwapProjectOrder(project, targetProject);
+                UpdateProjectOrderIndices();
+                SaveData();
+                BuildProjectHierarchy();
+                
+                // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
+                var movedNode = FindProjectNode(projectId);
+                if (movedNode != null)
+                {
+                    SelectedProjectNode = movedNode;
+                }
+            }
+        }
+
+        private bool CanMoveProjectDown(object? parameter)
+        {
+            if (SelectedProjectNode == null) return false;
+            
+            var project = Projects.FirstOrDefault(p => p.Id == SelectedProjectNode.Id);
+            if (project == null) return false;
+
+            var siblings = GetSiblingProjects(project);
+            var currentIndex = siblings.IndexOf(project);
+            
+            return currentIndex < siblings.Count - 1;
+        }
+
+        private void SwapProjectOrder(Project project1, Project project2)
+        {
+            var temp = project1.OrderIndex;
+            project1.OrderIndex = project2.OrderIndex;
+            project2.OrderIndex = temp;
+        }
+
+        private void UpdateProjectOrderIndices()
+        {
+            // å…¨ã¦ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ¬ãƒ™ãƒ«ã§OrderIndexã‚’å†è¨ˆç®—
+            var allProjects = Projects.ToList();
+            var groupedByParent = allProjects.GroupBy(p => p.ParentId);
+            
+            foreach (var group in groupedByParent)
+            {
+                var orderedProjects = group.OrderBy(p => p.OrderIndex).ToList();
+                for (int i = 0; i < orderedProjects.Count; i++)
+                {
+                    orderedProjects[i].OrderIndex = i;
+                }
+            }
+        }
+
+        // ã‚°ãƒ«ãƒ¼ãƒ—ä¸¦ã³æ›¿ãˆãƒ¡ã‚½ãƒƒãƒ‰
+        private void MoveGroupUp(object? parameter)
+        {
+            if (CurrentProject == null || SelectedViewGroup == null) return;
+
+            var groupId = SelectedViewGroup.Id;
+            var groups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            var currentIndex = groups.IndexOf(SelectedViewGroup);
+            
+            if (currentIndex > 0)
+            {
+                var targetGroup = groups[currentIndex - 1];
+                SwapGroupOrder(SelectedViewGroup, targetGroup);
+                UpdateGroupOrderIndices();
+                UpdateGroupList();
+                SaveData();
+                
+                // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
+                var movedGroup = CurrentProject.Groups.FirstOrDefault(g => g.Id == groupId);
+                if (movedGroup != null)
+                {
+                    SelectedViewGroup = movedGroup;
+                }
+            }
+        }
+
+        private bool CanMoveGroupUp(object? parameter)
+        {
+            if (CurrentProject == null || SelectedViewGroup == null) return false;
+            if (SelectedViewGroup.Id == "all") return false; // ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã¯ç§»å‹•ä¸å¯
+
+            var groups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            var currentIndex = groups.IndexOf(SelectedViewGroup);
+            
+            return currentIndex > 0;
+        }
+
+        private void MoveGroupDown(object? parameter)
+        {
+            if (CurrentProject == null || SelectedViewGroup == null) return;
+
+            var groupId = SelectedViewGroup.Id;
+            var groups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            var currentIndex = groups.IndexOf(SelectedViewGroup);
+            
+            if (currentIndex < groups.Count - 1)
+            {
+                var targetGroup = groups[currentIndex + 1];
+                SwapGroupOrder(SelectedViewGroup, targetGroup);
+                UpdateGroupOrderIndices();
+                UpdateGroupList();
+                SaveData();
+                
+                // é¸æŠçŠ¶æ…‹ã‚’ç¶­æŒ
+                var movedGroup = CurrentProject.Groups.FirstOrDefault(g => g.Id == groupId);
+                if (movedGroup != null)
+                {
+                    SelectedViewGroup = movedGroup;
+                }
+            }
+        }
+
+        private bool CanMoveGroupDown(object? parameter)
+        {
+            if (CurrentProject == null || SelectedViewGroup == null) return false;
+            if (SelectedViewGroup.Id == "all") return false; // Â«ã™ã¹ã¦Â» ã‚°ãƒ«ãƒ¼ãƒ—ã¯ç§»å‹•ä¸å¯
+
+            var groups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            var currentIndex = groups.IndexOf(SelectedViewGroup);
+            
+            return currentIndex < groups.Count - 1;
+        }
+
+        private void SwapGroupOrder(ItemGroup group1, ItemGroup group2)
+        {
+            var temp = group1.OrderIndex;
+            group1.OrderIndex = group2.OrderIndex;
+            group2.OrderIndex = temp;
+        }
+
+        private void UpdateGroupOrderIndices()
+        {
+            if (CurrentProject == null) return;
+            
+            var orderedGroups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            for (int i = 0; i < orderedGroups.Count; i++)
+            {
+                orderedGroups[i].OrderIndex = i;
+            }
+        }
+
+        // ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚³ãƒãƒ³ãƒ‰ã®å®Ÿè£…
+        private void FocusSearch(object? parameter)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var searchTextBox = mainWindow.FindName("SearchTextBox") as TextBox;
+                if (searchTextBox != null)
+                {
+                    searchTextBox.Focus();
+                    searchTextBox.SelectAll();
+                    StatusText = "ğŸ” æ¤œç´¢ãƒœãƒƒã‚¯ã‚¹ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¾ã—ãŸ";
+                }
+            }
+        }
+
+        private void FocusProject(object? parameter)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var projectTreeView = mainWindow.FindName("ProjectTreeView") as TreeView;
+                if (projectTreeView != null)
+                {
+                    projectTreeView.Focus();
+                    StatusText = "ğŸ“ ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¸€è¦§ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¾ã—ãŸ";
+                }
+            }
+        }
+
+        private void FocusGroup(object? parameter)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var groupTreeView = mainWindow.FindName("GroupTreeView") as TreeView;
+                if (groupTreeView != null)
+                {
+                    groupTreeView.Focus();
+                    StatusText = "ğŸ—‚ï¸ ã‚°ãƒ«ãƒ¼ãƒ—ä¸€è¦§ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¾ã—ãŸ";
+                }
+            }
+        }
+
+        private void FocusMainList(object? parameter)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var mainListView = mainWindow.FindName("MainListView") as ListView;
+                if (mainListView != null)
+                {
+                    mainListView.Focus();
+                    StatusText = "ğŸ“‹ ãƒ¡ã‚¤ãƒ³ãƒªã‚¹ãƒˆã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¾ã—ãŸ";
+                }
+            }
+        }
+
+        private void FocusSmartLauncher(object? parameter)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var smartLauncherListView = mainWindow.FindName("SmartLauncherListView") as ListView;
+                if (smartLauncherListView != null)
+                {
+                    smartLauncherListView.Focus();
+                    
+                    // ä½•ã‚‚é¸æŠã•ã‚Œã¦ã„ãªã„å ´åˆã¯æœ€åˆã®ã‚¢ã‚¤ãƒ†ãƒ ã‚’é¸æŠ
+                    if (smartLauncherListView.SelectedItem == null && SmartLauncherItems.Count > 0)
+                    {
+                        smartLauncherListView.SelectedIndex = 0;
+                    }
+                    
+                    StatusText = "ğŸš€ SmartLauncherã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¾ã—ãŸ";
+                }
+            }
+        }
+
+        // ãƒ‰ãƒ©ãƒƒã‚°&ãƒ‰ãƒ­ãƒƒãƒ—ä¸¦ã³æ›¿ãˆãƒ¡ã‚½ãƒƒãƒ‰
+        public void MoveProjectToPosition(string projectId, int newIndex)
+        {
+            var project = Projects.FirstOrDefault(p => p.Id == projectId);
+            if (project == null) return;
+
+            var siblings = GetSiblingProjects(project);
+            var currentIndex = siblings.IndexOf(project);
+            
+            if (currentIndex == newIndex) return;
+
+            // æ–°ã—ã„ä½ç½®ã«ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚’ç§»å‹•
+            siblings.RemoveAt(currentIndex);
+            siblings.Insert(newIndex, project);
+
+            // OrderIndexã‚’æ›´æ–°
+            for (int i = 0; i < siblings.Count; i++)
+            {
+                siblings[i].OrderIndex = i;
+            }
+
+            SaveData();
+            BuildProjectHierarchy();
+        }
+
+        public void MoveGroupToPosition(string groupId, int newIndex)
+        {
+            if (CurrentProject == null) return;
+
+            var group = CurrentProject.Groups.FirstOrDefault(g => g.Id == groupId);
+            if (group == null) return;
+
+            var groups = CurrentProject.Groups.OrderBy(g => g.OrderIndex).ToList();
+            var currentIndex = groups.IndexOf(group);
+            
+            if (currentIndex == newIndex) return;
+
+            // æ–°ã—ã„ä½ç½®ã«ã‚°ãƒ«ãƒ¼ãƒ—ã‚’ç§»å‹•
+            groups.RemoveAt(currentIndex);
+            groups.Insert(newIndex, group);
+
+            // OrderIndexã‚’æ›´æ–°
+            for (int i = 0; i < groups.Count; i++)
+            {
+                groups[i].OrderIndex = i;
+            }
+
+            UpdateGroupOrderIndices();
+            SaveData();
+        }
+
+        // ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚³ãƒãƒ³ãƒ‰
+        private void ClearSearch(object? parameter)
+        {
+            if (!string.IsNullOrEmpty(SearchText))
+            {
+                SearchText = string.Empty;
+                StatusText = "ğŸ” æ¤œç´¢ã‚’ã‚¯ãƒªã‚¢ã—ã¾ã—ãŸ";
+            }
+        }
+
+        private List<Project> GetSiblingProjects(Project project)
+        {
+            return Projects.Where(p => p.ParentId == project.ParentId)
+                          .OrderBy(p => p.OrderIndex)
+                          .ToList();
         }
     }
 }

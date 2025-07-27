@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 
 namespace ModernLauncher.Resources
@@ -11,52 +11,52 @@ namespace ModernLauncher.Resources
         public event PropertyChangedEventHandler? PropertyChanged;
 
         // Menu items
-        public string MenuFile => "?? �t�@�C��(F)";
-        public string MenuEdit => "?? �ҏW(E)";
-        public string MenuView => "??? �\��(V)";
-        public string MenuTools => "?? �c�[��(T)";
-        public string MenuHelp => "? �w���v(H)";
+        public string MenuFile => "📁 ファイル(F)";
+        public string MenuEdit => "✏️ 編集(E)";
+        public string MenuView => "👁️ 表示(V)";
+        public string MenuTools => "🔧 ツール(T)";
+        public string MenuHelp => "❓ ヘルプ(H)";
 
         // Toolbar buttons
-        public string AddItem => "�A�C�e���ǉ�";
-        public string Archive => "?? �G�N�X�|�[�g";
-        public string Delete => "�폜";
-        public string AddGroup => "�O���[�v�ǉ�";
-        public string Search => "?? ����:";
+        public string AddItem => "アイテム追加";
+        public string Archive => "📦 エクスポート";
+        public string Delete => "削除";
+        public string AddGroup => "グループ追加";
+        public string Search => "🔍 検索:";
 
         // Project bar
-        public string WorkTray => "? �I�����ڑ���";
-        public string New => "?? �V�K";
-        public string Import => "?? �C���|�[�g";
+        public string WorkTray => "⚙️ 選択項目操作";
+        public string New => "📊 新規";
+        public string Import => "📥 インポート";
 
         // Left panel
-        public string SmartFolders => "?? �O���[�v";
-        public string Projects => "?? �v���W�F�N�g";
-        public string NewFolder => "?? �V�K�t�H���_�[";
-        public string NewProjectInFolder => "?? �V�K�v���W�F�N�g";
-        public string DeleteProjectFolder => "??? �폜";
-        public string MoveToFolder => "?? �ړ�";
+        public string SmartFolders => "🗂️ グループ";
+        public string Projects => "📁 プロジェクト";
+        public string NewFolder => "📁 新規フォルダー";
+        public string NewProjectInFolder => "📊 新規プロジェクト";
+        public string DeleteProjectFolder => "🗑️ 削除";
+        public string MoveToFolder => "📦 移動";
 
         // ListView headers
-        public string Type => "??? ���";
-        public string Category => "?? ����";
-        public string Name => "?? ���O";
-        public string Path => "??? �p�X";
-        public string Group => "?? �O���[�v";
-        public string Description => "?? ����";
-        public string Actions => "? ����";
+        public string Type => "📋 種類";
+        public string Category => "🏷️ 分類";
+        public string Name => "📝 名前";
+        public string Path => "📂 パス";
+        public string Group => "🗂️ グループ";
+        public string Description => "📄 説明";
+        public string Actions => "⚙️ 操作";
 
         // Action buttons
-        public string Up => "��";
-        public string Down => "��";
-        public string Edit => "�ҏW";
-        public string DeleteShort => "��";
+        public string Up => "上";
+        public string Down => "下";
+        public string Edit => "編集";
+        public string DeleteShort => "削";
 
         // Status bar
-        public string StatusHelp => "?? Ctrl+N �V�K | Ctrl+I �A�C�e���ǉ� | Ctrl+G �O���[�v�ǉ� | F1 �w���v | ??? �h���b�O&�h���b�v�ŃA�C�e���ǉ�";
+        public string StatusHelp => "🔍 F3 検索 | 📁 Ctrl+1 プロジェクト | 🗂️ Ctrl+2 グループ | 📋 Ctrl+3 メインリスト | Ctrl+N 新規 | Ctrl+I アイテム追加 | F1 ヘルプ";
 
         // Drag & Drop
-        public string DropMessage => "?? �t�@�C����t�H���_�������Ƀh���b�v���ăA�C�e����ǉ�";
+        public string DropMessage => "📂 ファイルやフォルダをここにドロップしてアイテムを追加";
 
         private void OnPropertyChanged(string propertyName)
         {

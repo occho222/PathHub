@@ -8,7 +8,7 @@
         xmlns:res="clr-namespace:ModernLauncher.Resources"
         mc:Ignorable="d"
         Title="🛣️ PathHub" Height="800" Width="1400"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         Background="#ECE9D8"
         AllowDrop="True"
         FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
@@ -70,8 +70,13 @@
         
         <!-- Converters -->
         <local:GroupButtonVisibilityConverter x:Key="GroupButtonVisibilityConverter"/>
+        <local:GroupLaunchButtonVisibilityConverter x:Key="GroupLaunchButtonVisibilityConverter"/>
+        <local:AllGroupLaunchButtonVisibilityConverter x:Key="AllGroupLaunchButtonVisibilityConverter"/>
         <local:CategoryColorConverter x:Key="CategoryColorConverter"/>
         <local:CategoryColorIndicatorConverter x:Key="CategoryColorIndicatorConverter"/>
+        <local:AllGroupVisibilityConverter x:Key="AllGroupVisibilityConverter"/>
+        <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        <local:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
         
         <!-- Project Tree View Style -->
         <Style x:Key="ProjectTreeViewStyle" TargetType="TreeView">
@@ -150,6 +155,50 @@
                     <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Style for SmartLauncher ListViewItem: white text when selected -->
+        <Style x:Key="SmartLauncherListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="Border" Background="Transparent" 
+                                Padding="{TemplateBinding Padding}" CornerRadius="3" Margin="1,0">
+                            <ContentPresenter x:Name="PART_ContentPresenter" 
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            TextElement.Foreground="{TemplateBinding Foreground}"
+                                            TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="PART_ContentPresenter" Property="TextElement.Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E6F2FF"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Border" Property="Background" Value="#316AC5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="PART_ContentPresenter" Property="TextElement.Foreground" Value="White"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Modern Button Styles -->
@@ -425,6 +474,28 @@
 
         <Style x:Key="NeutralSmallButton" TargetType="Button" BasedOn="{StaticResource ModernSmallButton}"/>
 
+        <Style x:Key="SuccessSmallButton" TargetType="Button" BasedOn="{StaticResource ModernSmallButton}">
+            <Setter Property="Background" Value="#107C10"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#0B5A0B"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#0E6B0E"/>
+                    <Setter Property="BorderBrush" Value="#107C10"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#0B5A0B"/>
+                    <Setter Property="BorderBrush" Value="#094509"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#CCCCCC"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Other Styles -->
         <Style x:Key="ClassicTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
@@ -466,7 +537,7 @@
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 RecognizesAccessKey="True"
-                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                                TextElement.FontFamily="Segoe UI, Segoe UI Emoji, Noto ColorEmoji, Arial Unicode MS"/>
                             </Border>
                             <Thumb x:Name="PART_HeaderGripper" 
                                    HorizontalAlignment="Right" 
@@ -487,14 +558,184 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
+        <!-- Custom ScrollBar Style for wider scrollbars -->
+        <Style x:Key="WideScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Track -->
+                            <Border Grid.Row="1" Grid.Column="1" 
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"/>
+                            
+                            <!-- Thumb -->
+                            <Track x:Name="PART_Track" Grid.Row="1" Grid.Column="1"
+                                   IsDirectionReversed="False">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Style>
+                                            <Style TargetType="Thumb">
+                                                <Setter Property="Background" Value="#CCCCCC"/>
+                                                <Setter Property="BorderBrush" Value="#999999"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Thumb">
+                                                            <Border Background="{TemplateBinding Background}"
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    CornerRadius="2"/>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#999999"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsDragging" Value="True">
+                                                                    <Setter Property="Background" Value="#666666"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Thumb.Style>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                            
+                            <!-- Buttons for vertical scrollbar -->
+                            <RepeatButton Grid.Row="0" Grid.Column="1" 
+                                          Command="ScrollBar.LineUpCommand"
+                                          Background="#E0E0E0"
+                                          BorderBrush="#CCCCCC"
+                                          BorderThickness="1"
+                                          Height="18"
+                                          Content="▲"
+                                          FontSize="8">
+                                <RepeatButton.Style>
+                                    <Style TargetType="RepeatButton">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Horizontal">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RepeatButton.Style>
+                            </RepeatButton>
+                            <RepeatButton Grid.Row="2" Grid.Column="1" 
+                                          Command="ScrollBar.LineDownCommand"
+                                          Background="#E0E0E0"
+                                          BorderBrush="#CCCCCC"
+                                          BorderThickness="1"
+                                          Height="18"
+                                          Content="▼"
+                                          FontSize="8">
+                                <RepeatButton.Style>
+                                    <Style TargetType="RepeatButton">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Horizontal">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RepeatButton.Style>
+                            </RepeatButton>
+                            <!-- Buttons for horizontal scrollbar -->
+                            <RepeatButton Grid.Row="1" Grid.Column="0" 
+                                          Command="ScrollBar.LineLeftCommand"
+                                          Background="#E0E0E0"
+                                          BorderBrush="#CCCCCC"
+                                          BorderThickness="1"
+                                          Width="18"
+                                          Content="◀"
+                                          FontSize="8">
+                                <RepeatButton.Style>
+                                    <Style TargetType="RepeatButton">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Vertical">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RepeatButton.Style>
+                            </RepeatButton>
+                            <RepeatButton Grid.Row="1" Grid.Column="2" 
+                                          Command="ScrollBar.LineRightCommand"
+                                          Background="#E0E0E0"
+                                          BorderBrush="#CCCCCC"
+                                          BorderThickness="1"
+                                          Width="18"
+                                          Content="▶"
+                                          FontSize="8">
+                                <RepeatButton.Style>
+                                    <Style TargetType="RepeatButton">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Vertical">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RepeatButton.Style>
+                            </RepeatButton>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                            </Trigger>
+                            <Trigger Property="Orientation" Value="Vertical">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="True"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="18"/>
+                    <Setter Property="MinHeight" Value="18"/>
+                </Trigger>
+                <Trigger Property="Orientation" Value="Vertical">
+                    <Setter Property="Width" Value="18"/>
+                    <Setter Property="MinWidth" Value="18"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Window.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewProjectCommand}"/>
         <KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding AddItemCommand}"/>
         <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding AddGroupCommand}"/>
+        <KeyBinding Key="L" Modifiers="Ctrl" Command="{Binding LaunchGroupCommand}" CommandParameter="{Binding SelectedViewGroup}"/>
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveDataCommand}"/>
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}"/>
+        <KeyBinding Key="F2" Command="{Binding EditGroupCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding DeleteGroupCommand}"/>
+        
+        <!-- 新しいショートカット -->
+        <KeyBinding Key="F3" Command="{Binding FocusSearchCommand}"/>
+        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding FocusProjectCommand}"/>
+        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding FocusGroupCommand}"/>
+        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding FocusMainListCommand}"/>
+        <KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding FocusSmartLauncherCommand}"/>
+        <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}"/>
     </Window.InputBindings>
 
     <Grid>
@@ -521,6 +762,7 @@
                             <MenuItem Header="Export" Command="{Binding ExportProjectCommand}"/>
                         </MenuItem>
                         <MenuItem Header="Edit">
+                            <MenuItem Header="Edit Project/Folder" Command="{Binding EditProjectCommand}"/>
                             <MenuItem Header="Move Project" Command="{Binding MoveToFolderCommand}"/>
                             <MenuItem Header="Delete" Command="{Binding DeleteProjectCommand}"/>
                         </MenuItem>
@@ -562,7 +804,7 @@
                     <TextBlock Text="検索:" Foreground="{StaticResource TextColor}" 
                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
                              VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
-                    <TextBox Style="{StaticResource ClassicTextBox}"
+                    <TextBox x:Name="SearchTextBox" Style="{StaticResource ClassicTextBox}"
                            Width="220" Height="30" VerticalAlignment="Center"
                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                            VerticalContentAlignment="Center" Padding="8,4"/>
@@ -576,9 +818,7 @@
             <Grid Margin="6,5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <!-- Work Tray Label -->
@@ -589,22 +829,76 @@
                 
                 <!-- Item Operation Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Group Launch Button - Show for specific group -->
+                    <Button Style="{StaticResource ModernPrimaryButton}" 
+                            Command="{Binding LaunchGroupCommand}"
+                            CommandParameter="{Binding SelectedViewGroup}"
+                            Visibility="{Binding SelectedViewGroup, Converter={StaticResource GroupLaunchButtonVisibilityConverter}}"
+                            Margin="3,0" Height="32" MinWidth="100">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🚀" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
+                                     Style="{StaticResource EmojiTextBlock}"
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="一括起動" FontWeight="SemiBold"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- All Group Launch Button - Show for "all" group -->
+                    <Button Style="{StaticResource OfficeButton}" 
+                            Command="{Binding LaunchGroupCommand}"
+                            CommandParameter="{Binding SelectedViewGroup}"
+                            Visibility="{Binding SelectedViewGroup, Converter={StaticResource AllGroupLaunchButtonVisibilityConverter}}"
+                            Margin="3,0" Height="32" MinWidth="100">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌟" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
+                                     Style="{StaticResource EmojiTextBlock}"
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="全て起動" FontWeight="SemiBold"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
                     <Button Style="{StaticResource SuccessCommandButton}" 
                             Command="{Binding EditItemCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="70" Click="Button_Click">
+                            Margin="3,0" Height="32" MinWidth="70">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✏️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
-                            <TextBlock Text="{Binding Edit, Source={StaticResource Strings}}" FontWeight="SemiBold"
+                            <TextBlock Text="編集" FontWeight="SemiBold"
                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" Height="19" Width="40" VerticalAlignment="Center"/>
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto ColorEmoji, Arial Unicode MS" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource DangerCommandButton}"
+                    <Button Style="{StaticResource NeutralSmallButton}" 
+                            Command="{Binding MoveItemUpCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            ToolTip="選択したアイテムを上に移動"
+                            Margin="3,0" Height="32" Width="32">
+                        <TextBlock Text="⬆️" FontSize="12" FontWeight="Bold"
+                                 Style="{StaticResource EmojiTextBlock}"
+                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                    </Button>
+                    
+                    <Button Style="{StaticResource NeutralSmallButton}" 
+                            Command="{Binding MoveItemDownCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            ToolTip="選択したアイテムを下に移動"
+                            Margin="3,0" Height="32" Width="32">
+                        <TextBlock Text="⬇️" FontSize="12" FontWeight="Bold"
+                                 Style="{StaticResource EmojiTextBlock}"
+                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                    </Button>
+                    
+                    <Button Style="{StaticResource DangerCommandButton}" 
                             Command="{Binding DeleteItemCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
@@ -613,118 +907,65 @@
                             <TextBlock Text="🗑️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Delete}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="削除" FontWeight="SemiBold"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource ModernSecondaryButton}"
-                            Command="{Binding MoveItemUpCommand}"
-                            CommandParameter="{Binding SelectedItem}"
-                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="60">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⬆️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Up}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Button Style="{StaticResource ModernSecondaryButton}"
-                            Command="{Binding MoveItemDownCommand}"
-                            CommandParameter="{Binding SelectedItem}"
-                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="60">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⬇️" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
-                                     Style="{StaticResource EmojiTextBlock}"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
-                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=Down}" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <!-- App Launch Buttons -->
-                    <Button Style="{StaticResource VSCodeButton}"
+                    <Button Style="{StaticResource VSCodeButton}" 
                             Command="{Binding OpenWithVSCodeCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="10,0,3,0" Height="32" MinWidth="90"
-                            ToolTip="Open with VS Code">
+                            Margin="3,0" Height="32" MinWidth="90">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚡" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="VSCode" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button Style="{StaticResource OfficeButton}"
+                    <Button Style="{StaticResource OfficeButton}" 
                             Command="{Binding OpenWithOfficeCommand}"
                             CommandParameter="{Binding SelectedItem}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
-                            Margin="3,0" Height="32" MinWidth="90"
-                            ToolTip="Open with Office">
+                            Margin="3,0" Height="32" MinWidth="90">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
                                      Style="{StaticResource EmojiTextBlock}"
                                      Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
                             <TextBlock Text="Office" FontWeight="SemiBold"
-                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Bottom"/>
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                </StackPanel>
-                
-                <!-- Project Management Buttons -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource NeutralSmallButton}" 
-                            Command="{Binding NewFolderCommand}" ToolTip="New Folder"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="📁" FontSize="10" FontWeight="Bold"
-                                 Style="{StaticResource EmojiTextBlock}"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource AddSmallButton}" 
-                            Command="{Binding NewProjectCommand}" ToolTip="New Project"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="➕" FontSize="10" FontWeight="Bold"
-                                 Style="{StaticResource EmojiTextBlock}"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource NeutralSmallButton}" 
-                            Command="{Binding MoveToFolderCommand}" ToolTip="Move to Folder"
-                            Margin="0,0,3,0">
-                        <TextBlock Text="📦" FontSize="10" FontWeight="Bold"
-                                 Style="{StaticResource EmojiTextBlock}"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                    </Button>
-                    <Button Style="{StaticResource DeleteSmallButton}" 
-                            Command="{Binding DeleteProjectCommand}" ToolTip="Delete"
-                            Margin="0,0,0,0">
-                        <TextBlock Text="❌" FontSize="10" FontWeight="Bold"
-                                 FontFamily="Segoe UI Emoji, Segoe UI Symbol, Segoe UI, Noto Color Emoji, Arial Unicode MS"
-                                 UseLayoutRounding="True"
-                                 TextOptions.TextFormattingMode="Display"
-                                 TextOptions.TextRenderingMode="ClearType"
-                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                    
+                    <Button Style="{StaticResource ModernSecondaryButton}" 
+                            Command="{Binding OpenInExplorerCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                            Margin="3,0" Height="32" MinWidth="90">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📂" FontSize="12" Margin="0,0,6,0" FontWeight="Bold"
+                                     Style="{StaticResource EmojiTextBlock}"
+                                     Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="フォルダ" FontWeight="SemiBold"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="3" Background="{StaticResource BackgroundColor}"
+        <Grid x:Name="MainGrid" Grid.Row="3" Background="{StaticResource BackgroundColor}"
               AllowDrop="True">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="200" MaxWidth="500"/>
+                <ColumnDefinition Width="400" MinWidth="300" MaxWidth="600"/>
                 <ColumnDefinition Width="2"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -732,17 +973,82 @@
             <!-- Left Panel -->
             <Border Grid.Column="0" Background="{StaticResource PanelColor}" 
                     BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,1,0">
-                <Grid>
+                <Grid x:Name="LeftPanel">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="150" MinHeight="80"/>
+                        <RowDefinition Height="100" MinHeight="80" MaxHeight="150"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*" MinHeight="80"/>
+                        <RowDefinition Height="200" MinHeight="150" MaxHeight="300"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="60" MinHeight="50" MaxHeight="100"/>
                     </Grid.RowDefinitions>
                     
-                    <!-- Project Section -->
+                    <!-- SmartLauncher Section -->
                     <Border Grid.Row="0" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
+                            BorderThickness="0,0,0,1" Padding="8,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="SmartLauncher" 
+                                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                     FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
+                                     VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Style="{StaticResource NeutralSmallButton}"
+                                    Command="{Binding RefreshSmartLauncherCommand}" 
+                                    ToolTip="Refresh SmartLauncher">
+                                <TextBlock Text="🔄" FontSize="10" FontWeight="Bold"
+                                         Style="{StaticResource EmojiTextBlock}"
+                                         Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <ListView x:Name="SmartLauncherListView" Grid.Row="1" Background="Transparent" BorderThickness="0"
+                            FontSize="13" FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" 
+                            Margin="4"
+                            ItemsSource="{Binding SmartLauncherItems}"
+                            SelectedItem="{Binding SelectedSmartLauncherItem}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            ItemContainerStyle="{StaticResource SmartLauncherListViewItemStyle}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="13" Margin="0,0,6,0"
+                                             FontFamily="Segoe UI Emoji, Segoe UI Symbol, Segoe UI, Noto Color Emoji, Arial Unicode MS"
+                                             UseLayoutRounding="True"
+                                             TextOptions.TextFormattingMode="Display"
+                                             TextOptions.TextRenderingMode="ClearType"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="13" Margin="0,0,6,0"
+                                               FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" FontSize="11" 
+                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                             HorizontalAlignment="Right"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- Horizontal Splitter -->
+                    <GridSplitter Grid.Row="2" Background="{StaticResource BorderColor}" 
+                                HorizontalAlignment="Stretch" Height="2" Cursor="SizeNS"
+                                ResizeBehavior="PreviousAndCurrent" ResizeDirection="Rows"
+                                VerticalAlignment="Center"/>
+                    
+                    <!-- Project Section -->
+                    <Border Grid.Row="3" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
                             BorderThickness="0,0,0,1" Padding="8,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -754,33 +1060,41 @@
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Style="{StaticResource NeutralSmallButton}"
-                                        Command="{Binding NewFolderCommand}" 
-                                        ToolTip="New Folder"
-                                        Margin="0,0,3,0">
-                                    <TextBlock Text="📁" FontSize="10" FontWeight="Bold"
-                                             Style="{StaticResource EmojiTextBlock}"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                                </Button>
                                 <Button Style="{StaticResource AddSmallButton}"
                                         Command="{Binding NewProjectCommand}" 
-                                        ToolTip="New Project"
+                                        ToolTip="新規プロジェクト作成"
                                         Margin="0,0,3,0">
                                     <TextBlock Text="➕" FontSize="10" FontWeight="Bold"
                                              Style="{StaticResource EmojiTextBlock}"
                                              Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
                                 </Button>
-                                <Button Style="{StaticResource NeutralSmallButton}"
-                                        Command="{Binding MoveToFolderCommand}" 
-                                        ToolTip="Move to Folder"
+                                <Button Style="{StaticResource SuccessSmallButton}"
+                                        Command="{Binding EditProjectCommand}" 
+                                        ToolTip="プロジェクト・フォルダ名を編集"
                                         Margin="0,0,3,0">
-                                    <TextBlock Text="📦" FontSize="10" FontWeight="Bold"
+                                    <TextBlock Text="✏️" FontSize="10" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource NeutralSmallButton}"
+                                        Command="{Binding MoveProjectUpCommand}" 
+                                        ToolTip="選択したプロジェクト/フォルダを上に移動"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="⬆️" FontSize="9" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource NeutralSmallButton}"
+                                        Command="{Binding MoveProjectDownCommand}" 
+                                        ToolTip="選択したプロジェクト/フォルダを下に移動"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="⬇️" FontSize="9" FontWeight="Bold"
                                              Style="{StaticResource EmojiTextBlock}"
                                              Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
                                 </Button>
                                 <Button Style="{StaticResource DeleteSmallButton}"
                                         Command="{Binding DeleteProjectCommand}" 
-                                        ToolTip="Delete"
+                                        ToolTip="プロジェクト・フォルダ削除"
                                         Margin="0,0,0,0">
                                     <TextBlock Text="❌" FontSize="10" FontWeight="Bold"
                                              FontFamily="Segoe UI Emoji, Segoe UI Symbol, Segoe UI, Noto Color Emoji, Arial Unicode MS"
@@ -793,12 +1107,66 @@
                         </Grid>
                     </Border>
 
-                    <TreeView Grid.Row="1" 
+                    <TreeView x:Name="ProjectTreeView" Grid.Row="4" 
                              Style="{StaticResource ProjectTreeViewStyle}"
                              Margin="4"
-                             ItemsSource="{Binding ProjectNodes}">
+                             ItemsSource="{Binding ProjectNodes}"
+                             AllowDrop="True">
                         <TreeView.ItemContainerStyle>
-                            <StaticResource ResourceKey="ProjectTreeViewItemStyle"/>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource ProjectTreeViewItemStyle}">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="プロジェクト・フォルダ編集" 
+                                                    Command="{Binding DataContext.EditProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    FontWeight="Bold">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="✏️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="新規プロジェクト" 
+                                                    Command="{Binding DataContext.NewProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="➕" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="新規フォルダー" 
+                                                    Command="{Binding DataContext.NewFolderCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="📁" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="フォルダに移動" 
+                                                    Command="{Binding DataContext.MoveToFolderCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="📦" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="削除" 
+                                                    Command="{Binding DataContext.DeleteProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="🗑️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="上に移動" 
+                                                    Command="{Binding DataContext.MoveProjectUpCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="⬆️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="下に移動" 
+                                                    Command="{Binding DataContext.MoveProjectDownCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="⬇️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
@@ -827,8 +1195,9 @@
                                              Style="{StaticResource ProjectNodeTextBlockStyle}"
                                              Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}"/>
                                     <!-- Item count -->
-                                    <TextBlock Text="{Binding ItemCountText}" FontSize="12" 
+                                    <TextBlock Text="{Binding ItemCountText, UpdateSourceTrigger=PropertyChanged}" FontSize="12" 
                                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                             HorizontalAlignment="Right"
                                              Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}"
                                              VerticalAlignment="Center">
                                         <TextBlock.Style>
@@ -847,13 +1216,13 @@
                     </TreeView>
 
                     <!-- Horizontal Splitter -->
-                    <GridSplitter Grid.Row="2" Background="{StaticResource BorderColor}" 
+                    <GridSplitter Grid.Row="5" Background="{StaticResource BorderColor}" 
                                 HorizontalAlignment="Stretch" Height="2" Cursor="SizeNS"
                                 ResizeBehavior="PreviousAndCurrent" ResizeDirection="Rows"
                                 VerticalAlignment="Center"/>
                     
                     <!-- Group Section -->
-                    <Border Grid.Row="3" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
+                    <Border Grid.Row="6" Background="#E8E5D7" BorderBrush="{StaticResource BorderColor}" 
                             BorderThickness="0,1,0,1" Padding="8,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -864,21 +1233,79 @@
                                      FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextColor}"
                                      VerticalAlignment="Center"
                                      FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
-                            <Button Grid.Column="1" Style="{StaticResource AddSmallButton}"
-                                    Command="{Binding AddGroupCommand}" 
-                                    ToolTip="{Binding Source={StaticResource Strings}, Path=AddGroup}"
-                                    Margin="0,0,0,0">
-                                <TextBlock Text="➕" FontSize="10" FontWeight="Bold"
-                                         Style="{StaticResource EmojiTextBlock}"
-                                         Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
-                            </Button>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Style="{StaticResource ModernPrimaryButton}"
+                                        Command="{Binding LaunchGroupCommand}" 
+                                        CommandParameter="{Binding SelectedViewGroup}"
+                                        IsEnabled="{Binding SelectedViewGroup, Converter={x:Static local:NullToBoolConverter.Instance}}"
+                                        ToolTip="選択したグループのアイテムを一括起動"
+                                        Margin="0,0,3,0" Height="26" MinWidth="60">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="🚀" FontSize="9" FontWeight="Bold"
+                                                 Style="{StaticResource EmojiTextBlock}"
+                                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="起動" FontSize="11" FontWeight="SemiBold" Margin="3,0,0,0"
+                                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                 FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource AddSmallButton}"
+                                        Command="{Binding AddGroupCommand}" 
+                                        ToolTip="グループを追加"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="➕" FontSize="10" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource SuccessSmallButton}"
+                                        Command="{Binding EditGroupCommand}" 
+                                        CommandParameter="{Binding SelectedViewGroup}"
+                                        ToolTip="選択したグループを編集"
+                                        IsEnabled="{Binding SelectedViewGroup, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="✏️" FontSize="10" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource NeutralSmallButton}"
+                                        Command="{Binding MoveGroupUpCommand}" 
+                                        CommandParameter="{Binding SelectedViewGroup}"
+                                        ToolTip="選択したグループを上に移動"
+                                        IsEnabled="{Binding SelectedViewGroup, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="⬆️" FontSize="9" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource NeutralSmallButton}"
+                                        Command="{Binding MoveGroupDownCommand}" 
+                                        CommandParameter="{Binding SelectedViewGroup}"
+                                        ToolTip="選択したグループを下に移動"
+                                        IsEnabled="{Binding SelectedViewGroup, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}"
+                                        Margin="0,0,3,0">
+                                    <TextBlock Text="⬇️" FontSize="9" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                                <Button Style="{StaticResource DeleteSmallButton}"
+                                        Command="{Binding DeleteGroupCommand}" 
+                                        CommandParameter="{Binding SelectedViewGroup}"
+                                        ToolTip="選択したグループを削除"
+                                        IsEnabled="{Binding SelectedViewGroup, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}"
+                                        Margin="0,0,0,0">
+                                    <TextBlock Text="🗑️" FontSize="10" FontWeight="Bold"
+                                             Style="{StaticResource EmojiTextBlock}"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button>
+                            </StackPanel>
                         </Grid>
                     </Border>
 
-                    <TreeView Grid.Row="4" Background="Transparent" BorderThickness="0"
+                    <TreeView x:Name="GroupTreeView" Grid.Row="7" Background="Transparent" BorderThickness="0"
                             FontSize="13" FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS" Margin="4"
                             ItemsSource="{Binding CurrentProject.Groups}"
-                            SelectedItemChanged="TreeView_SelectedItemChanged">
+                            SelectedItemChanged="TreeView_SelectedItemChanged"
+                            AllowDrop="True">
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem">
                                 <Setter Property="Padding" Value="2"/>
@@ -887,10 +1314,66 @@
                                 <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="Foreground" Value="{StaticResource TextColor}"/>
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="グループを一括起動" 
+                                                    Command="{Binding DataContext.LaunchGroupCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    CommandParameter="{Binding}"
+                                                    FontWeight="Bold">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="🚀" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="グループを編集" 
+                                                    Command="{Binding DataContext.EditGroupCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding Id, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="✏️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="グループを削除" 
+                                                    Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding Id, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="🗑️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="グループを上に移動" 
+                                                    Command="{Binding DataContext.MoveGroupUpCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding Id, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="⬆️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="グループを下に移動" 
+                                                    Command="{Binding DataContext.MoveGroupDownCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding Id, Converter={x:Static local:AllGroupVisibilityConverter.Instance}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="⬇️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator/>
+                                            <MenuItem Header="新しいグループを追加" 
+                                                    Command="{Binding DataContext.AddGroupCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
+                                                <MenuItem.Icon>
+                                                    <TextBlock Text="➕" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="TreeViewItem">
-                                            <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}">
+                                            <Border x:Name="Border" Background="Transparent" Padding="{TemplateBinding Padding}"
+                                                    ContextMenu="{TemplateBinding ContextMenu}">
                                                 <ContentPresenter x:Name="PART_Header" 
                                                                 ContentSource="Header"
                                                                 HorizontalAlignment="Left"
@@ -926,10 +1409,21 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}" FontSize="13" Margin="0,0,6,0"
-                                               FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"/>
+                                               FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                               Foreground="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=Foreground}"/>
                                     <TextBlock Text="{Binding ItemCount}" FontSize="12" 
-                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{StaticResource SubTextColor}"/>
+                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource SubTextColor}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem}, Path=IsSelected}" Value="True">
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </DataTemplate>
                         </TreeView.ItemTemplate>
@@ -949,7 +1443,13 @@
                     FontSize="13"
                     FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
                     AllowDrop="True"
-                    MouseDoubleClick="ListView_MouseDoubleClick">
+                    MouseDoubleClick="ListView_MouseDoubleClick"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    ScrollViewer.CanContentScroll="True">
+                <ListView.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource WideScrollBarStyle}"/>
+                </ListView.Resources>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -984,19 +1484,6 @@
                         <GridView.ColumnHeaderContainerStyle>
                             <StaticResource ResourceKey="GridViewColumnHeaderStyle"/>
                         </GridView.ColumnHeaderContainerStyle>
-                        <GridViewColumn Width="60">
-                            <GridViewColumnHeader Content="種類" Tag="ItemType"/>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Icon}" FontSize="16" 
-                                             Style="{StaticResource EmojiTextBlock}"
-                                             HorizontalAlignment="Center" Margin="4"
-                                             UseLayoutRounding="True"
-                                             TextOptions.TextFormattingMode="Display"
-                                             TextOptions.TextRenderingMode="ClearType"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
                         <GridViewColumn Width="130">
                             <GridViewColumnHeader Content="分類" Tag="Category"/>
                             <GridViewColumn.CellTemplate>
@@ -1083,6 +1570,19 @@
                                              Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
                                              Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Width="140">
+                            <GridViewColumnHeader Content="最終アクセス" Tag="LastAccessed"/>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding LastAccessed, Converter={StaticResource DateTimeToStringConverter}}"
+                                             FontSize="12" 
+                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Margin="6,2"
+                                             HorizontalAlignment="Center"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

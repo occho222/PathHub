@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -16,26 +16,30 @@ namespace ModernLauncher.Models
         private Dictionary<string, string> _categoryColors = new Dictionary<string, string>();
         private Dictionary<string, string> _defaultColors = new Dictionary<string, string>
         {
-            ["ƒtƒHƒ‹ƒ_"] = "#FFD700",           // ‹àF
-            ["ƒAƒvƒŠƒP[ƒVƒ‡ƒ“"] = "#4169E1",     // ƒƒCƒ„ƒ‹ƒuƒ‹[
-            ["ƒhƒLƒ…ƒƒ“ƒg"] = "#32CD32",        // ƒ‰ƒCƒ€ƒOƒŠ[ƒ“
-            ["‰æ‘œ"] = "#FF6347",              // ƒgƒ}ƒgF
-            ["‰¹Šy"] = "#DA70D6",              // ƒI[ƒLƒbƒh
-            ["“®‰æ"] = "#FF4500",              // ƒIƒŒƒ“ƒWƒŒƒbƒh
-            ["ƒA[ƒJƒCƒu"] = "#8B4513",         // ƒTƒhƒ‹ƒuƒ‰ƒEƒ“
-            ["WebƒTƒCƒg"] = "#1E90FF",          // ƒhƒWƒƒ[ƒuƒ‹[
-            ["GitHubURL"] = "#24292e",         // GitHub ‚Ìƒuƒ‰ƒ“ƒhƒJƒ‰[
-            ["GitLabURL"] = "#FC6D26",         // GitLab ‚Ìƒuƒ‰ƒ“ƒhƒJƒ‰[
-            ["Googleƒhƒ‰ƒCƒu"] = "#4285F4",     // Google ƒhƒ‰ƒCƒu‚Ìƒuƒ‹[
-            ["MicrosoftTeams"] = "#6264A7",    // Microsoft Teams ‚Ìƒp[ƒvƒ‹
-            ["SharePoint"] = "#0078D4",        // SharePoint/Microsoft ‚Ìƒuƒ‹[
-            ["Excel"] = "#217346",             // Excel ‚ÌƒOƒŠ[ƒ“
-            ["Word"] = "#2B579A",              // Word ‚Ìƒuƒ‹[
-            ["PowerPoint"] = "#D24726",        // PowerPoint ‚ÌƒIƒŒƒ“ƒW
-            ["PDF"] = "#FF0000",               // ÔF
-            ["ƒVƒ‡[ƒgƒJƒbƒg"] = "#808080",      // ƒOƒŒ[
-            ["ƒtƒ@ƒCƒ‹"] = "#696969",           // ˆÃ‚¢ƒOƒŒ[
-            ["‚»‚Ì‘¼"] = "#A0A0A0"             // ƒ‰ƒCƒgƒOƒŒ[
+            ["ãƒ•ã‚©ãƒ«ãƒ€"] = "#FFD700",           // é‡‘è‰²
+            ["ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³"] = "#4169E1",     // ãƒ­ã‚¤ãƒ¤ãƒ«ãƒ–ãƒ«ãƒ¼
+            ["ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ"] = "#32CD32",        // ãƒ©ã‚¤ãƒ ã‚°ãƒªãƒ¼ãƒ³
+            ["ç”»åƒ"] = "#FF6347",              // ãƒˆãƒãƒˆè‰²
+            ["éŸ³æ¥½"] = "#DA70D6",              // ã‚ªãƒ¼ã‚­ãƒƒãƒ‰
+            ["å‹•ç”»"] = "#FF4500",              // ã‚ªãƒ¬ãƒ³ã‚¸ãƒ¬ãƒƒãƒ‰
+            ["ã‚¢ãƒ¼ã‚«ã‚¤ãƒ–"] = "#8B4513",         // ã‚µãƒ‰ãƒ«ãƒ–ãƒ©ã‚¦ãƒ³
+            ["Webã‚µã‚¤ãƒˆ"] = "#1E90FF",          // ãƒ‰ã‚¸ãƒ£ãƒ¼ãƒ–ãƒ«ãƒ¼
+            ["GitHubURL"] = "#24292e",         // GitHub ã®ãƒ–ãƒ©ãƒ³ãƒ‰ã‚«ãƒ©ãƒ¼
+            ["GitLabURL"] = "#FC6D26",         // GitLab ã®ãƒ–ãƒ©ãƒ³ãƒ‰ã‚«ãƒ©ãƒ¼
+            ["RedmineURL"] = "#B20000",        // Redmine ã®èµ¤è‰²
+            ["Googleãƒ‰ãƒ©ã‚¤ãƒ–"] = "#4285F4",     // Google ãƒ‰ãƒ©ã‚¤ãƒ–ã®ãƒ–ãƒ«ãƒ¼
+            ["MicrosoftTeams"] = "#6264A7",    // Microsoft Teams ã®ãƒ‘ãƒ¼ãƒ—ãƒ«
+            ["SharePoint"] = "#0078D4",        // SharePoint/Microsoft ã®ãƒ–ãƒ«ãƒ¼
+            ["OneDrive"] = "#0078D4",          // OneDrive ã®ãƒ–ãƒ«ãƒ¼
+            ["Excel"] = "#217346",             // Excel ã®ã‚°ãƒªãƒ¼ãƒ³
+            ["Word"] = "#2B579A",              // Word ã®ãƒ–ãƒ«ãƒ¼
+            ["PowerPoint"] = "#D24726",        // PowerPoint ã®ã‚ªãƒ¬ãƒ³ã‚¸
+            ["PDF"] = "#FF0000",               // èµ¤è‰²
+            ["ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆ"] = "#808080",      // ã‚°ãƒ¬ãƒ¼
+            ["ãƒ•ã‚¡ã‚¤ãƒ«"] = "#696969",           // æš—ã„ã‚°ãƒ¬ãƒ¼
+            ["ãƒ—ãƒ­ã‚°ãƒ©ãƒ "] = "#9932CC",         // ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ•ã‚¡ã‚¤ãƒ«ç”¨ã®ç´«
+            ["ã‚³ãƒãƒ³ãƒ‰"] = "#FF8C00",           // ã‚³ãƒãƒ³ãƒ‰ç”¨ã®ã‚ªãƒ¬ãƒ³ã‚¸
+            ["ãã®ä»–"] = "#A0A0A0"             // ãƒ©ã‚¤ãƒˆã‚°ãƒ¬ãƒ¼
         };
 
         private readonly IProjectService _projectService;
@@ -57,13 +61,13 @@ namespace ModernLauncher.Models
                 }
                 else
                 {
-                    // ƒfƒtƒHƒ‹ƒgF‚Å‰Šú‰»
+                    // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè‰²ã§åˆæœŸåŒ–
                     _categoryColors = new Dictionary<string, string>(_defaultColors);
                 }
             }
             catch
             {
-                // ƒGƒ‰[‚Ìê‡‚ÍƒfƒtƒHƒ‹ƒgF‚Å‰Šú‰»
+                // ã‚¨ãƒ©ãƒ¼ã®å ´åˆã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè‰²ã§åˆæœŸåŒ–
                 _categoryColors = new Dictionary<string, string>(_defaultColors);
             }
         }
@@ -76,20 +80,20 @@ namespace ModernLauncher.Models
             }
             catch
             {
-                // •Û‘¶ƒGƒ‰[‚Í–³‹iŸ‰ñ‹N“®‚ÉƒfƒtƒHƒ‹ƒg‚É–ß‚éj
+                // ä¿å­˜ã‚¨ãƒ©ãƒ¼ã¯ç„¡è¦–ï¼ˆæ¬¡å›èµ·å‹•æ™‚ã«ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«æˆ»ã‚‹ï¼‰
             }
         }
 
         public string GetColorForCategory(string category)
         {
             if (string.IsNullOrEmpty(category))
-                return _defaultColors["‚»‚Ì‘¼"];
+                return _defaultColors["ãã®ä»–"];
 
             return _categoryColors.TryGetValue(category, out var color) 
                 ? color 
                 : _defaultColors.TryGetValue(category, out var defaultColor) 
                     ? defaultColor 
-                    : _defaultColors["‚»‚Ì‘¼"];
+                    : _defaultColors["ãã®ä»–"];
         }
 
         public void SetColorForCategory(string category, string color)

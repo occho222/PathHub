@@ -1,4 +1,4 @@
-namespace ModernLauncher.Models
+﻿namespace ModernLauncher.Models
 {
     public class ItemGroup
     {

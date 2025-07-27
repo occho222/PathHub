@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -16,6 +16,70 @@ namespace ModernLauncher.Converters
                 return Visibility.Collapsed;
             }
             return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AllGroupVisibilityConverter : IValueConverter
+    {
+        public static readonly AllGroupVisibilityConverter Instance = new AllGroupVisibilityConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // ItemGroupã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¾ãŸã¯string IDã‚’å‡¦ç†
+            if (value is ItemGroup group)
+            {
+                return group.Id != "all";
+            }
+            else if (value is string id)
+            {
+                return id != "all";
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class GroupLaunchButtonVisibilityConverter : IValueConverter
+    {
+        public static readonly GroupLaunchButtonVisibilityConverter Instance = new GroupLaunchButtonVisibilityConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // ã‚°ãƒ«ãƒ¼ãƒ—ãŒé¸æŠã•ã‚Œã¦ãŠã‚Šã€ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ã§ã¯ãªã„å ´åˆã«è¡¨ç¤º
+            if (value is ItemGroup group && group.Id != "all")
+            {
+                return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AllGroupLaunchButtonVisibilityConverter : IValueConverter
+    {
+        public static readonly AllGroupLaunchButtonVisibilityConverter Instance = new AllGroupLaunchButtonVisibilityConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            // ã€Œã™ã¹ã¦ã€ã‚°ãƒ«ãƒ¼ãƒ—ãŒé¸æŠã•ã‚Œã¦ã„ã‚‹å ´åˆã«è¡¨ç¤º
+            if (value is ItemGroup group && group.Id == "all")
+            {
+                return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -47,9 +111,9 @@ namespace ModernLauncher.Converters
         {
             if (value is string str && !string.IsNullOrEmpty(str))
             {
-                return Visibility.Collapsed; // ƒeƒLƒXƒg‚ª‚ ‚éê‡‚ÍƒvƒŒ[ƒXƒzƒ‹ƒ_[‚ğ‰B‚·
+                return Visibility.Collapsed; // ãƒ†ã‚­ã‚¹ãƒˆãŒã‚ã‚‹å ´åˆã¯ãƒ—ãƒ¬ãƒ¼ã‚¹ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’éš ã™
             }
-            return Visibility.Visible; // ƒeƒLƒXƒg‚ª‚È‚¢ê‡‚ÍƒvƒŒ[ƒXƒzƒ‹ƒ_[‚ğ•\¦
+            return Visibility.Visible; // ãƒ†ã‚­ã‚¹ãƒˆãŒãªã„å ´åˆã¯ãƒ—ãƒ¬ãƒ¼ã‚¹ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’è¡¨ç¤º
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -66,9 +130,9 @@ namespace ModernLauncher.Converters
         {
             if (value is bool isFolder && isFolder)
             {
-                return "??"; // ƒtƒHƒ‹ƒ_ƒAƒCƒRƒ“
+                return "ğŸ“"; // ãƒ•ã‚©ãƒ«ãƒ€ã‚¢ã‚¤ã‚³ãƒ³
             }
-            return "??"; // ƒtƒ@ƒCƒ‹/ƒvƒƒWƒFƒNƒgƒAƒCƒRƒ“
+            return "ğŸ“„"; // ãƒ•ã‚¡ã‚¤ãƒ«/ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã‚¢ã‚¤ã‚³ãƒ³
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -108,6 +172,30 @@ namespace ModernLauncher.Converters
                 return brush;
             }
             return new SolidColorBrush(Colors.Transparent);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class DateTimeToStringConverter : IValueConverter
+    {
+        public static readonly DateTimeToStringConverter Instance = new DateTimeToStringConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is DateTime dateTime)
+            {
+                // DateTime.MinValueã®å ´åˆã¯æœªã‚¢ã‚¯ã‚»ã‚¹ã¨è¡¨ç¤º
+                if (dateTime == DateTime.MinValue)
+                {
+                    return "-";
+                }
+                return dateTime.ToString("yyyy/MM/dd HH:mm");
+            }
+            return "-";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -1,4 +1,4 @@
-using ModernLauncher.Interfaces;
+﻿using ModernLauncher.Interfaces;
 using ModernLauncher.Services;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ namespace ModernLauncher.Services
         {
             services[typeof(IProjectService)] = new ProjectService();
             services[typeof(ILauncherService)] = new LauncherService();
+            services[typeof(ISmartLauncherService)] = new SmartLauncherService((ILauncherService)services[typeof(ILauncherService)]);
         }
 
         public T GetService<T>() where T : class

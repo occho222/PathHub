@@ -1,6 +1,9 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -8,264 +11,200 @@ using ModernLauncher.Models;
 
 namespace ModernLauncher.Views
 {
-    public partial class ColorSettingsDialog : Window
+    /// <summary>
+    /// ColorSettingsDialog.xaml „ÅÆÁõ∏‰∫í‰ΩúÁî®„É≠„Ç∏„ÉÉ„ÇØ
+    /// </summary>
+    public partial class ColorSettingsDialog : Window, INotifyPropertyChanged
     {
-        private readonly Dictionary<string, TextBox> colorTextBoxes = new Dictionary<string, TextBox>();
-        private readonly Dictionary<string, Border> colorPreviews = new Dictionary<string, Border>();
+        private readonly ObservableCollection<ColorSettingItem> _colorSettings;
+        private readonly List<PresetColor> _presetColors;
 
         public ColorSettingsDialog()
         {
             InitializeComponent();
+            
+            _presetColors = CreatePresetColors();
+            _colorSettings = new ObservableCollection<ColorSettingItem>();
+            
+            LoadColorSettings();
+            DataContext = this;
         }
 
-        private void InitializeComponent()
+        public ObservableCollection<ColorSettingItem> ColorSettings => _colorSettings;
+
+        private void LoadColorSettings()
         {
-            Title = "êFê›íË - ï™óﬁï ÉJÉâÅ[ê›íË";
-            Width = 500;
-            Height = 600;
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            Background = new SolidColorBrush(Color.FromRgb(236, 233, 216));
-            ResizeMode = ResizeMode.NoResize;
-
-            var mainGrid = new Grid();
-            Content = mainGrid;
-
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            // ÉXÉNÉçÅ[ÉãÉrÉÖÅ[ÉA
-            var scrollViewer = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Padding = new Thickness(20)
-            };
-            Grid.SetRow(scrollViewer, 0);
-            mainGrid.Children.Add(scrollViewer);
-
-            var stackPanel = new StackPanel();
-            scrollViewer.Content = stackPanel;
-
-            // É^ÉCÉgÉã
-            var titleBlock = new TextBlock
-            {
-                Text = "ï™óﬁï êFê›íË",
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 20),
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            stackPanel.Children.Add(titleBlock);
-
-            // ê‡ñæ
-            var descBlock = new TextBlock
-            {
-                Text = "äeï™óﬁÇÃï\é¶êFÇê›íËÇ≈Ç´Ç‹Ç∑ÅB16êiêîÉJÉâÅ[ÉRÅ[ÉhÅió·: #FF0000ÅjÇ≈ì¸óÕÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB",
-                FontSize = 13,
-                Margin = new Thickness(0, 0, 0, 20),
-                TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102))
-            };
-            stackPanel.Children.Add(descBlock);
-
-            // äeï™óﬁÇÃêFê›íË
             var categoryColors = CategoryColorSettings.Instance.GetAllCategoryColors();
             var categories = categoryColors.Keys.OrderBy(k => k).ToList();
 
             foreach (var category in categories)
             {
-                var categoryPanel = CreateCategoryPanel(category, categoryColors[category]);
-                stackPanel.Children.Add(categoryPanel);
-            }
-
-            // É{É^ÉìÉpÉlÉã
-            var buttonPanel = new DockPanel
-            {
-                Margin = new Thickness(20),
-                LastChildFill = false
-            };
-            Grid.SetRow(buttonPanel, 1);
-            mainGrid.Children.Add(buttonPanel);
-
-            var resetButton = new Button
-            {
-                Content = "ÉfÉtÉHÉãÉgÇ…ñﬂÇ∑",
-                Width = 120,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-            resetButton.Click += ResetButton_Click;
-            DockPanel.SetDock(resetButton, Dock.Left);
-            buttonPanel.Children.Add(resetButton);
-
-            var cancelButton = new Button
-            {
-                Content = "ÉLÉÉÉìÉZÉã",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                Margin = new Thickness(0, 0, 10, 0),
-                IsCancel = true
-            };
-            cancelButton.Click += (s, e) => DialogResult = false;
-            DockPanel.SetDock(cancelButton, Dock.Right);
-            buttonPanel.Children.Add(cancelButton);
-
-            var okButton = new Button
-            {
-                Content = "OK",
-                Width = 80,
-                FontSize = 13,
-                Padding = new Thickness(8, 5, 8, 5),
-                IsDefault = true
-            };
-            okButton.Click += OkButton_Click;
-            DockPanel.SetDock(okButton, Dock.Right);
-            buttonPanel.Children.Add(okButton);
-        }
-
-        private StackPanel CreateCategoryPanel(string category, string color)
-        {
-            var panel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-
-            // ÉJÉeÉSÉäñº
-            var categoryLabel = new TextBlock
-            {
-                Text = category,
-                Width = 120,
-                FontSize = 13,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-            panel.Children.Add(categoryLabel);
-
-            // êFÉvÉåÉrÉÖÅ[
-            var colorPreview = new Border
-            {
-                Width = 30,
-                Height = 20,
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-            UpdateColorPreview(colorPreview, color);
-            colorPreviews[category] = colorPreview;
-            panel.Children.Add(colorPreview);
-
-            // ÉJÉâÅ[ÉRÅ[Éhì¸óÕ
-            var colorTextBox = new TextBox
-            {
-                Text = color,
-                Width = 100,
-                FontSize = 13,
-                Padding = new Thickness(6, 4, 6, 4),
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-            colorTextBox.TextChanged += (s, e) => OnColorTextChanged(category, colorTextBox.Text);
-            colorTextBoxes[category] = colorTextBox;
-            panel.Children.Add(colorTextBox);
-
-            // éñëOíËã`êFëIëÉRÉìÉ{É{ÉbÉNÉX
-            var colorComboBox = new ComboBox
-            {
-                Width = 100,
-                FontSize = 12,
-                Margin = new Thickness(0, 0, 0, 0)
-            };
-            
-            var predefinedColors = new[]
-            {
-                new { Name = "ê‘", Value = "#FF0000" },
-                new { Name = "óŒ", Value = "#008000" },
-                new { Name = "ê¬", Value = "#0000FF" },
-                new { Name = "â©", Value = "#FFFF00" },
-                new { Name = "ÉIÉåÉìÉW", Value = "#FFA500" },
-                new { Name = "éá", Value = "#800080" },
-                new { Name = "ÉsÉìÉN", Value = "#FFC0CB" },
-                new { Name = "íÉ", Value = "#A52A2A" },
-                new { Name = "ÉOÉåÅ[", Value = "#808080" },
-                new { Name = "çï", Value = "#000000" },
-                new { Name = "ExcelóŒ", Value = "#217346" },
-                new { Name = "Wordê¬", Value = "#2B579A" },
-                new { Name = "PowerPointûÚ", Value = "#D24726" },
-                new { Name = "GitHubçï", Value = "#24292e" },
-                new { Name = "GitLabûÚ", Value = "#FC6D26" },
-                new { Name = "Googleê¬", Value = "#4285F4" },
-                new { Name = "Teamséá", Value = "#6264A7" },
-                new { Name = "SharePointê¬", Value = "#0078D4" }
-            };
-
-            colorComboBox.ItemsSource = predefinedColors;
-            colorComboBox.DisplayMemberPath = "Name";
-            colorComboBox.SelectedValuePath = "Value";
-            colorComboBox.SelectionChanged += (s, e) =>
-            {
-                if (colorComboBox.SelectedValue is string selectedColor)
+                var colorItem = new ColorSettingItem
                 {
-                    colorTextBox.Text = selectedColor;
-                    OnColorTextChanged(category, selectedColor);
-                }
+                    Category = category,
+                    ColorCode = categoryColors[category],
+                    PresetColors = _presetColors
+                };
+                _colorSettings.Add(colorItem);
+            }
+
+            ColorSettingsItemsControl.ItemsSource = _colorSettings;
+        }
+
+        private List<PresetColor> CreatePresetColors()
+        {
+            return new List<PresetColor>
+            {
+                new PresetColor { Name = "Ëµ§", Value = "#FF0000" },
+                new PresetColor { Name = "Á∑ë", Value = "#008000" },
+                new PresetColor { Name = "Èùí", Value = "#0000FF" },
+                new PresetColor { Name = "ÈªÑ", Value = "#FFFF00" },
+                new PresetColor { Name = "„Ç™„É¨„É≥„Ç∏", Value = "#FFA500" },
+                new PresetColor { Name = "Á¥´", Value = "#800080" },
+                new PresetColor { Name = "„Éî„É≥„ÇØ", Value = "#FFC0CB" },
+                new PresetColor { Name = "Ëå∂", Value = "#A52A2A" },
+                new PresetColor { Name = "„Ç∞„É¨„Éº", Value = "#808080" },
+                new PresetColor { Name = "Èªí", Value = "#000000" },
+                new PresetColor { Name = "ExcelÁ∑ë", Value = "#217346" },
+                new PresetColor { Name = "WordÈùí", Value = "#2B579A" },
+                new PresetColor { Name = "PowerPointÊ©ô", Value = "#D24726" },
+                new PresetColor { Name = "GitHubÈªí", Value = "#24292e" },
+                new PresetColor { Name = "GitLabÊ©ô", Value = "#FC6D26" },
+                new PresetColor { Name = "GoogleÈùí", Value = "#4285F4" },
+                new PresetColor { Name = "TeamsÁ¥´", Value = "#6264A7" },
+                new PresetColor { Name = "SharePointÈùí", Value = "#0078D4" }
             };
-            panel.Children.Add(colorComboBox);
-
-            return panel;
         }
 
-        private void OnColorTextChanged(string category, string colorText)
+        private void PresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (colorPreviews.TryGetValue(category, out var preview))
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is PresetColor selectedColor)
             {
-                UpdateColorPreview(preview, colorText);
+                // Find the corresponding color setting item
+                var parentBorder = FindParent<Border>(comboBox);
+                if (parentBorder?.DataContext is ColorSettingItem colorItem)
+                {
+                    colorItem.ColorCode = selectedColor.Value;
+                }
             }
         }
 
-        private void UpdateColorPreview(Border preview, string colorText)
+        private T FindParent<T>(DependencyObject child) where T : DependencyObject
         {
-            try
-            {
-                var color = (Color)ColorConverter.ConvertFromString(colorText);
-                preview.Background = new SolidColorBrush(color);
-            }
-            catch
-            {
-                preview.Background = new SolidColorBrush(Colors.LightGray);
-            }
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null)
+                return null;
+
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindParent<T>(parentObject);
         }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("Ç∑Ç◊ÇƒÇÃêFê›íËÇÉfÉtÉHÉãÉgÇ…ñﬂÇµÇ‹Ç∑Ç©ÅH", "ämîF",
+            var result = MessageBox.Show("„Åô„Åπ„Å¶„ÅÆËâ≤Ë®≠ÂÆö„Çí„Éá„Éï„Ç©„É´„Éà„Å´Êàª„Åó„Åæ„Åô„ÅãÔºü", "Á¢∫Ë™ç",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 CategoryColorSettings.Instance.ResetToDefaults();
-                var categoryColors = CategoryColorSettings.Instance.GetAllCategoryColors();
                 
-                foreach (var kvp in categoryColors)
-                {
-                    if (colorTextBoxes.TryGetValue(kvp.Key, out var textBox))
-                    {
-                        textBox.Text = kvp.Value;
-                        OnColorTextChanged(kvp.Key, kvp.Value);
-                    }
-                }
+                // Reload the color settings
+                _colorSettings.Clear();
+                LoadColorSettings();
             }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            // ê›íËÇï€ë∂
-            foreach (var kvp in colorTextBoxes)
+            // Save all color settings
+            foreach (var colorItem in _colorSettings)
             {
-                CategoryColorSettings.Instance.SetColorForCategory(kvp.Key, kvp.Value.Text);
+                CategoryColorSettings.Instance.SetColorForCategory(colorItem.Category, colorItem.ColorCode);
             }
-            
+
             DialogResult = true;
         }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class ColorSettingItem : INotifyPropertyChanged
+    {
+        private string _category;
+        private string _colorCode;
+        private Brush _colorBrush;
+
+        public string Category
+        {
+            get => _category;
+            set
+            {
+                _category = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ColorCode
+        {
+            get => _colorCode;
+            set
+            {
+                _colorCode = value;
+                UpdateColorBrush();
+                OnPropertyChanged();
+            }
+        }
+
+        public Brush ColorBrush
+        {
+            get => _colorBrush;
+            private set
+            {
+                _colorBrush = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<PresetColor> PresetColors { get; set; }
+
+        private void UpdateColorBrush()
+        {
+            try
+            {
+                var color = (Color)ColorConverter.ConvertFromString(_colorCode);
+                ColorBrush = new SolidColorBrush(color);
+            }
+            catch
+            {
+                ColorBrush = new SolidColorBrush(Colors.LightGray);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class PresetColor
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

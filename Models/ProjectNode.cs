@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -17,7 +17,7 @@ namespace ModernLauncher.Models
         public string? ParentId { get; set; }
         public ProjectNode? Parent { get; set; }
         public ObservableCollection<ProjectNode> Children { get; set; } = new ObservableCollection<ProjectNode>();
-        public Project? Project { get; set; } // ÀÛ‚ÌƒvƒƒWƒFƒNƒgƒf[ƒ^iƒtƒHƒ‹ƒ_[‚Ìê‡‚Ínullj
+        public Project? Project { get; set; } // å®Ÿéš›ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã®å ´åˆã¯nullï¼‰
 
         public bool IsExpanded
         {
@@ -31,7 +31,7 @@ namespace ModernLauncher.Models
             set => SetProperty(ref isSelected, value);
         }
 
-        // ƒtƒHƒ‹ƒ_ƒAƒCƒRƒ“‚Æ€–Ú”‚ğŠÜ‚Ş•\¦–¼
+        // ãƒ•ã‚©ãƒ«ãƒ€ã‚¢ã‚¤ã‚³ãƒ³ã¨é …ç›®æ•°ã‚’å«ã‚€è¡¨ç¤ºå
         public string DisplayName 
         { 
             get 
@@ -39,23 +39,30 @@ namespace ModernLauncher.Models
                 if (IsFolder)
                 {
                     var childCount = GetDescendantProjectCount();
-                    return $"?? {Name} ({childCount})";
+                    return $"ğŸ“ {Name} ({childCount})";
                 }
                 else if (Project != null)
                 {
                     var itemCount = Project.Items?.Count ?? 0;
+                    // ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ­ã‚°ã‚’è¿½åŠ 
+                    System.Diagnostics.Debug.WriteLine($"DisplayName for {Name}: ItemCount = {itemCount}");
                     return $"{Name} ({itemCount})";
                 }
-                return Name;
+                else
+                {
+                    // ProjectãŒnullã®å ´åˆã®è­¦å‘Šãƒ­ã‚°
+                    System.Diagnostics.Debug.WriteLine($"Warning: Project is null for node {Name} (IsFolder: {IsFolder})");
+                    return $"{Name} (?)";
+                }
             }
         }
 
         public int Level => Parent?.Level + 1 ?? 0;
 
-        // ƒtƒHƒ‹ƒ_ƒAƒCƒRƒ“‚Ì‚İ
+        // ãƒ•ã‚©ãƒ«ãƒ€ã‚¢ã‚¤ã‚³ãƒ³ã®ã¿
         public string FolderIcon => IsFolder ? "??" : "";
 
-        // €–Ú”‚Ì‚İ
+        // é …ç›®æ•°ã®ã¿
         public string ItemCountText
         {
             get
@@ -70,7 +77,12 @@ namespace ModernLauncher.Models
                     var itemCount = Project.Items?.Count ?? 0;
                     return $"({itemCount})";
                 }
-                return "";
+                else
+                {
+                    // ProjectãŒnullã®å ´åˆ
+                    System.Diagnostics.Debug.WriteLine($"Warning: Project is null for ItemCountText on node {Name}");
+                    return "(?)";
+                }
             }
         }
 
@@ -118,7 +130,7 @@ namespace ModernLauncher.Models
             Children.Remove(child);
         }
 
-        // DisplayName‚ÌXV‚ğƒgƒŠƒK[‚·‚éƒƒ\ƒbƒh
+        // DisplayNameã®æ›´æ–°ã‚’ãƒˆãƒªã‚¬ãƒ¼ã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
         public void RefreshDisplayName()
         {
             OnPropertyChanged(nameof(DisplayName));

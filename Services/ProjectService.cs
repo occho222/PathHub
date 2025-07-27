@@ -1,10 +1,11 @@
-using ModernLauncher.Interfaces;
+ï»¿using ModernLauncher.Interfaces;
 using ModernLauncher.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ModernLauncher.Services
 {
@@ -13,6 +14,7 @@ namespace ModernLauncher.Services
         private readonly string projectsFolder = "Projects";
         private readonly string projectListFile = "projects.json";
         private readonly string colorSettingsFile = "colorSettings.json";
+        private readonly string windowLayoutFile = "windowLayout.json";
 
         public ProjectService()
         {
@@ -28,11 +30,11 @@ namespace ModernLauncher.Services
             {
                 string projectFile = Path.Combine(projectsFolder, $"{project.Id}.json");
                 string json = JsonConvert.SerializeObject(project, Formatting.Indented);
-                File.WriteAllText(projectFile, json);
+                File.WriteAllText(projectFile, json, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒvƒƒWƒFƒNƒg‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -50,11 +52,11 @@ namespace ModernLauncher.Services
                 }).ToList();
 
                 string json = JsonConvert.SerializeObject(projectList, Formatting.Indented);
-                File.WriteAllText(projectListFile, json);
+                File.WriteAllText(projectListFile, json, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒvƒƒWƒFƒNƒgˆê——‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¸€è¦§ã®ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -63,11 +65,24 @@ namespace ModernLauncher.Services
             try
             {
                 string json = JsonConvert.SerializeObject(colorSettings, Formatting.Indented);
-                File.WriteAllText(colorSettingsFile, json);
+                File.WriteAllText(colorSettingsFile, json, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Fİ’è‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"è‰²è¨­å®šã®ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
+            }
+        }
+
+        public void SaveWindowLayout(WindowLayoutSettings layoutSettings)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(layoutSettings, Formatting.Indented);
+                File.WriteAllText(windowLayoutFile, json, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆè¨­å®šã®ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -77,14 +92,31 @@ namespace ModernLauncher.Services
             {
                 if (File.Exists(colorSettingsFile))
                 {
-                    string json = File.ReadAllText(colorSettingsFile);
+                    string json = File.ReadAllText(colorSettingsFile, Encoding.UTF8);
                     return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 }
                 return null;
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Fİ’è‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"è‰²è¨­å®šã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
+            }
+        }
+
+        public WindowLayoutSettings? LoadWindowLayout()
+        {
+            try
+            {
+                if (File.Exists(windowLayoutFile))
+                {
+                    string json = File.ReadAllText(windowLayoutFile, Encoding.UTF8);
+                    return JsonConvert.DeserializeObject<WindowLayoutSettings>(json);
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆè¨­å®šã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -95,7 +127,7 @@ namespace ModernLauncher.Services
                 var projectFile = Path.Combine(projectsFolder, $"{id}.json");
                 if (File.Exists(projectFile))
                 {
-                    var projectJson = File.ReadAllText(projectFile);
+                    var projectJson = File.ReadAllText(projectFile, Encoding.UTF8);
                     var project = JsonConvert.DeserializeObject<Project>(projectJson);
                     return project;
                 }
@@ -103,7 +135,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒvƒƒWƒFƒNƒg‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -113,7 +145,7 @@ namespace ModernLauncher.Services
             {
                 if (File.Exists(projectListFile))
                 {
-                    string json = File.ReadAllText(projectListFile);
+                    string json = File.ReadAllText(projectListFile, Encoding.UTF8);
                     var projectList = JsonConvert.DeserializeObject<List<ProjectInfo>>(json);
                     return projectList ?? new List<ProjectInfo>();
                 }
@@ -121,7 +153,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒvƒƒWƒFƒNƒgƒŠƒXƒg‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒªã‚¹ãƒˆã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -137,7 +169,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒvƒƒWƒFƒNƒg‚Ìíœ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å‰Šé™¤ã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -146,11 +178,11 @@ namespace ModernLauncher.Services
             try
             {
                 string json = JsonConvert.SerializeObject(project, Formatting.Indented);
-                File.WriteAllText(filePath, json);
+                File.WriteAllText(filePath, json, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒGƒNƒXƒ|[ƒg‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
 
@@ -160,22 +192,22 @@ namespace ModernLauncher.Services
             {
                 if (!File.Exists(filePath))
                 {
-                    throw new FileNotFoundException("w’è‚³‚ê‚½ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ");
+                    throw new FileNotFoundException("æŒ‡å®šã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“");
                 }
 
-                string json = File.ReadAllText(filePath);
+                string json = File.ReadAllText(filePath, Encoding.UTF8);
                 var project = JsonConvert.DeserializeObject<Project>(json);
                 
                 if (project == null)
                 {
-                    throw new InvalidOperationException("–³Œø‚ÈƒvƒƒWƒFƒNƒgƒtƒ@ƒCƒ‹‚Å‚·");
+                    throw new InvalidOperationException("ç„¡åŠ¹ãªãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã§ã™");
                 }
 
                 return project;
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"ƒCƒ“ƒ|[ƒg‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", ex);
+                throw new InvalidOperationException($"ã‚¤ãƒ³ãƒãƒ¼ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸ: {ex.Message}", ex);
             }
         }
     }

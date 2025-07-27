@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="ModernLauncher.Views.AddItemDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Item" 
+        Height="680" 
+        Width="560"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        MinHeight="620"
+        MinWidth="500"
+        Background="{StaticResource {x:Static SystemColors.WindowBrushKey}}"
+        FontFamily="Yu Gothic UI, Meiryo UI, Arial, sans-serif"
+        FontSize="13">
+
+    <Window.Resources>
+        <!-- Include the same modern styles -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Background" Value="#28A745"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#28A745"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="Height" Value="36"/>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#323130"/>
+            <Setter Property="BorderBrush" Value="#D1D1D1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="Height" Value="36"/>
+        </Style>
+
+        <Style x:Key="BrowseButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Background" Value="#6C757D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#6C757D"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Width" Value="90"/>
+            <Setter Property="Height" Value="36"/>
+        </Style>
+
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D1D1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                          Focusable="false" 
+                                          HorizontalScrollBarVisibility="Hidden" 
+                                          VerticalScrollBarVisibility="Hidden"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D1D1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="ModernListBoxStyle" TargetType="ListBox">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D1D1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBox">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer Focusable="false">
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#323130"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+        </Style>
+
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#323130"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Light"/>
+            <Setter Property="Foreground" Value="#323130"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+
+        <Style x:Key="WelcomeTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Yu Gothic UI, Meiryo UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#605E5C"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,24"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="0" 
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="24">
+            <StackPanel>
+                <!-- Header -->
+                <TextBlock Text="Add New Item" 
+                           Style="{StaticResource HeaderStyle}"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Welcome Text -->
+                <TextBlock Text="Add a new item to your project. Please fill in the required information."
+                           Style="{StaticResource WelcomeTextStyle}"/>
+
+                <!-- Form Fields -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Name Field -->
+                    <TextBlock Grid.Row="0" 
+                               Text="Name" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox Grid.Row="1" 
+                             x:Name="NameTextBox"
+                             Style="{StaticResource ModernTextBoxStyle}"
+                             Margin="0,0,0,18"
+                             ToolTip="Enter the display name for the item"/>
+
+                    <!-- Path Field -->
+                    <TextBlock Grid.Row="2" 
+                               Text="Path" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <Grid Grid.Row="3" Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" 
+                                 x:Name="PathTextBox"
+                                 Style="{StaticResource ModernTextBoxStyle}"
+                                 Margin="0,0,10,0"
+                                 ToolTip="Enter the path to the executable or URL"/>
+                        <Button Grid.Column="1" 
+                                x:Name="BrowseButton"
+                                Content="Browse"
+                                Style="{StaticResource BrowseButtonStyle}"
+                                Click="BrowseButton_Click"/>
+                    </Grid>
+
+                    <!-- Category Field -->
+                    <TextBlock Grid.Row="4" 
+                               Text="Category" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <Grid Grid.Row="5" Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0" 
+                                  x:Name="CategoryComboBox"
+                                  Style="{StaticResource ModernComboBoxStyle}"
+                                  IsEditable="True"
+                                  Margin="0,0,10,0"
+                                  ToolTip="Select or enter a category for the item"/>
+                        <Button Grid.Column="1" 
+                                x:Name="ManageCategoriesButton"
+                                Content="🗂️ 管理"
+                                Style="{StaticResource BrowseButtonStyle}"
+                                Click="ManageCategoriesButton_Click"
+                                ToolTip="分類を管理"/>
+                    </Grid>
+
+                    <!-- Description Field -->
+                    <TextBlock Grid.Row="6" 
+                               Text="Description" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox Grid.Row="7" 
+                             x:Name="DescriptionTextBox"
+                             Style="{StaticResource ModernTextBoxStyle}"
+                             Margin="0,0,0,18"
+                             ToolTip="Enter a description for the item (optional)"/>
+
+                    <!-- Launch Options -->
+                    <TextBlock Grid.Row="8" 
+                               Text="Launch Options" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <CheckBox Grid.Row="9" 
+                              x:Name="VSCodeCheckBox"
+                              Content="⚡ VSCodeで開く"
+                              Style="{StaticResource ModernCheckBoxStyle}"
+                              Margin="0,0,0,8"
+                              ToolTip="Check this option to open the item with Visual Studio Code"/>
+                    <CheckBox Grid.Row="9" 
+                              x:Name="OfficeCheckBox"
+                              Content="📋 Officeで開く"
+                              Style="{StaticResource ModernCheckBoxStyle}"
+                              Margin="0,32,0,18"
+                              ToolTip="Check this option to open the item with Microsoft Office applications"/>
+
+                    <!-- Groups Field -->
+                    <TextBlock Grid.Row="10" 
+                               Text="Groups" 
+                               Style="{StaticResource LabelStyle}"/>
+                    <ListBox Grid.Row="11" 
+                             x:Name="GroupsListBox"
+                             Style="{StaticResource ModernListBoxStyle}"
+                             SelectionMode="Multiple"
+                             MinHeight="120"
+                             MaxHeight="160"
+                             ToolTip="Select groups for the item"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="1" 
+                Background="#F8F9FA" 
+                BorderBrush="#E1DFDD" 
+                BorderThickness="0,1,0,0"
+                Padding="24,18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- OK Button -->
+                <Button Grid.Column="1" 
+                        x:Name="OkButton"
+                        Content="Add"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsDefault="True"
+                        Margin="0,0,12,0"
+                        Click="OkButton_Click"/>
+
+                <!-- Cancel Button -->
+                <Button Grid.Column="2" 
+                        x:Name="CancelButton"
+                        Content="Cancel"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        IsCancel="True"
+                        Click="CancelButton_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

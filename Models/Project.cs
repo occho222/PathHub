@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.ObjectModel;
 
 namespace ModernLauncher.Models
@@ -8,8 +8,8 @@ namespace ModernLauncher.Models
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int OrderIndex { get; set; }
-        public string? ParentId { get; set; } // ŠK‘w\‘¢‚Ì‚½‚ß‚ÌeƒvƒƒWƒFƒNƒgID
-        public bool IsFolder { get; set; } // ƒtƒHƒ‹ƒ_[‚©‚Ç‚¤‚©‚ğ¦‚·ƒtƒ‰ƒO
+        public string? ParentId { get; set; } // éšå±¤æ§‹é€ ã®ãŸã‚ã®è¦ªãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆID
+        public bool IsFolder { get; set; } // ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã‹ã©ã†ã‹ã‚’ç¤ºã™ãƒ•ãƒ©ã‚°
         public ObservableCollection<ItemGroup> Groups { get; set; } = new ObservableCollection<ItemGroup>();
         public ObservableCollection<LauncherItem> Items { get; set; } = new ObservableCollection<LauncherItem>();
     }

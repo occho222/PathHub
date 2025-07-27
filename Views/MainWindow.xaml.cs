@@ -1,41 +1,79 @@
-using System;
-using System.IO;
-using System.Linq;
+ï»¿using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.ComponentModel;
-using System.Windows.Data;
+using ModernLauncher.Services;
 using ModernLauncher.ViewModels;
 using ModernLauncher.Models;
+using ModernLauncher.Interfaces;
 
 namespace ModernLauncher.Views
 {
     public partial class MainWindow : Window
     {
-        private Border? dropOverlay;
-        private string? _lastSortProperty;
-        private ListSortDirection _lastSortDirection = ListSortDirection.Ascending;
+        private readonly WindowLayoutManager _layoutManager;
+        private readonly DragDropManager _dragDropManager;
+        private readonly KeyboardShortcutManager _keyboardManager;
+        private readonly ColumnSortManager _columnSortManager;
 
         public MainWindow()
         {
+            // ä¾å­˜é–¢ä¿‚ã‚’æ³¨å…¥
+            var projectService = ServiceLocator.Instance.GetService<IProjectService>();
+            _layoutManager = new WindowLayoutManager(projectService);
+            _dragDropManager = new DragDropManager();
+            _keyboardManager = new KeyboardShortcutManager();
+            _columnSortManager = new ColumnSortManager(_layoutManager);
+
+            // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚’äº‹å‰ã«èª­ã¿è¾¼ã¿
+            _layoutManager.LoadWindowLayoutEarly(this);
+            
             InitializeComponent();
+            
             Loaded += MainWindow_Loaded;
+            Closing += MainWindow_Closing;
+            SizeChanged += MainWindow_SizeChanged;
+            LocationChanged += MainWindow_LocationChanged;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // ƒhƒƒbƒvƒI[ƒo[ƒŒƒC‚ÌQÆ‚ğæ“¾
-            dropOverlay = FindName("DropOverlay") as Border;
+            // å„ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã‚’åˆæœŸåŒ–
+            _layoutManager.ApplyLayoutSettings(this);
+            _dragDropManager.Initialize(this);
+            _keyboardManager.SetupKeyboardShortcuts(this);
+            _columnSortManager.SetupColumnSorting(this);
 
-            // ƒhƒ‰ƒbƒO&ƒhƒƒbƒvƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰[‚ğİ’è
-            DragEnter += MainWindow_DragEnter;
-            DragOver += MainWindow_DragOver;
-            DragLeave += MainWindow_DragLeave;
-            Drop += MainWindow_Drop;
+            // TreeViewã®ãƒ‰ãƒ©ãƒƒã‚°&ãƒ‰ãƒ­ãƒƒãƒ—ã‚’è¨­å®š
+            SetupTreeViewDragDrop();
 
-            // GridViewColumnHeader‚ÌClickƒCƒxƒ“ƒg‚ğƒEƒBƒ“ƒhƒEƒŒƒxƒ‹‚Åƒnƒ“ƒhƒ‹
-            AddHandler(GridViewColumnHeader.ClickEvent, new RoutedEventHandler(ListViewColumnHeader_Click));
+            // MainListViewã®æ¨ªã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«å•é¡Œã‚’ä¿®æ­£
+            SetupMainListViewScrolling();
+        }
+
+        private void SetupTreeViewDragDrop()
+        {
+            var projectTreeView = FindName("ProjectTreeView") as TreeView;
+            if (projectTreeView != null)
+            {
+                _dragDropManager.SetupProjectTreeViewEvents(projectTreeView);
+            }
+
+            var groupTreeView = FindName("GroupTreeView") as TreeView;
+            if (groupTreeView != null)
+            {
+                _dragDropManager.SetupGroupTreeViewEvents(groupTreeView);
+            }
+        }
+
+        private void SetupMainListViewScrolling()
+        {
+            var mainListView = FindName("MainListView") as ListView;
+            if (mainListView != null)
+            {
+                mainListView.PreviewMouseWheel += MainListView_PreviewMouseWheel;
+            }
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -52,7 +90,6 @@ namespace ModernLauncher.Views
                 treeViewItem.DataContext is ProjectNode projectNode &&
                 DataContext is MainViewModel viewModel)
             {
-                // ‚æ‚èÚ×‚ÈƒfƒoƒbƒOƒƒO‚ğ’Ç‰Á
                 System.Diagnostics.Debug.WriteLine($"=== PROJECT SELECTION DEBUG ===");
                 System.Diagnostics.Debug.WriteLine($"Selected: {projectNode.Name}");
                 System.Diagnostics.Debug.WriteLine($"IsFolder: {projectNode.IsFolder}");
@@ -61,17 +98,13 @@ namespace ModernLauncher.Views
                 System.Diagnostics.Debug.WriteLine($"Timestamp: {DateTime.Now:HH:mm:ss.fff}");
                 System.Diagnostics.Debug.WriteLine("================================");
                 
-                // ViewModel‚Ì‘I‘ğƒm[ƒh‚ğXV
                 viewModel.SelectedProjectNode = projectNode;
-                
-                // ƒCƒxƒ“ƒg‚Ìˆ—‚ğ’â~‚µ‚Äd•¡‚ğ–h‚®
                 e.Handled = true;
             }
         }
 
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // ListView€–Ú‚Ìƒ_ƒuƒ‹ƒNƒŠƒbƒN‚ÅƒAƒCƒeƒ€‚ğ‹N“®
             if (sender is ListView listView && 
                 listView.SelectedItem != null && 
                 DataContext is MainViewModel viewModel)
@@ -80,265 +113,64 @@ namespace ModernLauncher.Views
             }
         }
 
-        private void ListViewColumnHeader_Click(object sender, RoutedEventArgs e)
+        private void MainListView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (e.OriginalSource is GridViewColumnHeader header && header.Tag is string propertyName)
+            var listView = sender as ListView;
+            if (listView == null) return;
+
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                // ƒƒCƒ“ListView‚ğ’T‚·
-                var listView = FindMainListView();
-                if (listView?.ItemsSource == null) return;
-
-                var view = CollectionViewSource.GetDefaultView(listView.ItemsSource);
-                if (view == null) return;
-
-                // ƒ\[ƒg•ûŒü‚ÌØ‚è‘Ö‚¦
-                ListSortDirection direction = ListSortDirection.Ascending;
-                if (_lastSortProperty == propertyName && _lastSortDirection == ListSortDirection.Ascending)
+                var scrollViewer = FindScrollViewer(listView);
+                if (scrollViewer != null)
                 {
-                    direction = ListSortDirection.Descending;
+                    if (e.Delta > 0)
+                    {
+                        scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - 50);
+                    }
+                    else
+                    {
+                        scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + 50);
+                    }
+                    e.Handled = true;
                 }
-                _lastSortProperty = propertyName;
-                _lastSortDirection = direction;
-
-                view.SortDescriptions.Clear();
-                view.SortDescriptions.Add(new SortDescription(propertyName, direction));
-                view.Refresh();
             }
         }
 
-        private ListView? FindMainListView()
-        {
-            // MainListView‚ğ–¼‘O‚Å’¼ÚŒŸõ
-            return FindName("MainListView") as ListView ?? FindListViewInVisualTree(this);
-        }
-
-        private ListView? FindListViewInVisualTree(DependencyObject parent)
+        private ScrollViewer? FindScrollViewer(DependencyObject parent)
         {
             for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-                
-                if (child is ListView listView && listView.View is GridView)
+                if (child is ScrollViewer scrollViewer)
                 {
-                    return listView;
+                    return scrollViewer;
                 }
-
-                var result = FindListViewInVisualTree(child);
+                
+                var result = FindScrollViewer(child);
                 if (result != null)
                     return result;
             }
             return null;
         }
 
-        private void MainWindow_DragEnter(object sender, DragEventArgs e)
-        {
-            bool canDrop = false;
-
-            // ƒtƒ@ƒCƒ‹ƒhƒƒbƒv‚ğƒ`ƒFƒbƒN
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files != null && files.Length > 0)
-                {
-                    canDrop = true;
-                }
-            }
-            // Webƒuƒ‰ƒEƒU‚©‚ç‚ÌHTML/ƒeƒLƒXƒgƒhƒƒbƒv‚ğƒ`ƒFƒbƒN
-            else if (e.Data.GetDataPresent(DataFormats.Html) || 
-                     e.Data.GetDataPresent(DataFormats.Text) || 
-                     e.Data.GetDataPresent(DataFormats.UnicodeText))
-            {
-                canDrop = true;
-            }
-
-            if (canDrop)
-            {
-                e.Effects = DragDropEffects.Copy;
-                ShowDropOverlay();
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-            }
-            e.Handled = true;
-        }
-
-        private void MainWindow_DragOver(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) ||
-                e.Data.GetDataPresent(DataFormats.Html) ||
-                e.Data.GetDataPresent(DataFormats.Text) ||
-                e.Data.GetDataPresent(DataFormats.UnicodeText))
-            {
-                e.Effects = DragDropEffects.Copy;
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-            }
-            e.Handled = true;
-        }
-
-        private void MainWindow_DragLeave(object sender, DragEventArgs e)
-        {
-            // ƒ}ƒEƒX‚ªƒEƒBƒ“ƒhƒE‚Ì‹«ŠE‚ğo‚½ê‡‚Ì‚İƒI[ƒo[ƒŒƒC‚ğ‰B‚·
-            var position = e.GetPosition(this);
-            var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
-            
-            if (!bounds.Contains(position))
-            {
-                HideDropOverlay();
-            }
-            e.Handled = true;
-        }
-
-        private void MainWindow_Drop(object sender, DragEventArgs e)
-        {
-            HideDropOverlay();
-
-            if (DataContext is MainViewModel viewModel)
-            {
-                try
-                {
-                    // ƒtƒ@ƒCƒ‹ƒhƒƒbƒv‚Ìˆ—
-                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                    {
-                        var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                        if (files != null && files.Length > 0)
-                        {
-                            foreach (var file in files)
-                            {
-                                try
-                                {
-                                    // ’Ç‰Á—pƒ_ƒCƒAƒƒO‚ğŒo—R‚µ‚ÄƒAƒCƒeƒ€‚ğ’Ç‰Á
-                                    viewModel.ShowAddItemDialogWithPath(file);
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"ƒtƒ@ƒCƒ‹u{Path.GetFileName(file)}v‚Ì’Ç‰Á‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", 
-                                                  "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                }
-                            }
-                        }
-                    }
-                    // Webƒuƒ‰ƒEƒU‚©‚ç‚ÌHTML/ƒeƒLƒXƒgƒhƒƒbƒv‚Ìˆ—
-                    else if (e.Data.GetDataPresent(DataFormats.Html) || 
-                             e.Data.GetDataPresent(DataFormats.Text) || 
-                             e.Data.GetDataPresent(DataFormats.UnicodeText))
-                    {
-                        string? url = ExtractUrlFromDropData(e.Data);
-                        if (!string.IsNullOrEmpty(url))
-                        {
-                            viewModel.ShowAddItemDialogWithPath(url);
-                        }
-                        else
-                        {
-                            MessageBox.Show("—LŒø‚ÈURL‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½B", "î•ñ", 
-                                          MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"ƒhƒƒbƒv‚µ‚½ƒAƒCƒeƒ€‚Ìˆ—‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}", 
-                                  "ƒGƒ‰[", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            e.Handled = true;
-        }
-
-        private string? ExtractUrlFromDropData(IDataObject dataObject)
-        {
-            // HTML‚©‚çURL‚ğ’Šo
-            if (dataObject.GetDataPresent(DataFormats.Html))
-            {
-                try
-                {
-                    var html = dataObject.GetData(DataFormats.Html) as string;
-                    if (!string.IsNullOrEmpty(html))
-                    {
-                        // HTML‚©‚çhref‘®«‚ğ’Šo
-                        var hrefMatch = System.Text.RegularExpressions.Regex.Match(html, @"href=[""']([^""']+)[""']", 
-                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                        if (hrefMatch.Success)
-                        {
-                            string url = hrefMatch.Groups[1].Value;
-                            if (IsValidUrl(url))
-                            {
-                                return url;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // HTML‚Ì‰ğÍ‚É¸”s‚µ‚½ê‡‚ÍƒeƒLƒXƒg‚©‚ç‚Ì’Šo‚ÉƒtƒH[ƒ‹ƒoƒbƒN
-                }
-            }
-
-            // ƒeƒLƒXƒg‚©‚çURL‚ğ’Šo
-            string? text = null;
-            if (dataObject.GetDataPresent(DataFormats.UnicodeText))
-            {
-                text = dataObject.GetData(DataFormats.UnicodeText) as string;
-            }
-            else if (dataObject.GetDataPresent(DataFormats.Text))
-            {
-                text = dataObject.GetData(DataFormats.Text) as string;
-            }
-
-            if (!string.IsNullOrEmpty(text))
-            {
-                // s‚²‚Æ‚É•ªŠ„‚µ‚ÄURL‚ğ’T‚·
-                var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var line in lines)
-                {
-                    var trimmedLine = line.Trim();
-                    if (IsValidUrl(trimmedLine))
-                    {
-                        return trimmedLine;
-                    }
-                }
-
-                // ³‹K•\Œ»‚ÅURLƒpƒ^[ƒ“‚ğ’Šo
-                var urlMatch = System.Text.RegularExpressions.Regex.Match(text, 
-                    @"https?://[^\s]+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                if (urlMatch.Success)
-                {
-                    return urlMatch.Value;
-                }
-            }
-
-            return null;
-        }
-
-        private bool IsValidUrl(string url)
-        {
-            return !string.IsNullOrEmpty(url) && 
-                   (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
-                    url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) &&
-                   Uri.TryCreate(url, UriKind.Absolute, out _);
-        }
-
-        private void ShowDropOverlay()
-        {
-            if (dropOverlay != null)
-            {
-                dropOverlay.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void HideDropOverlay()
-        {
-            if (dropOverlay != null)
-            {
-                dropOverlay.Visibility = Visibility.Collapsed;
-            }
-        }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            // ç©ºã®ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©ãƒ¼ï¼ˆå¿…è¦ã«å¿œã˜ã¦å®Ÿè£…ï¼‰
+        }
 
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            _layoutManager.SaveWindowLayout(this);
+        }
+
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // ã‚µã‚¤ã‚ºå¤‰æ›´ã¯LayoutManagerãŒè‡ªå‹•çš„ã«å‡¦ç†
+        }
+
+        private void MainWindow_LocationChanged(object sender, EventArgs e)
+        {
+            // ä½ç½®å¤‰æ›´ã¯LayoutManagerãŒè‡ªå‹•çš„ã«å‡¦ç†
         }
     }
 }

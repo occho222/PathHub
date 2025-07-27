@@ -1,4 +1,4 @@
-using ModernLauncher.Models;
+﻿using ModernLauncher.Models;
 using System.Collections.Generic;
 
 namespace ModernLauncher.Interfaces
@@ -14,5 +14,7 @@ namespace ModernLauncher.Interfaces
         Project? ImportProject(string filePath);
         void SaveColorSettings(Dictionary<string, string> colorSettings);
         Dictionary<string, string>? LoadColorSettings();
+        void SaveWindowLayout(WindowLayoutSettings layoutSettings);
+        WindowLayoutSettings? LoadWindowLayout();
     }
 }

@@ -1,4 +1,4 @@
-{
+﻿{
   "Id": "f592e048-63e1-44e2-92ba-3d0b5360bafc",
   "Name": "デフォルト",
   "OrderIndex": 0,
@@ -30,7 +30,11 @@
       "Icon": "DIR",
       "ItemType": "Folder",
       "OrderIndex": 0,
-      "GroupNames": ""
+      "GroupNames": "",
+      "LastAccessed": "0001-01-01T00:00:00",
+      "ProjectName": "",
+      "FolderPath": "",
+      "OpenWithVSCode": false
     },
     {
       "Id": "edfb2224-eaae-433e-b27d-bbb635c138e2",
@@ -43,7 +47,11 @@
       "Icon": "DIR",
       "ItemType": "Folder",
       "OrderIndex": 1,
-      "GroupNames": ""
+      "GroupNames": "",
+      "LastAccessed": "0001-01-01T00:00:00",
+      "ProjectName": "",
+      "FolderPath": "",
+      "OpenWithVSCode": false
     },
     {
       "Id": "c748d5ea-89e8-4637-978e-a75dea54757a",
@@ -56,7 +64,11 @@
       "Icon": "DIR",
       "ItemType": "Folder",
       "OrderIndex": 2,
-      "GroupNames": ""
+      "GroupNames": "",
+      "LastAccessed": "0001-01-01T00:00:00",
+      "ProjectName": "",
+      "FolderPath": "",
+      "OpenWithVSCode": false
     }
   ]
 }
