@@ -752,10 +752,10 @@
         <KeyBinding Key="Delete" Command="{Binding DeleteGroupCommand}"/>
         
         <!-- 新しいショートカット -->
-        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding FocusProjectCommand}"/>
-        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding FocusGroupCommand}"/>
-        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding FocusMainListCommand}"/>
-        <KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding FocusSmartLauncherCommand}"/>
+        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding FocusSmartLauncherCommand}"/>
+        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding FocusProjectCommand}"/>
+        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding FocusGroupCommand}"/>
+        <KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding FocusMainListCommand}"/>
         <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}"/>
     </Window.InputBindings>
 
