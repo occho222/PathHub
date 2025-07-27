@@ -982,7 +982,7 @@
                         <RowDefinition Height="200" MinHeight="150" MaxHeight="300"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="60" MinHeight="50" MaxHeight="100"/>
+                        <RowDefinition Height="150" MinHeight="100" MaxHeight="250"/>
                     </Grid.RowDefinitions>
                     
                     <!-- SmartLauncher Section -->
