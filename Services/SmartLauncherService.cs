@@ -116,38 +116,38 @@ namespace ModernLauncher.Services
         {
             var smartItems = new List<SmartLauncherItem>();
 
-            // All Projects (English)
+            // すべてのプロジェクト
             var allProjectItems = GetAllProjectItems(projects);
             smartItems.Add(new SmartLauncherItem
             {
                 Id = "all-projects",
-                DisplayName = "All Projects",
+                DisplayName = "すべてのプロジェクト",
                 Icon = "🗂️",
                 ItemType = SmartLauncherItemType.AllProjects,
                 Items = allProjectItems,
                 ItemCount = allProjectItems.Count
             });
 
-            // Today's Opened Paths (English)
+            // 今日開いたパス
             var todaysItems = GetTodaysOpenedPaths();
             var todaysLauncherItems = ConvertToLauncherItems(todaysItems);
             smartItems.Add(new SmartLauncherItem
             {
                 Id = "todays-opened",
-                DisplayName = "Today's Opened Paths",
+                DisplayName = "今日開いたパス",
                 Icon = "📅",
                 ItemType = SmartLauncherItemType.TodaysOpenedPaths,
                 Items = todaysLauncherItems,
                 ItemCount = todaysLauncherItems.Count
             });
 
-            // Opened Paths within a Week (English)
+            // 週間内に開いたパス
             var weeklyItems = GetWeeklyOpenedPaths();
             var weeklyLauncherItems = ConvertToLauncherItems(weeklyItems);
             smartItems.Add(new SmartLauncherItem
             {
                 Id = "weekly-opened",
-                DisplayName = "Opened Paths within a Week",
+                DisplayName = "週間内に開いたパス",
                 Icon = "📆",
                 ItemType = SmartLauncherItemType.WeeklyOpenedPaths,
                 Items = weeklyLauncherItems,

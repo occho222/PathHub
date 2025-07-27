@@ -50,7 +50,7 @@ namespace ModernLauncher.Models
             set => SetProperty(ref itemCount, value);
         }
 
-        public string ItemCountText => $"({ItemCount} items)";
+        public string ItemCountText => $"({ItemCount} 項目)";
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

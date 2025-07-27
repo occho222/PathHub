@@ -53,7 +53,7 @@ namespace ModernLauncher.Resources
         public string DeleteShort => "削";
 
         // Status bar
-        public string StatusHelp => "🔍 F3 検索 | 📁 Ctrl+1 プロジェクト | 🗂️ Ctrl+2 グループ | 📋 Ctrl+3 メインリスト | Ctrl+N 新規 | Ctrl+I アイテム追加 | F1 ヘルプ";
+        public string StatusHelp => "🔍 Ctrl+F 検索 | 🔍 Ctrl+Shift+F 全検索 | 📁 Ctrl+1 プロジェクト | 🗂️ Ctrl+2 グループ | 📋 Ctrl+3 メインリスト | Ctrl+N 新規 | Ctrl+I アイテム追加 | F1 ヘルプ";
 
         // Drag & Drop
         public string DropMessage => "📂 ファイルやフォルダをここにドロップしてアイテムを追加";

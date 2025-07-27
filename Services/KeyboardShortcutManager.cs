@@ -79,6 +79,24 @@ namespace ModernLauncher.Services
                 }
                 e.Handled = true;
             }
+            else if (e.Key == Key.Tab || e.Key == Key.Down)
+            {
+                // TabまたはDownキーでメインListViewにフォーカスを移動
+                if (sender is TextBox textBox)
+                {
+                    var window = Window.GetWindow(textBox);
+                    if (window != null)
+                    {
+                        var mainListView = window.FindName("MainListView") as ListView;
+                        if (mainListView != null && mainListView.Items.Count > 0)
+                        {
+                            mainListView.Focus();
+                            mainListView.SelectedIndex = 0;
+                        }
+                    }
+                }
+                e.Handled = true;
+            }
         }
 
         private void ProjectTreeView_KeyDown(object sender, KeyEventArgs e)
@@ -132,7 +150,7 @@ namespace ModernLauncher.Services
                     if (selectedItem != null)
                     {
                         viewModel.SelectedSmartLauncherItem = selectedItem;
-                        viewModel.StatusText = $"?? SmartLauncher: {selectedItem.DisplayName} ��I�����܂���";
+                        viewModel.StatusText = $"?? SmartLauncher: {selectedItem.DisplayName} ��I�����܂���";
                     }
                     e.Handled = true;
                 }

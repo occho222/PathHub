@@ -752,7 +752,6 @@
         <KeyBinding Key="Delete" Command="{Binding DeleteGroupCommand}"/>
         
         <!-- 新しいショートカット -->
-        <KeyBinding Key="F3" Command="{Binding FocusSearchCommand}"/>
         <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding FocusProjectCommand}"/>
         <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding FocusGroupCommand}"/>
         <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding FocusMainListCommand}"/>

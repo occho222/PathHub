@@ -35,6 +35,7 @@ namespace ModernLauncher.Views
             Closing += MainWindow_Closing;
             SizeChanged += MainWindow_SizeChanged;
             LocationChanged += MainWindow_LocationChanged;
+            KeyDown += MainWindow_KeyDown;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -171,6 +172,30 @@ namespace ModernLauncher.Views
         private void MainWindow_LocationChanged(object sender, EventArgs e)
         {
             // 位置変更はLayoutManagerが自動的に処理
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Ctrl+F で検索テキストボックスにフォーカス
+            if (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
+            {
+                var searchTextBox = FindName("SearchTextBox") as TextBox;
+                if (searchTextBox != null)
+                {
+                    searchTextBox.Focus();
+                    searchTextBox.SelectAll();
+                }
+                e.Handled = true;
+            }
+            // Ctrl+Shift+F で全てのプロジェクトから検索
+            else if (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            {
+                if (DataContext is MainViewModel viewModel)
+                {
+                    viewModel.SearchAllProjectsCommand.Execute(null);
+                }
+                e.Handled = true;
+            }
         }
     }
 }

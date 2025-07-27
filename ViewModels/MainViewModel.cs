@@ -30,7 +30,7 @@ namespace ModernLauncher.ViewModels
         private string searchText = string.Empty;
         private LauncherItem? selectedItem;
         private string statusText = string.Empty;
-        private readonly string appVersion = "1.4.0";
+        private readonly string appVersion = "1.4.1";
 
         // SmartLauncher properties
         private ObservableCollection<SmartLauncherItem> smartLauncherItems = new ObservableCollection<SmartLauncherItem>();
@@ -117,6 +117,7 @@ namespace ModernLauncher.ViewModels
         public ICommand FocusMainListCommand { get; }
         public ICommand FocusSmartLauncherCommand { get; }
         public ICommand ClearSearchCommand { get; }
+        public ICommand SearchAllProjectsCommand { get; }
 
         public MainViewModel() : this(
             ServiceLocator.Instance.GetService<IProjectService>(), 
@@ -175,6 +176,7 @@ namespace ModernLauncher.ViewModels
             FocusMainListCommand = new RelayCommand(FocusMainList);
             FocusSmartLauncherCommand = new RelayCommand(FocusSmartLauncher);
             ClearSearchCommand = new RelayCommand(ClearSearch);
+            SearchAllProjectsCommand = new RelayCommand(SearchAllProjects);
 
             LoadProjects();
             LoadSmartLauncherItems();
@@ -225,11 +227,8 @@ namespace ModernLauncher.ViewModels
                 SelectedProjectNode = null;
                 SelectedViewGroup = null;
                 
-                // Display the items from the selected smart launcher item
-                UpdateDisplayedItems(item.Items);
-                
-                // Update status text
-                StatusText = $"{item.DisplayName}: {item.ItemCount} items";
+                // 検索フィルタを考慮してアイテムを表示
+                ApplySmartLauncherSearch();
                 
                 System.Diagnostics.Debug.WriteLine($"Smart launcher item selected: {item.DisplayName}");
             }
@@ -776,7 +775,12 @@ namespace ModernLauncher.ViewModels
 
         private void ApplySearch()
         {
-            if (IsShowingAllProjects)
+            if (IsSmartLauncherMode && SelectedSmartLauncherItem != null)
+            {
+                // スマートランチャーモード時の検索処理
+                ApplySmartLauncherSearch();
+            }
+            else if (IsShowingAllProjects)
             {
                 ShowAllProjectsItems();
             }
@@ -788,6 +792,26 @@ namespace ModernLauncher.ViewModels
             {
                 ShowAllItems();
             }
+        }
+
+        private void ApplySmartLauncherSearch()
+        {
+            if (SelectedSmartLauncherItem == null) return;
+
+            var items = SelectedSmartLauncherItem.Items;
+
+            // 検索フィルタを適用
+            if (!string.IsNullOrEmpty(SearchText))
+            {
+                items = FilterItems(items, SearchText).ToList();
+            }
+
+            UpdateDisplayedItems(items);
+            
+            // ステータステキストを更新（フィルタ後のアイテム数を表示）
+            StatusText = $"{SelectedSmartLauncherItem.DisplayName}: {items.Count} items" +
+                        (items.Count != SelectedSmartLauncherItem.ItemCount && !string.IsNullOrEmpty(SearchText) 
+                         ? $" (全{SelectedSmartLauncherItem.ItemCount}項目から検索)" : "");
         }
 
         private void UpdateStatusText()
@@ -3231,6 +3255,31 @@ namespace ModernLauncher.ViewModels
             {
                 SearchText = string.Empty;
                 StatusText = "🔍 検索をクリアしました";
+            }
+        }
+
+        private void SearchAllProjects(object? parameter)
+        {
+            // スマートランチャーの「すべてのプロジェクト」を選択
+            var allProjectsItem = SmartLauncherItems.FirstOrDefault(item => 
+                item.ItemType == SmartLauncherItemType.AllProjects);
+            
+            if (allProjectsItem != null)
+            {
+                SelectedSmartLauncherItem = allProjectsItem;
+                
+                // 検索テキストボックスにフォーカス
+                if (Application.Current.MainWindow is MainWindow mainWindow)
+                {
+                    var searchTextBox = mainWindow.FindName("SearchTextBox") as TextBox;
+                    if (searchTextBox != null)
+                    {
+                        searchTextBox.Focus();
+                        searchTextBox.SelectAll();
+                    }
+                }
+                
+                StatusText = "🔍 すべてのプロジェクトから検索モードに切り替えました";
             }
         }
 
