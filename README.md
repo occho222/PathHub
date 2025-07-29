@@ -1,102 +1,109 @@
-# ModernLauncher - FenrirFS Style Application
+# PathHub - FenrirFS Style Application
 
-## ŠT—v
-FenrirFS•—‚ÌƒNƒ‰ƒVƒbƒN‚ÈƒfƒUƒCƒ“‚ðŽ‚Âƒ‰ƒ“ƒ`ƒƒ[ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Å‚·BMVVMƒpƒ^[ƒ“‚ÆSOLIDŒ´‘¥‚É]‚Á‚ÄÄ\’z‚³‚ê‚Ä‚¢‚Ü‚·B
+PathHub/
+    ProjectNode.cs
+    AddItemDialog.cs
+    EditItemDialog.cs
+    FolderSelectionDialog.cs
+    HelpDialog.cs
+ Resources/            # Resources
+    LocalizedStrings.cs
+FenrirFSé¢¨ã®ã‚¯ãƒ©ã‚·ãƒƒã‚¯ãªãƒ‡ã‚¶ã‚¤ãƒ³ã‚’æŒã¤ãƒ©ãƒ³ãƒãƒ£ãƒ¼ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã§ã™ã€‚MVVMãƒ‘ã‚¿ãƒ¼ãƒ³ã¨SOLIDåŽŸå‰‡ã«å¾“ã£ã¦å†æ§‹ç¯‰ã•ã‚Œã¦ã„ã¾ã™ã€‚
 
-## ƒA[ƒLƒeƒNƒ`ƒƒ
+## ã‚¢ãƒ¼ã‚­ãƒ†ã‚¯ãƒãƒ£
 
-### ƒtƒHƒ‹ƒ_\¬
+### ãƒ•ã‚©ãƒ«ãƒ€æ§‹æˆ
 ```
 ModernLauncher/
-„¥„Ÿ„Ÿ Models/               # ƒf[ƒ^ƒ‚ƒfƒ‹
-„    „¥„Ÿ„Ÿ Project.cs
-„    „¥„Ÿ„Ÿ ProjectInfo.cs
-„    „¥„Ÿ„Ÿ ItemGroup.cs
-„    „¥„Ÿ„Ÿ LauncherItem.cs
-„    „¤„Ÿ„Ÿ SelectableGroup.cs
-„¥„Ÿ„Ÿ ViewModels/           # ƒrƒ…[ƒ‚ƒfƒ‹iMVVMƒpƒ^[ƒ“j
-„    „¤„Ÿ„Ÿ MainViewModel.cs
-„¥„Ÿ„Ÿ Views/                # ƒrƒ…[iXAML/Windowj
-„    „¥„Ÿ„Ÿ MainWindow.xaml
-„    „¥„Ÿ„Ÿ MainWindow.xaml.cs
-„    „¤„Ÿ„Ÿ TextInputDialog.cs
-„¥„Ÿ„Ÿ Services/             # ƒrƒWƒlƒXƒƒWƒbƒNEƒT[ƒrƒX
-„    „¥„Ÿ„Ÿ ProjectService.cs
-„    „¥„Ÿ„Ÿ LauncherService.cs
-„    „¤„Ÿ„Ÿ ServiceLocator.cs
-„¥„Ÿ„Ÿ Interfaces/           # ƒCƒ“ƒ^[ƒtƒF[ƒX’è‹`
-„    „¥„Ÿ„Ÿ IProjectService.cs
-„    „¤„Ÿ„Ÿ ILauncherService.cs
-„¥„Ÿ„Ÿ Commands/             # ƒRƒ}ƒ“ƒhƒpƒ^[ƒ“ŽÀ‘•
-„    „¤„Ÿ„Ÿ RelayCommand.cs
-„¤„Ÿ„Ÿ Converters/           # ƒf[ƒ^ƒoƒCƒ“ƒfƒBƒ“ƒO—pƒRƒ“ƒo[ƒ^[
-    „¤„Ÿ„Ÿ GroupButtonVisibilityConverter.cs
+â”œâ”€â”€ Models/               # ãƒ‡ãƒ¼ã‚¿ãƒ¢ãƒ‡ãƒ«
+â”‚   â”œâ”€â”€ Project.cs
+â”‚   â”œâ”€â”€ ProjectInfo.cs
+â”‚   â”œâ”€â”€ ItemGroup.cs
+â”‚   â”œâ”€â”€ LauncherItem.cs
+â”‚   â””â”€â”€ SelectableGroup.cs
+â”œâ”€â”€ ViewModels/           # ãƒ“ãƒ¥ãƒ¼ãƒ¢ãƒ‡ãƒ«ï¼ˆMVVMãƒ‘ã‚¿ãƒ¼ãƒ³ï¼‰
+â”‚   â””â”€â”€ MainViewModel.cs
+â”œâ”€â”€ Views/                # ãƒ“ãƒ¥ãƒ¼ï¼ˆXAML/Windowï¼‰
+â”‚   â”œâ”€â”€ MainWindow.xaml
+â”‚   â”œâ”€â”€ MainWindow.xaml.cs
+â”‚   â””â”€â”€ TextInputDialog.cs
+â”œâ”€â”€ Services/             # ãƒ“ã‚¸ãƒã‚¹ãƒ­ã‚¸ãƒƒã‚¯ãƒ»ã‚µãƒ¼ãƒ“ã‚¹
+â”‚   â”œâ”€â”€ ProjectService.cs
+â”‚   â”œâ”€â”€ LauncherService.cs
+â”‚   â””â”€â”€ ServiceLocator.cs
+â”œâ”€â”€ Interfaces/           # ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹å®šç¾©
+â”‚   â”œâ”€â”€ IProjectService.cs
+â”‚   â””â”€â”€ ILauncherService.cs
+â”œâ”€â”€ Commands/             # ã‚³ãƒžãƒ³ãƒ‰ãƒ‘ã‚¿ãƒ¼ãƒ³å®Ÿè£…
+â”‚   â””â”€â”€ RelayCommand.cs
+â””â”€â”€ Converters/           # ãƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ç”¨ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼
+    â””â”€â”€ GroupButtonVisibilityConverter.cs
 ```
 
-## ÝŒvŒ´‘¥
+## è¨­è¨ˆåŽŸå‰‡
 
-### MVVMƒpƒ^[ƒ“
-- **Model**: ƒf[ƒ^‚ÆƒrƒWƒlƒXƒƒWƒbƒN
-- **View**: UI•\Ž¦iXAMLj
-- **ViewModel**: View‚ÆModel‚Ì’‡‰îAƒf[ƒ^ƒoƒCƒ“ƒfƒBƒ“ƒO
+### MVVMãƒ‘ã‚¿ãƒ¼ãƒ³
+- **Model**: ãƒ‡ãƒ¼ã‚¿ã¨ãƒ“ã‚¸ãƒã‚¹ãƒ­ã‚¸ãƒƒã‚¯
+- **View**: UIè¡¨ç¤ºï¼ˆXAMLï¼‰
+- **ViewModel**: Viewã¨Modelã®ä»²ä»‹ã€ãƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°
 
-### SOLIDŒ´‘¥‚Ì“K—p
-1. **’PˆêÓ”C‚ÌŒ´‘¥ (SRP)**: ŠeƒNƒ‰ƒX‚Í1‚Â‚ÌÓ”C‚Ì‚Ý
-2. **ŠJ•ú•Â½‚ÌŒ´‘¥ (OCP)**: Šg’£‚ÉŠJ•úAC³‚É•Â½
-3. **ƒŠƒXƒRƒt‚Ì’uŠ·Œ´‘¥ (LSP)**: ”h¶ƒNƒ‰ƒX‚ÍŠî’êƒNƒ‰ƒX‚Ì‘ã‘Ö‰Â”\
-4. **ƒCƒ“ƒ^[ƒtƒF[ƒX•ª—£‚ÌŒ´‘¥ (ISP)**: •s—v‚ÈˆË‘¶ŠÖŒW‚ð”ð‚¯‚é
-5. **ˆË‘¶ŠÖŒW‹t“]‚ÌŒ´‘¥ (DIP)**: ’ŠÛ‚ÉˆË‘¶A‹ïÛ‚É”ñˆË‘¶
+### SOLIDåŽŸå‰‡ã®é©ç”¨
+1. **å˜ä¸€è²¬ä»»ã®åŽŸå‰‡ (SRP)**: å„ã‚¯ãƒ©ã‚¹ã¯1ã¤ã®è²¬ä»»ã®ã¿
+2. **é–‹æ”¾é–‰éŽ–ã®åŽŸå‰‡ (OCP)**: æ‹¡å¼µã«é–‹æ”¾ã€ä¿®æ­£ã«é–‰éŽ–
+3. **ãƒªã‚¹ã‚³ãƒ•ã®ç½®æ›åŽŸå‰‡ (LSP)**: æ´¾ç”Ÿã‚¯ãƒ©ã‚¹ã¯åŸºåº•ã‚¯ãƒ©ã‚¹ã®ä»£æ›¿å¯èƒ½
+4. **ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹åˆ†é›¢ã®åŽŸå‰‡ (ISP)**: ä¸è¦ãªä¾å­˜é–¢ä¿‚ã‚’é¿ã‘ã‚‹
+5. **ä¾å­˜é–¢ä¿‚é€†è»¢ã®åŽŸå‰‡ (DIP)**: æŠ½è±¡ã«ä¾å­˜ã€å…·è±¡ã«éžä¾å­˜
 
-### ƒŒƒCƒ„•ª—£
+### ãƒ¬ã‚¤ãƒ¤åˆ†é›¢
 - **Presentation Layer**: Views, ViewModels
 - **Business Logic Layer**: Services, Commands
 - **Data Access Layer**: Services (ProjectService)
 - **Domain Layer**: Models, Interfaces
 
-## Žå—v‚È‰ü‘P“_
+## ä¸»è¦ãªæ”¹å–„ç‚¹
 
-### 1. Ó”C‚Ì•ª—£
-- UIŠÖ˜A‚ÌƒƒWƒbƒN‚ÍViewModel‚É
-- ƒf[ƒ^‘€ì‚ÍServiceƒNƒ‰ƒX‚É
-- ƒrƒWƒlƒXƒ‹[ƒ‹‚Í“KØ‚ÈƒT[ƒrƒX‚É•ª—£
+### 1. è²¬ä»»ã®åˆ†é›¢
+- UIé–¢é€£ã®ãƒ­ã‚¸ãƒƒã‚¯ã¯ViewModelã«
+- ãƒ‡ãƒ¼ã‚¿æ“ä½œã¯Serviceã‚¯ãƒ©ã‚¹ã«
+- ãƒ“ã‚¸ãƒã‚¹ãƒ«ãƒ¼ãƒ«ã¯é©åˆ‡ãªã‚µãƒ¼ãƒ“ã‚¹ã«åˆ†é›¢
 
-### 2. ˆË‘¶ŠÖŒW’“ü
-- ServiceLocatorƒpƒ^[ƒ“‚ÅƒT[ƒrƒX‚ðŠÇ—
-- ƒCƒ“ƒ^[ƒtƒF[ƒXƒx[ƒX‚ÌÝŒv
-- ƒeƒXƒ^ƒrƒŠƒeƒB‚ÌŒüã
+### 2. ä¾å­˜é–¢ä¿‚æ³¨å…¥
+- ServiceLocatorãƒ‘ã‚¿ãƒ¼ãƒ³ã§ã‚µãƒ¼ãƒ“ã‚¹ã‚’ç®¡ç†
+- ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ãƒ™ãƒ¼ã‚¹ã®è¨­è¨ˆ
+- ãƒ†ã‚¹ã‚¿ãƒ“ãƒªãƒ†ã‚£ã®å‘ä¸Š
 
-### 3. ƒf[ƒ^ƒoƒCƒ“ƒfƒBƒ“ƒO
-- View‚ÆViewModel‚ÌŠ®‘S•ª—£
-- INotifyPropertyChanged‚ÌŽÀ‘•
-- ƒRƒ}ƒ“ƒhƒpƒ^[ƒ“‚É‚æ‚éƒAƒNƒVƒ‡ƒ“ˆ—
+### 3. ãƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°
+- Viewã¨ViewModelã®å®Œå…¨åˆ†é›¢
+- INotifyPropertyChangedã®å®Ÿè£…
+- ã‚³ãƒžãƒ³ãƒ‰ãƒ‘ã‚¿ãƒ¼ãƒ³ã«ã‚ˆã‚‹ã‚¢ã‚¯ã‚·ãƒ§ãƒ³å‡¦ç†
 
-### 4. ƒGƒ‰[ƒnƒ“ƒhƒŠƒ“ƒO
-- Še‘w‚Å‚Ì“KØ‚È—áŠOˆ—
-- ƒ†[ƒU[ƒtƒŒƒ“ƒhƒŠ[‚ÈƒGƒ‰[ƒƒbƒZ[ƒW
+### 4. ã‚¨ãƒ©ãƒ¼ãƒãƒ³ãƒ‰ãƒªãƒ³ã‚°
+- å„å±¤ã§ã®é©åˆ‡ãªä¾‹å¤–å‡¦ç†
+- ãƒ¦ãƒ¼ã‚¶ãƒ¼ãƒ•ãƒ¬ãƒ³ãƒ‰ãƒªãƒ¼ãªã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 
-## Žg—p‹Zp
+## ä½¿ç”¨æŠ€è¡“
 - .NET 6.0
 - WPF (Windows Presentation Foundation)
-- MVVM (Model-View-ViewModel) ƒpƒ^[ƒ“
-- Newtonsoft.Json (JSONƒVƒŠƒAƒ‰ƒCƒ[[ƒVƒ‡ƒ“)
+- MVVM (Model-View-ViewModel) ãƒ‘ã‚¿ãƒ¼ãƒ³
+- Newtonsoft.Json (JSONã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚¼ãƒ¼ã‚·ãƒ§ãƒ³)
 
-## ¡Œã‚ÌŠg’£—\’è
-1. ƒAƒCƒeƒ€’Ç‰ÁE•ÒWƒ_ƒCƒAƒƒO‚ÌŽÀ‘•
-2. ƒCƒ“ƒ|[ƒgEƒGƒNƒXƒ|[ƒg‹@”\‚ÌŠ®‘SŽÀ‘•
-3. ƒwƒ‹ƒvƒVƒXƒeƒ€‚ÌŽÀ‘•
-4. Ý’èŠÇ—‹@”\
-5. ƒvƒ‰ƒOƒCƒ“ƒA[ƒLƒeƒNƒ`ƒƒ
-6. ’P‘ÌƒeƒXƒg‚Ì’Ç‰Á
+## ä»Šå¾Œã®æ‹¡å¼µäºˆå®š
+1. ã‚¢ã‚¤ãƒ†ãƒ è¿½åŠ ãƒ»ç·¨é›†ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®å®Ÿè£…
+2. ã‚¤ãƒ³ãƒãƒ¼ãƒˆãƒ»ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆæ©Ÿèƒ½ã®å®Œå…¨å®Ÿè£…
+3. ãƒ˜ãƒ«ãƒ—ã‚·ã‚¹ãƒ†ãƒ ã®å®Ÿè£…
+4. è¨­å®šç®¡ç†æ©Ÿèƒ½
+5. ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚¢ãƒ¼ã‚­ãƒ†ã‚¯ãƒãƒ£
+6. å˜ä½“ãƒ†ã‚¹ãƒˆã®è¿½åŠ 
 
-## ŠJ”­ŽÒŒü‚¯î•ñ
+## é–‹ç™ºè€…å‘ã‘æƒ…å ±
 
-### V‹@”\‚Ì’Ç‰Á•û–@
-1. •K—v‚É‰ž‚¶‚ÄƒCƒ“ƒ^[ƒtƒF[ƒX‚ð’è‹`
-2. ƒT[ƒrƒXƒNƒ‰ƒX‚ÅƒrƒWƒlƒXƒƒWƒbƒN‚ðŽÀ‘•
-3. ViewModel‚ÉƒRƒ}ƒ“ƒh‚ÆƒvƒƒpƒeƒB‚ð’Ç‰Á
-4. View‚ÅUI‚Æƒf[ƒ^ƒoƒCƒ“ƒfƒBƒ“ƒO‚ðÝ’è
+### æ–°æ©Ÿèƒ½ã®è¿½åŠ æ–¹æ³•
+1. å¿…è¦ã«å¿œã˜ã¦ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã‚’å®šç¾©
+2. ã‚µãƒ¼ãƒ“ã‚¹ã‚¯ãƒ©ã‚¹ã§ãƒ“ã‚¸ãƒã‚¹ãƒ­ã‚¸ãƒƒã‚¯ã‚’å®Ÿè£…
+3. ViewModelã«ã‚³ãƒžãƒ³ãƒ‰ã¨ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’è¿½åŠ 
+4. Viewã§UIã¨ãƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚’è¨­å®š
 
-### ƒeƒXƒg
-- ŠeƒT[ƒrƒX‚Í“Æ—§‚µ‚ÄƒeƒXƒg‰Â”\
-- ViewModel‚ÌƒƒWƒbƒN‚ÍˆË‘¶ŠÖŒW’“ü‚Åƒ‚ƒbƒN‰»‰Â”\
-- ƒrƒWƒlƒXƒƒWƒbƒN‚ÆUI‚ª•ª—£‚³‚ê‚Ä‚¢‚é‚½‚ß’P‘ÌƒeƒXƒg‚ª—eˆÕ
+### ãƒ†ã‚¹ãƒˆ
+- å„ã‚µãƒ¼ãƒ“ã‚¹ã¯ç‹¬ç«‹ã—ã¦ãƒ†ã‚¹ãƒˆå¯èƒ½
+- ViewModelã®ãƒ­ã‚¸ãƒƒã‚¯ã¯ä¾å­˜é–¢ä¿‚æ³¨å…¥ã§ãƒ¢ãƒƒã‚¯åŒ–å¯èƒ½
+- ãƒ“ã‚¸ãƒã‚¹ãƒ­ã‚¸ãƒƒã‚¯ã¨UIãŒåˆ†é›¢ã•ã‚Œã¦ã„ã‚‹ãŸã‚å˜ä½“ãƒ†ã‚¹ãƒˆãŒå®¹æ˜“
