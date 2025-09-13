@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using PathHub.Utils;
 
 namespace ModernLauncher.Views
 {
@@ -24,9 +25,12 @@ namespace ModernLauncher.Views
         public List<string> Features { get; private set; }
         public List<string> Tips { get; private set; }
         public List<string> AboutInfo { get; private set; }
+        public string AppVersionText { get; private set; }
 
         private void InitializeHelpContent()
         {
+            AppVersionText = $"Modern Project Management Tool {VersionHelper.GetDisplayVersion()}";
+
             BasicUsageItems = new List<string>
             {
                 "🎯 アイテム追加: ツールバーの「➕ アイテム追加」ボタンまたは Ctrl+I",

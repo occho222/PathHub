@@ -13,6 +13,7 @@ using ModernLauncher.Interfaces;
 using ModernLauncher.Models;
 using ModernLauncher.Services;
 using ModernLauncher.Views;
+using PathHub.Utils;
 
 namespace ModernLauncher.ViewModels
 {
@@ -30,7 +31,6 @@ namespace ModernLauncher.ViewModels
         private string searchText = string.Empty;
         private LauncherItem? selectedItem;
         private string statusText = string.Empty;
-        private readonly string appVersion = "1.4.1";
 
         // SmartLauncher properties
         private ObservableCollection<SmartLauncherItem> smartLauncherItems = new ObservableCollection<SmartLauncherItem>();
@@ -388,7 +388,7 @@ namespace ModernLauncher.ViewModels
             set => SetProperty(ref statusText, value);
         }
 
-        public string AppVersion => $"v{appVersion}";
+        public string AppVersion => VersionHelper.GetDisplayVersion();
 
         public ObservableCollection<LauncherItem> DisplayedItems { get; } = new ObservableCollection<LauncherItem>();
 

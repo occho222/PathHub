@@ -137,7 +137,7 @@
                                        Style="{StaticResource HeaderStyle}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="Modern Project Management Tool v1.4.1" 
+                        <TextBlock Text="{Binding AppVersionText}"
                                    Style="{StaticResource SubtitleStyle}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
