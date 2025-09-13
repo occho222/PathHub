@@ -8,13 +8,13 @@
     {
       "Id": "all",
       "Name": "すべて",
-      "ItemCount": "",
+      "ItemCount": "0 アイテム",
       "OrderIndex": 0
     },
     {
       "Id": "197fdfb1-666e-4759-9520-5c8f1f4af0b5",
       "Name": "よく使う",
-      "ItemCount": "",
+      "ItemCount": "0 アイテム",
       "OrderIndex": 1
     }
   ],

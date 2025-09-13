@@ -7,6 +7,7 @@ using ModernLauncher.Services;
 using ModernLauncher.ViewModels;
 using ModernLauncher.Models;
 using ModernLauncher.Interfaces;
+using PathHub.Utils;
 
 namespace ModernLauncher.Views
 {
@@ -30,7 +31,25 @@ namespace ModernLauncher.Views
             _layoutManager.LoadWindowLayoutEarly(this);
             
             InitializeComponent();
-            
+
+            // ContextMenu関連のイベントを追跡
+            ProjectTreeView.ContextMenuOpening += (s, e) => {
+                DebugLogger.Log($"=== CONTEXT MENU OPENING ===");
+                DebugLogger.Log($"Sender: {s?.GetType().Name}");
+                DebugLogger.Log($"SelectedItem: {ProjectTreeView.SelectedItem?.GetType().Name} - {ProjectTreeView.SelectedItem}");
+                if (DataContext is MainViewModel vm)
+                {
+                    DebugLogger.Log($"ViewModel.SelectedProjectNode: {vm.SelectedProjectNode?.Name ?? "null"}");
+                    DebugLogger.Log($"NewProjectCommand: {vm.NewProjectCommand}");
+                    DebugLogger.Log($"NewProjectCommand.CanExecute: {vm.NewProjectCommand?.CanExecute(null)}");
+                }
+                DebugLogger.Log("===========================");
+            };
+
+            ProjectTreeView.ContextMenuClosing += (s, e) => {
+                DebugLogger.Log("=== CONTEXT MENU CLOSING ===");
+            };
+
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
             SizeChanged += MainWindow_SizeChanged;
@@ -83,6 +102,31 @@ namespace ModernLauncher.Views
             {
                 viewModel.SelectedViewGroup = selectedGroup;
             }
+        }
+
+        private void ProjectTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            DebugLogger.Log($"=== PROJECT TREE SELECTION EVENT ===");
+            DebugLogger.Log($"Sender: {sender?.GetType().Name}");
+            DebugLogger.Log($"OldValue: {e.OldValue?.GetType().Name} - {e.OldValue}");
+            DebugLogger.Log($"NewValue: {e.NewValue?.GetType().Name} - {e.NewValue}");
+
+            if (DataContext is MainViewModel viewModel && e.NewValue is ProjectNode selectedProjectNode)
+            {
+                DebugLogger.Log($"Selected ProjectNode: {selectedProjectNode.Name}");
+                DebugLogger.Log($"IsFolder: {selectedProjectNode.IsFolder}");
+                DebugLogger.Log($"ID: {selectedProjectNode.Id}");
+
+                viewModel.SelectedProjectNode = selectedProjectNode;
+                DebugLogger.Log($"SelectedProjectNode set to: {viewModel.SelectedProjectNode?.Name}");
+            }
+            else
+            {
+                DebugLogger.Log($"DataContext type: {DataContext?.GetType().Name}");
+                DebugLogger.Log($"e.NewValue type: {e.NewValue?.GetType().Name}");
+                DebugLogger.Log($"Failed to set SelectedProjectNode");
+            }
+            DebugLogger.Log("====================================");
         }
 
         private void ProjectTreeViewItem_Selected(object sender, RoutedEventArgs e)

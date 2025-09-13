@@ -1128,65 +1128,14 @@
                         </Grid>
                     </Border>
 
-                    <TreeView x:Name="ProjectTreeView" Grid.Row="4" 
+                    <TreeView x:Name="ProjectTreeView" Grid.Row="4"
                              Style="{StaticResource ProjectTreeViewStyle}"
                              Margin="4"
                              ItemsSource="{Binding ProjectNodes}"
+                             SelectedItemChanged="ProjectTreeView_SelectedItemChanged"
                              AllowDrop="True">
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem" BasedOn="{StaticResource ProjectTreeViewItemStyle}">
-                                <Setter Property="ContextMenu">
-                                    <Setter.Value>
-                                        <ContextMenu>
-                                            <MenuItem Header="プロジェクト・フォルダ編集" 
-                                                    Command="{Binding DataContext.EditProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                                                    FontWeight="Bold">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="✏️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <Separator/>
-                                            <MenuItem Header="新規プロジェクト" 
-                                                    Command="{Binding DataContext.NewProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="➕" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <MenuItem Header="新規フォルダー" 
-                                                    Command="{Binding DataContext.NewFolderCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="📁" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <Separator/>
-                                            <MenuItem Header="フォルダに移動" 
-                                                    Command="{Binding DataContext.MoveToFolderCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="📦" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <MenuItem Header="削除" 
-                                                    Command="{Binding DataContext.DeleteProjectCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="🗑️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <Separator/>
-                                            <MenuItem Header="上に移動" 
-                                                    Command="{Binding DataContext.MoveProjectUpCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="⬆️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                            <MenuItem Header="下に移動" 
-                                                    Command="{Binding DataContext.MoveProjectDownCommand, RelativeSource={RelativeSource AncestorType=TreeView}}">
-                                                <MenuItem.Icon>
-                                                    <TextBlock Text="⬇️" FontSize="12" Style="{StaticResource EmojiTextBlock}"/>
-                                                </MenuItem.Icon>
-                                            </MenuItem>
-                                        </ContextMenu>
-                                    </Setter.Value>
-                                </Setter>
                             </Style>
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>

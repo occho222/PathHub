@@ -128,13 +128,17 @@ namespace ModernLauncher.ViewModels
 
         public MainViewModel(IProjectService projectService, ILauncherService launcherService, ISmartLauncherService smartLauncherService)
         {
+            // デバッグログをクリア
+            DebugLogger.Clear();
+            DebugLogger.Log("MainViewModel constructor started");
+
             this.projectService = projectService;
             this.launcherService = launcherService;
             this.smartLauncherService = smartLauncherService;
 
             // Commands initialization
-            NewProjectCommand = new RelayCommand(NewProject);
-            NewFolderCommand = new RelayCommand(NewFolder);
+            NewProjectCommand = new RelayCommand(NewProject, CanNewProject);
+            NewFolderCommand = new RelayCommand(NewFolder, CanNewFolder);
             DeleteProjectCommand = new RelayCommand(DeleteProjectOrFolder, CanDeleteProjectOrFolder);
             EditProjectCommand = new RelayCommand(EditProjectOrFolder, CanEditProjectOrFolder);
             MoveToFolderCommand = new RelayCommand(MoveToFolder, CanMoveProjectToFolder);
@@ -1504,8 +1508,17 @@ namespace ModernLauncher.ViewModels
         // Command implementations
         private void NewProject(object? parameter)
         {
+            DebugLogger.Log("=== NewProject command triggered ===");
+            DebugLogger.Log($"Parameter: {parameter}");
+            DebugLogger.Log($"Parameter type: {parameter?.GetType().Name}");
+            DebugLogger.Log($"SelectedProjectNode: {SelectedProjectNode?.Name ?? "null"}");
+
             try
             {
+                // パラメータから ProjectNode を取得、なければ SelectedProjectNode を使用
+                var targetNode = parameter as ProjectNode ?? SelectedProjectNode;
+                DebugLogger.Log($"Target node: {targetNode?.Name ?? "null"}");
+
                 // 利用可能なフォルダノードを取得
                 var availableFolders = new List<ProjectNode>();
                 CollectFoldersRecursive(ProjectNodes, availableFolders);
@@ -1613,10 +1626,19 @@ namespace ModernLauncher.ViewModels
 
         private void NewFolder(object? parameter)
         {
+            DebugLogger.Log("=== NewFolder command triggered ===");
+            DebugLogger.Log($"Parameter: {parameter}");
+            DebugLogger.Log($"Parameter type: {parameter?.GetType().Name}");
+            DebugLogger.Log($"SelectedProjectNode: {SelectedProjectNode?.Name ?? "null"}");
+
+            // パラメータから ProjectNode を取得、なければ SelectedProjectNode を使用
+            var targetNode = parameter as ProjectNode ?? SelectedProjectNode;
+            DebugLogger.Log($"Target node: {targetNode?.Name ?? "null"}");
+
             var dialog = new TextInputDialog("New Folder", "Enter folder name:");
             if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.InputText))
             {
-                var parentId = SelectedProjectNode?.IsFolder == true ? SelectedProjectNode.Id : SelectedProjectNode?.ParentId;
+                var parentId = targetNode?.IsFolder == true ? targetNode.Id : targetNode?.ParentId;
                 
                 var newFolder = new Project
                 {
@@ -2236,6 +2258,20 @@ namespace ModernLauncher.ViewModels
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private bool CanNewProject(object? parameter)
+        {
+            DebugLogger.Log($"CanNewProject called - Parameter: {parameter}, Result: true");
+            // 新規プロジェクトは常に作成可能
+            return true;
+        }
+
+        private bool CanNewFolder(object? parameter)
+        {
+            DebugLogger.Log($"CanNewFolder called - Parameter: {parameter}, Result: true");
+            // 新規フォルダは常に作成可能
+            return true;
         }
 
         private bool CanDeleteProjectOrFolder(object? parameter)

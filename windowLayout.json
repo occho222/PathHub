@@ -1,0 +1,23 @@
+﻿{
+  "WindowWidth": 1400.0,
+  "WindowHeight": 800.0,
+  "WindowLeft": 66.0,
+  "WindowTop": 144.0,
+  "IsMaximized": false,
+  "LeftPanelWidth": 400.0,
+  "SmartLauncherHeight": 100.0,
+  "ProjectAreaHeight": 200.0,
+  "GroupAreaHeight": 193.0,
+  "ColumnWidths": {
+    "Category": 130.0,
+    "ProjectName": 150.0,
+    "Name": 240.0,
+    "Description": 200.0,
+    "Path": 280.0,
+    "GroupNames": 120.0,
+    "FolderPath": 120.0,
+    "LastAccessed": 140.0
+  },
+  "LastSortColumn": null,
+  "IsAscending": true
+}
