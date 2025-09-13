@@ -13,7 +13,6 @@
 1. **バージョン更新** (Verはデータ管理にもあります。)
 
    * `${PROJECT_NAME}.csproj` の Version, AssemblyVersion, FileVersion を更新
-   * `Models/AppSettings.cs` の DataVersion を更新
 
 2. **リリースノート更新**:
 
