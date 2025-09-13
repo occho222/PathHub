@@ -1486,13 +1486,25 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
+                        <GridViewColumn Width="150">
+                            <GridViewColumnHeader Content="プロジェクト" Tag="ProjectName"/>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ProjectName}" FontSize="12"
+                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"
+                                             Margin="6,2"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Width="240">
                             <GridViewColumnHeader Content="名前" Tag="Name"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" FontSize="13" 
+                                    <TextBlock Text="{Binding Name}" FontSize="13"
                                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"
                                              Margin="6,2"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -1501,9 +1513,9 @@
                             <GridViewColumnHeader Content="説明" Tag="Description"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Description}" FontSize="12" 
+                                    <TextBlock Text="{Binding Description}" FontSize="12"
                                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"
                                              Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
@@ -1513,9 +1525,9 @@
                             <GridViewColumnHeader Content="パス" Tag="Path"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Path}" FontSize="12" 
+                                    <TextBlock Text="{Binding Path}" FontSize="12"
                                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"
                                              Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
@@ -1525,21 +1537,9 @@
                             <GridViewColumnHeader Content="グループ" Tag="GroupNames"/>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding GroupNames}" FontSize="12" 
+                                    <TextBlock Text="{Binding GroupNames}" FontSize="12"
                                              FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
-                                             Margin="6,2"
-                                             TextTrimming="CharacterEllipsis"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Width="150">
-                            <GridViewColumnHeader Content="プロジェクト" Tag="ProjectName"/>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding ProjectName}" FontSize="12" 
-                                             FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS"
-                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}" 
+                                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"
                                              Margin="6,2"
                                              TextTrimming="CharacterEllipsis"/>
                                 </DataTemplate>
