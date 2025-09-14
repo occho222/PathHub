@@ -81,6 +81,35 @@ namespace ModernLauncher.Services
                 .ToList();
         }
 
+        public List<PathAccessHistory> GetRecentlyUsedPaths()
+        {
+            return accessHistory
+                .OrderByDescending(h => h.LastAccessTime)
+                .ThenByDescending(h => h.AccessCount)
+                .Take(30) // Limit to 30 most recently used
+                .ToList();
+        }
+
+        public List<LauncherItem> GetAllItemsSortedByRecentUsage(IEnumerable<Project> projects)
+        {
+            var allProjectItems = GetAllProjectItems(projects);
+            var accessLookup = accessHistory.ToDictionary(h => h.Path, h => h);
+
+            return allProjectItems
+                .Select(item => new
+                {
+                    Item = item,
+                    LastAccess = accessLookup.ContainsKey(item.Path) ? accessLookup[item.Path].LastAccessTime : DateTime.MinValue,
+                    AccessCount = accessLookup.ContainsKey(item.Path) ? accessLookup[item.Path].AccessCount : 0
+                })
+                .OrderByDescending(x => x.LastAccess)
+                .ThenByDescending(x => x.AccessCount)
+                .ThenBy(x => x.Item.ProjectName)
+                .ThenBy(x => x.Item.Name)
+                .Select(x => x.Item)
+                .ToList();
+        }
+
         public List<LauncherItem> GetAllProjectItems(IEnumerable<Project> projects)
         {
             var allItems = new List<LauncherItem>();
@@ -115,6 +144,18 @@ namespace ModernLauncher.Services
         public List<SmartLauncherItem> GetSmartLauncherItems(IEnumerable<Project> projects)
         {
             var smartItems = new List<SmartLauncherItem>();
+
+            // 最近使った項目（最上位に配置）- 全ての項目を最近使った順でソート
+            var allItemsSortedByUsage = GetAllItemsSortedByRecentUsage(projects);
+            smartItems.Add(new SmartLauncherItem
+            {
+                Id = "recently-used",
+                DisplayName = "最近使った",
+                Icon = "⏱️",
+                ItemType = SmartLauncherItemType.RecentlyUsed,
+                Items = allItemsSortedByUsage,
+                ItemCount = allItemsSortedByUsage.Count
+            });
 
             // すべてのプロジェクト
             var allProjectItems = GetAllProjectItems(projects);

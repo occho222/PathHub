@@ -10,7 +10,7 @@
 
 ユーザーがリリースを要求した場合、以下の手順を自動的に実行する:
 
-1. **バージョン更新** (Verはデータ管理にもあります。)
+1. **バージョン更新** 
 
    * `${PROJECT_NAME}.csproj` の Version, AssemblyVersion, FileVersion を更新
 

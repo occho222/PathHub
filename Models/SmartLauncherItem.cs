@@ -71,6 +71,7 @@ namespace ModernLauncher.Models
     public enum SmartLauncherItemType
     {
         AllProjects,
+        RecentlyUsed,
         TodaysOpenedPaths,
         WeeklyOpenedPaths
     }
