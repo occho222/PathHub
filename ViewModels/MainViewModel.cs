@@ -298,19 +298,25 @@ namespace ModernLauncher.ViewModels
             {
                 // 単一プロジェクトが選択された場合
                 System.Diagnostics.Debug.WriteLine($"Switching to project: {value.Project.Name}");
-                
+
                 // 状態をリセット
                 IsSmartLauncherMode = false;
                 SelectedSmartLauncherItem = null;
                 IsShowingAllProjects = false;
                 currentDisplayedProjects.Clear();
                 currentDisplayedProjects.Add(value.Project);
-                
+
                 // CurrentProjectを設定して、UIの更新をトリガー
                 CurrentProject = value.Project;
-                
+
                 // グループ選択をリセット
                 SelectedViewGroup = null;
+
+                // 検索文字をクリア
+                if (!string.IsNullOrEmpty(SearchText))
+                {
+                    SearchText = string.Empty;
+                }
                 
                 // アイテム表示を即座に更新
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
@@ -323,11 +329,17 @@ namespace ModernLauncher.ViewModels
             {
                 // フォルダが選択された場合、子プロジェクトを集めて表示
                 System.Diagnostics.Debug.WriteLine($"Switching to folder: {value.Name}");
-                
+
                 // SmartLauncher mode を無効にする
                 IsSmartLauncherMode = false;
                 SelectedSmartLauncherItem = null;
-                
+
+                // 検索文字をクリア
+                if (!string.IsNullOrEmpty(SearchText))
+                {
+                    SearchText = string.Empty;
+                }
+
                 var childProjects = GetChildProjects(value);
                 if (childProjects.Any())
                 {
