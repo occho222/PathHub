@@ -93,6 +93,39 @@ namespace ModernLauncher.Views
             if (mainListView != null)
             {
                 mainListView.PreviewMouseWheel += MainListView_PreviewMouseWheel;
+                mainListView.PreviewKeyDown += MainListView_PreviewKeyDown;
+            }
+
+            var mainGrid = FindName("MainGrid") as System.Windows.Controls.Grid;
+            if (mainGrid != null)
+            {
+                mainGrid.PreviewKeyDown += MainGrid_PreviewKeyDown;
+            }
+        }
+
+        private void MainListView_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Ctrl+V でクリップボードの値をパスに設定してアイテム追加ダイアログを開く
+            if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                HandlePasteToAddItem();
+                e.Handled = true;
+            }
+        }
+
+        private void MainGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Ctrl+V でクリップボードの値をパスに設定してアイテム追加ダイアログを開く
+            if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                // 他のテキスト入力コントロールにフォーカスがある場合はスキップ
+                if (Keyboard.FocusedElement is TextBox || Keyboard.FocusedElement is System.Windows.Controls.Primitives.TextBoxBase)
+                {
+                    return;
+                }
+
+                HandlePasteToAddItem();
+                e.Handled = true;
             }
         }
 
@@ -239,6 +272,57 @@ namespace ModernLauncher.Views
                     viewModel.SearchAllProjectsCommand.Execute(null);
                 }
                 e.Handled = true;
+            }
+        }
+
+        private void HandlePasteToAddItem()
+        {
+            try
+            {
+                // クリップボードからテキストを取得
+                if (!Clipboard.ContainsText())
+                {
+                    return;
+                }
+
+                var clipboardText = Clipboard.GetText();
+                if (string.IsNullOrWhiteSpace(clipboardText))
+                {
+                    return;
+                }
+
+                if (DataContext is MainViewModel viewModel)
+                {
+                    // プロジェクトが選択されているか確認
+                    if (viewModel.CurrentProject == null && !viewModel.IsShowingAllProjects)
+                    {
+                        MessageBox.Show("プロジェクトを選択してください", "エラー",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // 全プロジェクト表示時は最初のプロジェクトに追加
+                    var targetProject = viewModel.CurrentProject ?? viewModel.Projects.FirstOrDefault();
+                    if (targetProject == null)
+                    {
+                        MessageBox.Show("アイテムを追加するプロジェクトがありません", "エラー",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // AddItemDialogを開く
+                    var dialog = new AddItemDialog(targetProject.Groups.ToList());
+
+                    // クリップボードの値をパスに設定
+                    dialog.SetInitialValues("", clipboardText.Trim(), "", "");
+
+                    dialog.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"クリップボードの処理中にエラーが発生しました: {ex.Message}", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
