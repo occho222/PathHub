@@ -7,7 +7,7 @@ namespace PathHub.Utils
     {
         private static readonly string LogPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PathHub",
+            "NicoPath",
             "debug.log"
         );
 
