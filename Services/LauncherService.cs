@@ -12,17 +12,17 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // ÅIƒAƒNƒZƒX“úŽž‚ðXV
+                // ï¿½ÅIï¿½Aï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½V
                 item.LastAccessed = DateTime.Now;
                 
-                // VSCode‚ÅŠJ‚­ƒIƒvƒVƒ‡ƒ“‚ªƒIƒ“‚Ìê‡‚ÍVSCode‚ÅŠJ‚­
+                // VSCodeï¿½ÅŠJï¿½ï¿½ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Ìê‡ï¿½ï¿½VSCodeï¿½ÅŠJï¿½ï¿½
                 if (item.OpenWithVSCode)
                 {
                     LaunchItemWithVSCode(item);
                     return;
                 }
                 
-                // OfficeƒAƒvƒŠ‚ÅŠJ‚­ƒIƒvƒVƒ‡ƒ“‚ªƒIƒ“‚Ìê‡‚ÍOfficeƒAƒvƒŠ‚ÅŠJ‚­
+                // Officeï¿½Aï¿½vï¿½ï¿½ï¿½ÅŠJï¿½ï¿½ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Ìê‡ï¿½ï¿½Officeï¿½Aï¿½vï¿½ï¿½ï¿½ÅŠJï¿½ï¿½
                 if (item.OpenWithOffice)
                 {
                     LaunchItemWithOffice(item);
@@ -56,7 +56,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("‹N“®‚ÉŽ¸”s‚µ‚Ü‚µ‚½: " + ex.Message, ex);
+                throw new InvalidOperationException("ï¿½Nï¿½ï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: " + ex.Message, ex);
             }
         }
 
@@ -64,38 +64,38 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // ÅIƒAƒNƒZƒX“úŽž‚ðXV
+                // ï¿½ÅIï¿½Aï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½V
                 item.LastAccessed = DateTime.Now;
                 
                 string path = item.Path;
 
-                // VSCode‚ÌƒpƒX‚ðŒŸõ
+                // VSCodeï¿½Ìƒpï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 string vsCodePath = FindVSCodePath();
                 if (string.IsNullOrEmpty(vsCodePath))
                 {
-                    throw new InvalidOperationException("VS Code ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñBVS Code ‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚é‚±‚Æ‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢B");
+                    throw new InvalidOperationException("VS Code ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½BVS Code ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Xï¿½gï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B");
                 }
 
-                // VSCode‚ÅŠJ‚­
+                // VSCodeï¿½ÅŠJï¿½ï¿½
                 if (Directory.Exists(path))
                 {
-                    // ƒtƒHƒ‹ƒ_‚Ìê‡
+                    // ï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½Ìê‡
                     Process.Start(new ProcessStartInfo(vsCodePath, $"\"{path}\"") { UseShellExecute = true });
                 }
                 else if (File.Exists(path))
                 {
-                    // ƒtƒ@ƒCƒ‹‚Ìê‡
+                    // ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìê‡
                     Process.Start(new ProcessStartInfo(vsCodePath, $"\"{path}\"") { UseShellExecute = true });
                 }
                 else
                 {
-                    // ƒpƒX‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í’Êí‚Ì‹N“®•û–@‚ðŽŽ‚·
+                    // ï¿½pï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í’Êï¿½Ì‹Nï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     LaunchItem(new LauncherItem { Path = path, OpenWithVSCode = false });
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("VS Code ‚Å‚Ì‹N“®‚ÉŽ¸”s‚µ‚Ü‚µ‚½: " + ex.Message, ex);
+                throw new InvalidOperationException("VS Code ï¿½Å‚Ì‹Nï¿½ï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: " + ex.Message, ex);
             }
         }
 
@@ -103,45 +103,57 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // ÅIƒAƒNƒZƒX“úŽž‚ðXV
+                // ï¿½ÅIï¿½Aï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½V
                 item.LastAccessed = DateTime.Now;
                 
                 string path = item.Path;
 
-                // URL‚Ü‚½‚ÍSharePoint‚Ìê‡
+                // URLï¿½Ü‚ï¿½ï¿½ï¿½SharePointï¿½Ìê‡
                 if (path.StartsWith("http://") || path.StartsWith("https://"))
                 {
                     LaunchOfficeUrl(path);
                     return;
                 }
 
-                // ƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹‚Ìê‡
+                // ï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìê‡
                 if (File.Exists(path))
                 {
                     LaunchOfficeFile(path);
                     return;
                 }
 
-                // ƒtƒ@ƒCƒ‹‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í’Êí‚Ì‹N“®•û–@‚ðŽŽ‚·
+                // ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í’Êï¿½Ì‹Nï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 LaunchItem(new LauncherItem { Path = path, OpenWithOffice = false });
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Office ƒAƒvƒŠ‚Å‚Ì‹N“®‚ÉŽ¸”s‚µ‚Ü‚µ‚½: " + ex.Message, ex);
+                throw new InvalidOperationException("Office ï¿½Aï¿½vï¿½ï¿½ï¿½Å‚Ì‹Nï¿½ï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: " + ex.Message, ex);
             }
         }
 
         private void LaunchOfficeUrl(string url)
         {
-            // SharePoint‚â Office Online ‚ÌURL‚ðOfficeƒAƒvƒŠ‚ÅŠJ‚­
+            // OneNote links - launch directly with onenote: protocol
+            if (url.StartsWith("onenote:", StringComparison.OrdinalIgnoreCase))
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                return;
+            }
+
+            // SharePointï¿½ï¿½ Office Online ï¿½ï¿½URLï¿½ï¿½Officeï¿½Aï¿½vï¿½ï¿½ï¿½ÅŠJï¿½ï¿½
             string officeUri = "";
-            
-            // URL‚ÌŽí—Þ‚É‰ž‚¶‚ÄOffice URIƒXƒL[ƒ€‚ðŽg—p
-            if (url.Contains("sharepoint.com") || url.Contains("office365.sharepoint.com") || 
+
+            // URLï¿½ÌŽï¿½Þ‚É‰ï¿½ï¿½ï¿½ï¿½ï¿½Office URIï¿½Xï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½p
+            if (url.Contains("sharepoint.com") || url.Contains("office365.sharepoint.com") ||
                 url.Contains("-my.sharepoint.com"))
             {
-                // SharePoint‚Ìƒtƒ@ƒCƒ‹‚Ìê‡i‘gDƒTƒCƒg‚ÆŒÂl—pOneDrive‚Ì—¼•û‚É‘Î‰žj
-                if (url.Contains(".xlsx") || url.Contains("workbook") || url.Contains(":x:"))
+                // SharePointï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Ìê‡ï¿½iï¿½gï¿½Dï¿½Tï¿½Cï¿½gï¿½ÆŒÂlï¿½pOneDriveï¿½Ì—ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½j
+                if (url.Contains(".one") || url.Contains("notebook") || url.Contains(":o:") ||
+                    url.Contains("onenote.aspx") || url.Contains("_layouts/OneNote.aspx"))
+                {
+                    officeUri = $"onenote:ofe|u|{url}";
+                }
+                else if (url.Contains(".xlsx") || url.Contains("workbook") || url.Contains(":x:"))
                 {
                     officeUri = $"ms-excel:ofe|u|{url}";
                 }
@@ -155,14 +167,14 @@ namespace ModernLauncher.Services
                 }
                 else
                 {
-                    // ƒtƒ@ƒCƒ‹Ží—Þ‚ª•s–¾‚Èê‡‚Íƒuƒ‰ƒEƒU‚ÅŠJ‚­
+                    // ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Þ‚ï¿½ï¿½sï¿½ï¿½ï¿½Èê‡ï¿½Íƒuï¿½ï¿½ï¿½Eï¿½Uï¿½ÅŠJï¿½ï¿½
                     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                     return;
                 }
             }
             else if (url.Contains("docs.google.com"))
             {
-                // Google Docs‚Ìê‡‚Í“KØ‚ÈOfficeƒAƒvƒŠ‚ÅŠJ‚­
+                // Google Docsï¿½Ìê‡ï¿½Í“Kï¿½Ø‚ï¿½Officeï¿½Aï¿½vï¿½ï¿½ï¿½ÅŠJï¿½ï¿½
                 if (url.Contains("/spreadsheets/"))
                 {
                     officeUri = $"ms-excel:ofe|u|{url}";
@@ -183,12 +195,12 @@ namespace ModernLauncher.Services
             }
             else
             {
-                // ‚»‚Ì‘¼‚ÌURL‚Íƒuƒ‰ƒEƒU‚ÅŠJ‚­
+                // ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½URLï¿½Íƒuï¿½ï¿½ï¿½Eï¿½Uï¿½ÅŠJï¿½ï¿½
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 return;
             }
 
-            // Office URIƒXƒL[ƒ€‚Å‹N“®
+            // Office URIï¿½Xï¿½Lï¿½[ï¿½ï¿½ï¿½Å‹Nï¿½ï¿½
             Process.Start(new ProcessStartInfo(officeUri) { UseShellExecute = true });
         }
 
@@ -197,9 +209,12 @@ namespace ModernLauncher.Services
             string ext = Path.GetExtension(filePath).ToLower();
             string officeUri = "";
 
-            // ƒtƒ@ƒCƒ‹Šg’£Žq‚É‰ž‚¶‚ÄOffice URIƒXƒL[ƒ€‚ðŽg—p
+            // ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½qï¿½É‰ï¿½ï¿½ï¿½ï¿½ï¿½Office URIï¿½Xï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½p
             switch (ext)
             {
+                case ".one":
+                    officeUri = $"onenote:ofe|u|file:///{filePath.Replace('\\', '/')}";
+                    break;
                 case ".xlsx":
                 case ".xls":
                 case ".xlsm":
@@ -217,30 +232,30 @@ namespace ModernLauncher.Services
                     officeUri = $"ms-powerpoint:ofe|u|file:///{filePath.Replace('\\', '/')}";
                     break;
                 default:
-                    // Officeƒtƒ@ƒCƒ‹‚Å‚È‚¢ê‡‚Í’Êí‚Ì•û–@‚ÅŠJ‚­
+                    // Officeï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ê‡ï¿½Í’Êï¿½Ì•ï¿½ï¿½@ï¿½ÅŠJï¿½ï¿½
                     Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
                     return;
             }
 
-            // Office URIƒXƒL[ƒ€‚Å‹N“®
+            // Office URIï¿½Xï¿½Lï¿½[ï¿½ï¿½ï¿½Å‹Nï¿½ï¿½
             Process.Start(new ProcessStartInfo(officeUri) { UseShellExecute = true });
         }
 
         private string FindVSCodePath()
         {
-            // ˆê”Ê“I‚ÈVS Code‚ÌƒCƒ“ƒXƒg[ƒ‹ƒpƒX
+            // ï¿½ï¿½Ê“Iï¿½ï¿½VS Codeï¿½ÌƒCï¿½ï¿½ï¿½Xï¿½gï¿½[ï¿½ï¿½ï¿½pï¿½X
             string[] possiblePaths = {
                 @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Microsoft VS Code\Code.exe",
                 @"C:\Program Files\Microsoft VS Code\Code.exe",
                 @"C:\Program Files (x86)\Microsoft VS Code\Code.exe",
-                "code" // PATHŠÂ‹«•Ï”‚É‚ ‚éê‡
+                "code" // PATHï¿½Â‹ï¿½ï¿½Ïï¿½ï¿½É‚ï¿½ï¿½ï¿½ê‡
             };
 
             foreach (string path in possiblePaths)
             {
                 if (path == "code")
                 {
-                    // PATHŠÂ‹«•Ï”‚Å"code"ƒRƒ}ƒ“ƒh‚ªŽg—p‰Â”\‚©ƒ`ƒFƒbƒN
+                    // PATHï¿½Â‹ï¿½ï¿½Ïï¿½ï¿½ï¿½"code"ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½gï¿½pï¿½Â”\ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
                     try
                     {
                         var process = Process.Start(new ProcessStartInfo("code", "--version")
@@ -257,7 +272,7 @@ namespace ModernLauncher.Services
                     }
                     catch
                     {
-                        // PATHŠÂ‹«•Ï”‚ÉcodeƒRƒ}ƒ“ƒh‚ª‚È‚¢ê‡‚Í–³Ž‹
+                        // PATHï¿½Â‹ï¿½ï¿½Ïï¿½ï¿½ï¿½codeï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í–ï¿½ï¿½ï¿½
                     }
                 }
                 else if (File.Exists(path))
@@ -340,36 +355,36 @@ namespace ModernLauncher.Services
         public string GetItemType(string path)
         {
             if (string.IsNullOrEmpty(path))
-                return "•s–¾";
+                return "ï¿½sï¿½ï¿½";
 
             if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 return "Web";
 
             if (Directory.Exists(path))
-                return "ƒtƒHƒ‹ƒ_";
+                return "ï¿½tï¿½Hï¿½ï¿½ï¿½_";
 
             if (File.Exists(path))
             {
                 var ext = Path.GetExtension(path).ToLower();
                 return ext switch
                 {
-                    ".exe" or ".msi" or ".bat" or ".cmd" => "ŽÀsƒtƒ@ƒCƒ‹",
-                    ".txt" or ".rtf" => "ƒeƒLƒXƒg",
-                    ".doc" or ".docx" => "Word•¶‘",
-                    ".xls" or ".xlsx" => "Excel•¶‘",
+                    ".exe" or ".msi" or ".bat" or ".cmd" => "ï¿½ï¿½ï¿½sï¿½tï¿½@ï¿½Cï¿½ï¿½",
+                    ".txt" or ".rtf" => "ï¿½eï¿½Lï¿½Xï¿½g",
+                    ".doc" or ".docx" => "Wordï¿½ï¿½ï¿½ï¿½",
+                    ".xls" or ".xlsx" => "Excelï¿½ï¿½ï¿½ï¿½",
                     ".ppt" or ".pptx" => "PowerPoint",
                     ".pdf" => "PDF",
-                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "‰æ‘œ",
-                    ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "‰¹Šy",
-                    ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "“®‰æ",
-                    ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ˆ³kƒtƒ@ƒCƒ‹",
-                    ".lnk" => "ƒVƒ‡[ƒgƒJƒbƒg",
-                    ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ƒvƒƒOƒ‰ƒ€",
-                    _ => "ƒtƒ@ƒCƒ‹"
+                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "ï¿½æ‘œ",
+                    ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "ï¿½ï¿½ï¿½y",
+                    ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "ï¿½ï¿½ï¿½ï¿½",
+                    ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ï¿½ï¿½ï¿½kï¿½tï¿½@ï¿½Cï¿½ï¿½",
+                    ".lnk" => "ï¿½Vï¿½ï¿½ï¿½[ï¿½gï¿½Jï¿½bï¿½g",
+                    ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½",
+                    _ => "ï¿½tï¿½@ï¿½Cï¿½ï¿½"
                 };
             }
 
-            return "ƒRƒ}ƒ“ƒh";
+            return "ï¿½Rï¿½}ï¿½ï¿½ï¿½h";
         }
 
         public string DetectCategory(string path)
@@ -377,7 +392,7 @@ namespace ModernLauncher.Services
             try
             {
                 if (string.IsNullOrEmpty(path))
-                    return "‚»‚Ì‘¼";
+                    return "ï¿½ï¿½ï¿½Ì‘ï¿½";
 
                 if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 {
@@ -392,7 +407,7 @@ namespace ModernLauncher.Services
                     else if (lowerPath.Contains("redmine"))
                         return "RedmineURL";
                     else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
-                        return "Googleƒhƒ‰ƒCƒu";
+                        return "Googleï¿½hï¿½ï¿½ï¿½Cï¿½u";
                     else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
                         return "MicrosoftTeams";
                     else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
@@ -403,12 +418,12 @@ namespace ModernLauncher.Services
                              host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
                         return "OneDrive";
                     else
-                        return "WebƒTƒCƒg";
+                        return "Webï¿½Tï¿½Cï¿½g";
                 }
 
                 if (Directory.Exists(path))
                 {
-                    return "ƒtƒHƒ‹ƒ_";
+                    return "ï¿½tï¿½Hï¿½ï¿½ï¿½_";
                 }
 
                 if (File.Exists(path))
@@ -416,27 +431,27 @@ namespace ModernLauncher.Services
                     var ext = Path.GetExtension(path).ToLower();
                     return ext switch
                     {
-                        ".exe" or ".msi" or ".bat" or ".cmd" => "ƒAƒvƒŠƒP[ƒVƒ‡ƒ“",
-                        ".txt" or ".rtf" => "ƒhƒLƒ…ƒƒ“ƒg",
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "ï¿½Aï¿½vï¿½ï¿½ï¿½Pï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½",
+                        ".txt" or ".rtf" => "ï¿½hï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½g",
                         ".doc" or ".docx" => "Word",
                         ".xls" or ".xlsx" => "Excel",
                         ".ppt" or ".pptx" => "PowerPoint",
                         ".pdf" => "PDF",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "‰æ‘œ",
-                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "‰¹Šy",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "“®‰æ",
-                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ƒA[ƒJƒCƒu",
-                        ".lnk" => "ƒVƒ‡[ƒgƒJƒbƒg",
-                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ƒvƒƒOƒ‰ƒ€",
-                        _ => "ƒtƒ@ƒCƒ‹"
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "ï¿½æ‘œ",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "ï¿½ï¿½ï¿½y",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "ï¿½ï¿½ï¿½ï¿½",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "ï¿½Aï¿½[ï¿½Jï¿½Cï¿½u",
+                        ".lnk" => "ï¿½Vï¿½ï¿½ï¿½[ï¿½gï¿½Jï¿½bï¿½g",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½",
+                        _ => "ï¿½tï¿½@ï¿½Cï¿½ï¿½"
                     };
                 }
 
-                return "ƒRƒ}ƒ“ƒh";
+                return "ï¿½Rï¿½}ï¿½ï¿½ï¿½h";
             }
             catch (Exception)
             {
-                return "‚»‚Ì‘¼";
+                return "ï¿½ï¿½ï¿½Ì‘ï¿½";
             }
         }
     }
