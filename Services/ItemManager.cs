@@ -30,18 +30,15 @@ namespace ModernLauncher.Services
 
             try
             {
-                // 既存のアイテムで同じパスがないかチェック
                 if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
+                    MessageBox.Show($"\"{path}\" is already added.", "Info",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // ファイル名から名前を生成
                 var (name, description, category) = GenerateItemInfo(path);
 
-                // 新しいアイテムを作成
                 var newItem = new LauncherItem
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -55,15 +52,12 @@ namespace ModernLauncher.Services
                     ProjectName = targetProject.Name
                 };
 
-                // アイコンとタイプを設定
                 newItem.RefreshIconAndType();
-
-                // プロジェクトに追加
                 targetProject.Items.Add(newItem);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
+                throw new InvalidOperationException($"Failed to add item: {ex.Message}", ex);
             }
         }
 
@@ -76,21 +70,15 @@ namespace ModernLauncher.Services
 
             try
             {
-                // 既存のアイテムで同じパスがないかチェック
                 if (targetProject.Items.Any(i => i.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show($"「{path}」は既に追加されています。", "情報",
+                    MessageBox.Show($"\"{path}\" is already added.", "Info",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // AddItemDialogに事前情報を設定して表示
                 var dialog = new AddItemDialog(targetProject.Groups.ToList());
-                
-                // ファイル名から名前を生成
                 var (name, description, category) = GenerateItemInfo(path);
-
-                // ダイアログに初期値を設定
                 dialog.SetInitialValues(name, path, category, description, false);
 
                 if (dialog.ShowDialog() == true && dialog.Result != null)
@@ -98,16 +86,13 @@ namespace ModernLauncher.Services
                     var newItem = dialog.Result;
                     newItem.OrderIndex = targetProject.Items.Count;
                     newItem.ProjectName = targetProject.Name;
-                    
-                    // アイコンとタイプを設定
                     newItem.RefreshIconAndType();
-                    
                     targetProject.Items.Add(newItem);
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"アイテムの追加に失敗しました: {ex.Message}", ex);
+                throw new InvalidOperationException($"Failed to add item: {ex.Message}", ex);
             }
         }
 
@@ -119,10 +104,7 @@ namespace ModernLauncher.Services
                 var newItem = dialog.Result;
                 newItem.OrderIndex = targetProject.Items.Count;
                 newItem.ProjectName = targetProject.Name;
-                
-                // アイコンとタイプを設定
                 newItem.RefreshIconAndType();
-                
                 targetProject.Items.Add(newItem);
             }
         }
@@ -131,20 +113,17 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // Record the access before launching
                 RecordItemAccess(item);
-                
                 _launcherService.LaunchItem(item);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         public void LaunchGroup(Project project, ItemGroup group)
         {
-            // 「すべて」グループが選択された場合
             IEnumerable<LauncherItem> itemsToLaunch;
             if (group.Id == "all")
             {
@@ -156,18 +135,17 @@ namespace ModernLauncher.Services
             }
 
             var itemList = itemsToLaunch.ToList();
-            
+
             if (itemList.Count == 0)
             {
-                MessageBox.Show($"グループ「{group.Name}」には起動可能なアイテムがありません", "情報", 
+                MessageBox.Show($"Group \"{group.Name}\" has no launchable items.", "Info",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // 確認メッセージを表示
-            var result = MessageBox.Show($"グループ「{group.Name}」の{itemList.Count}個のアイテムを一括起動しますか？", 
-                "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            
+            var result = MessageBox.Show($"Launch {itemList.Count} items from group \"{group.Name}\"?",
+                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
             if (result == MessageBoxResult.Yes)
             {
                 int successCount = 0;
@@ -178,51 +156,43 @@ namespace ModernLauncher.Services
                 {
                     try
                     {
-                        // Record the access before launching
                         RecordItemAccess(item);
-                        
                         _launcherService.LaunchItem(item);
                         successCount++;
-                        
-                        // 各アイテムの起動間隔を設ける
                         System.Threading.Thread.Sleep(100);
                     }
                     catch (Exception ex)
                     {
                         errorCount++;
-                        errors.Add($"「{item.Name}」: {ex.Message}");
+                        errors.Add($"\"{item.Name}\": {ex.Message}");
                     }
                 }
 
-                // 結果メッセージを返す
                 if (errorCount > 0)
                 {
-                    var message = $"グループ一括起動完了\n成功: {successCount}個\n失敗: {errorCount}個";
+                    var message = $"Group launch completed\\nSuccess: {successCount}\\nFailure: {errorCount}";
                     if (errors.Count > 0 && errors.Count <= 5)
                     {
-                        message += "\n\nエラー詳細:\n" + string.Join("\n", errors);
+                        message += "\\n\\nErrors:\\n" + string.Join("\\n", errors);
                     }
                     else if (errors.Count > 5)
                     {
-                        message += "\n\nエラー詳細:\n" + string.Join("\n", errors.Take(5)) + $"\n...他{errors.Count - 5}件";
+                        message += "\\n\\nErrors:\\n" + string.Join("\\n", errors.Take(5)) + $"\\n...and {errors.Count - 5} more";
                     }
-                    
-                    MessageBox.Show(message, "一括起動結果", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    MessageBox.Show(message, "Group Launch Result", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
 
         public void EditItem(LauncherItem item, Project project)
         {
-            var dialog = new EditItemDialog(item, project.Groups.ToList());
+            var dialog = new EditItemDialog(item, project.Groups.ToList(), new List<Project> { project }, project);
             if (dialog.ShowDialog() == true && dialog.Result != null)
             {
                 var editedItem = dialog.Result;
-                
-                // アイコンとタイプを設定
                 editedItem.RefreshIconAndType();
-                
-                // 元のアイテムと置き換え
+
                 var index = project.Items.IndexOf(item);
                 if (index >= 0)
                 {
@@ -233,7 +203,7 @@ namespace ModernLauncher.Services
 
         public bool DeleteItem(LauncherItem item, Project project)
         {
-            var result = MessageBox.Show($"「{item.Name}」を削除しますか？", "確認",
+            var result = MessageBox.Show($"Delete \"{item.Name}\"?", "Confirm",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
@@ -291,7 +261,6 @@ namespace ModernLauncher.Services
 
             if (IsUrl(path))
             {
-                // URLの場合はドメイン名を名前として使用
                 try
                 {
                     var uri = new Uri(path);
@@ -300,28 +269,28 @@ namespace ModernLauncher.Services
                     {
                         name = name.Substring(4);
                     }
-                    description = $"Webサイト: {path}";
+                    description = $"Web site: {path}";
                 }
                 catch
                 {
-                    name = "Webサイト";
-                    description = $"Webサイト: {path}";
+                    name = "Web site";
+                    description = $"Web site: {path}";
                 }
             }
             else if (Directory.Exists(path))
             {
                 name = Path.GetFileName(path.TrimEnd('\\', '/'));
-                description = $"フォルダ: {path}";
+                description = $"Folder: {path}";
             }
             else if (File.Exists(path))
             {
                 name = Path.GetFileNameWithoutExtension(path);
-                description = $"ファイル: {Path.GetFileName(path)}";
+                description = $"File: {Path.GetFileName(path)}";
             }
             else
             {
                 name = Path.GetFileName(path);
-                description = $"ドラッグ&ドロップで追加: {name}";
+                description = $"Added by drag & drop: {name}";
             }
 
             if (string.IsNullOrWhiteSpace(name))
@@ -329,16 +298,14 @@ namespace ModernLauncher.Services
                 name = path;
             }
 
-            // 分類を自動判定
             string category = DetermineCategory(path);
-
             return (name, description, category);
         }
 
         private bool IsUrl(string path)
         {
-            return !string.IsNullOrEmpty(path) && 
-                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+            return !string.IsNullOrEmpty(path) &&
+                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                     path.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -347,14 +314,14 @@ namespace ModernLauncher.Services
             try
             {
                 if (string.IsNullOrEmpty(path))
-                    return "その他";
+                    return "Other";
 
                 if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 {
                     var uri = new Uri(path.StartsWith("www.") ? "http://" + path : path);
                     var host = uri.Host.ToLower();
                     var lowerPath = path.ToLower();
-                    
+
                     if (host.Contains("github.com"))
                         return "GitHubURL";
                     else if (host.Contains("gitlab.com") || lowerPath.Contains("gitlab"))
@@ -362,22 +329,22 @@ namespace ModernLauncher.Services
                     else if (lowerPath.Contains("redmine"))
                         return "RedmineURL";
                     else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
-                        return "Googleドライブ";
+                        return "Google Drive";
                     else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
                         return "MicrosoftTeams";
-                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") ||
                              host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
                         return "SharePoint";
                     else if (host.Contains("outlook.office365.com") || host.Contains("outlook.office.com") ||
                              host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
                         return "OneDrive";
                     else
-                        return "Webサイト";
+                        return "Web site";
                 }
 
                 if (Directory.Exists(path))
                 {
-                    return "フォルダ";
+                    return "Folder";
                 }
 
                 if (File.Exists(path))
@@ -385,27 +352,27 @@ namespace ModernLauncher.Services
                     var ext = Path.GetExtension(path).ToLower();
                     return ext switch
                     {
-                        ".exe" or ".msi" or ".bat" or ".cmd" => "アプリケーション",
-                        ".txt" or ".rtf" => "ドキュメント",
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "Application",
+                        ".txt" or ".rtf" => "Document",
                         ".doc" or ".docx" => "Word",
                         ".xls" or ".xlsx" => "Excel",
                         ".ppt" or ".pptx" => "PowerPoint",
                         ".pdf" => "PDF",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
-                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
-                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "アーカイブ",
-                        ".lnk" => "ショートカット",
-                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "プログラム",
-                        _ => "ファイル"
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "Image",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "Music",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "Video",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "Archive",
+                        ".lnk" => "Shortcut",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "Program",
+                        _ => "File"
                     };
                 }
 
-                return "コマンド";
+                return "Command";
             }
             catch (Exception)
             {
-                return "その他";
+                return "Other";
             }
         }
     }

@@ -553,6 +553,65 @@ namespace ModernLauncher.ViewModels
             }
         }
 
+        private void UpdateItemGroupNamesForProject(LauncherItem item, Project project)
+        {
+            if (project != null && item.GroupIds != null)
+            {
+                var groupNames = project.Groups
+                    .Where(g => item.GroupIds.Contains(g.Id) && g.Id != "all")
+                    .Select(g => g.Name);
+                item.GroupNames = string.Join(", ", groupNames);
+            }
+        }
+
+        private void UpdateGroupListForProject(Project project)
+        {
+            if (project != null)
+            {
+                var sortedGroups = project.Groups.OrderBy(g => g.OrderIndex).ToList();
+                project.Groups.Clear();
+                foreach (var group in sortedGroups)
+                {
+                    if (group.Id == "all")
+                    {
+                        group.ItemCount = $"{project.Items.Count} アイテム";
+                    }
+                    else
+                    {
+                        var count = project.Items.Count(i => i.GroupIds != null && i.GroupIds.Contains(group.Id));
+                        group.ItemCount = $"{count} アイテム";
+                    }
+                    project.Groups.Add(group);
+                }
+            }
+        }
+
+        private List<Project> GetAllProjectsFlattened()
+        {
+            var result = new List<Project>();
+            foreach (var node in ProjectNodes)
+            {
+                CollectProjects(node, result);
+            }
+            return result;
+        }
+
+        private void CollectProjects(ProjectNode node, List<Project> result)
+        {
+            if (!node.IsFolder && node.Project != null)
+            {
+                result.Add(node.Project);
+            }
+
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                {
+                    CollectProjects(child, result);
+                }
+            }
+        }
+
         private void InitializeUI()
         {
             if (Projects.Count > 0)
@@ -1868,26 +1927,47 @@ namespace ModernLauncher.ViewModels
             var item = parameter as LauncherItem ?? SelectedItem;
             if (item != null && CurrentProject != null)
             {
-                var dialog = new EditItemDialog(item, CurrentProject.Groups.ToList());
+                // Get all projects for the dialog
+                var allProjects = GetAllProjectsFlattened();
+                var dialog = new EditItemDialog(item, CurrentProject.Groups.ToList(), allProjects, CurrentProject);
                 if (dialog.ShowDialog() == true && dialog.Result != null)
                 {
                     var editedItem = dialog.Result;
-                    
+
                     // 新しいメソッドを使用してアイコンとタイプを設定
                     editedItem.RefreshIconAndType();
-                    
-                    // グループ名を更新
-                    UpdateItemGroupNames(editedItem);
-                    
-                    // 元のアイテムと置き換え
-                    var index = CurrentProject.Items.IndexOf(item);
-                    if (index >= 0)
+
+                    // Check if project was changed
+                    if (dialog.SelectedProject != null && dialog.SelectedProject.Id != CurrentProject.Id)
                     {
-                        CurrentProject.Items[index] = editedItem;
+                        // Remove from current project
+                        CurrentProject.Items.Remove(item);
+
+                        // Add to new project
+                        dialog.SelectedProject.Items.Add(editedItem);
+
+                        // Update group names for the new project
+                        UpdateItemGroupNamesForProject(editedItem, dialog.SelectedProject);
+
+                        // Update group list for new project
+                        UpdateGroupListForProject(dialog.SelectedProject);
                     }
-                    
-                    UpdateGroupList();
-                    
+                    else
+                    {
+                        // Same project - just update the item
+                        // グループ名を更新
+                        UpdateItemGroupNames(editedItem);
+
+                        // 元のアイテムと置き換え
+                        var index = CurrentProject.Items.IndexOf(item);
+                        if (index >= 0)
+                        {
+                            CurrentProject.Items[index] = editedItem;
+                        }
+
+                        UpdateGroupList();
+                    }
+
                     // 表示を更新
                     if (SelectedViewGroup != null)
                     {
@@ -1897,7 +1977,7 @@ namespace ModernLauncher.ViewModels
                     {
                         ShowAllItems();
                     }
-                    
+
                     SaveData();
                 }
             }

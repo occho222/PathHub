@@ -18,28 +18,39 @@ namespace ModernLauncher.Views
     public partial class EditItemDialog : Window
     {
         public LauncherItem? Result { get; private set; }
-        
+        public Project? SelectedProject { get; private set; }
+
         private readonly List<ItemGroup> availableGroups;
         private readonly LauncherItem originalItem;
         private readonly CategoryService _categoryService;
+        private readonly List<Project> availableProjects;
+        private readonly Project currentProject;
 
-        public EditItemDialog(LauncherItem item, List<ItemGroup> groups)
+        public EditItemDialog(LauncherItem item, List<ItemGroup> groups, List<Project> projects, Project currentProject)
         {
             InitializeComponent();
-            
+
             originalItem = item;
             availableGroups = groups;
+            availableProjects = projects;
+            this.currentProject = currentProject;
             _categoryService = new CategoryService();
-            
+
             InitializeControls();
             LoadItemData();
-            
+
             // Set focus to name textbox
             NameTextBox.Focus();
         }
 
         private void InitializeControls()
         {
+            // Initialize project ComboBox
+            foreach (var project in availableProjects)
+            {
+                ProjectComboBox.Items.Add(project);
+            }
+
             // Initialize category ComboBox with all available categories
             LoadCategories();
 
@@ -72,7 +83,10 @@ namespace ModernLauncher.Views
             NameTextBox.Text = originalItem.Name;
             PathTextBox.Text = originalItem.Path;
             DescriptionTextBox.Text = originalItem.Description ?? string.Empty;
-            
+
+            // Set project
+            ProjectComboBox.SelectedItem = currentProject;
+
             // Set category (select from existing items or set text)
             bool categoryFound = false;
             foreach (var item in CategoryComboBox.Items)
@@ -84,7 +98,7 @@ namespace ModernLauncher.Views
                     break;
                 }
             }
-            
+
             if (!categoryFound)
             {
                 CategoryComboBox.Text = originalItem.Category ?? "その他";
@@ -197,6 +211,9 @@ namespace ModernLauncher.Views
                 OpenWithVSCode = VSCodeCheckBox?.IsChecked == true,
                 OpenWithOffice = OfficeCheckBox?.IsChecked == true
             };
+
+            // Set selected project
+            SelectedProject = ProjectComboBox.SelectedItem as Project;
 
             DialogResult = true;
         }
