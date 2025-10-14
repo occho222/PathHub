@@ -151,7 +151,8 @@ namespace ModernLauncher.Services
                 if (url.Contains(".one") || url.Contains("notebook") || url.Contains(":o:") ||
                     url.Contains("onenote.aspx") || url.Contains("_layouts/OneNote.aspx"))
                 {
-                    officeUri = $"onenote:ofe|u|{url}";
+                    // OneNote uses onenote:https://... format to open in desktop app
+                    officeUri = $"onenote:{url}";
                 }
                 else if (url.Contains(".xlsx") || url.Contains("workbook") || url.Contains(":x:"))
                 {
@@ -213,7 +214,8 @@ namespace ModernLauncher.Services
             switch (ext)
             {
                 case ".one":
-                    officeUri = $"onenote:ofe|u|file:///{filePath.Replace('\\', '/')}";
+                    // OneNote uses onenote:file:/// format
+                    officeUri = $"onenote:file:///{filePath.Replace('\\', '/')}";
                     break;
                 case ".xlsx":
                 case ".xls":
