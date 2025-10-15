@@ -322,8 +322,11 @@ namespace ModernLauncher.Services
                     var host = uri.Host.ToLower();
                     var lowerPath = path.ToLower();
 
+                    // URLデコードして.oneが含まれているか確認（エンコードされた.oneも検出）
+                    string decodedPath = Uri.UnescapeDataString(lowerPath);
+
                     // OneNoteの判定を最優先（.oneが含まれていればOneNote）
-                    if (lowerPath.Contains(".one"))
+                    if (lowerPath.Contains(".one") || decodedPath.Contains(".one"))
                         return "OneNote";
 
                     if (host.Contains("github.com"))
