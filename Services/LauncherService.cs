@@ -1,4 +1,4 @@
-using ModernLauncher.Interfaces;
+﻿using ModernLauncher.Interfaces;
 using ModernLauncher.Models;
 using System;
 using System.Diagnostics;
@@ -12,23 +12,23 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // �ŏI�A�N�Z�X�������X�V
+                // 最終アクセス日時を更新
                 item.LastAccessed = DateTime.Now;
-                
-                // VSCode�ŊJ���I�v�V�������I���̏ꍇ��VSCode�ŊJ��
+
+                // VSCodeで開くオプションが選択されている場合はVSCodeで開く
                 if (item.OpenWithVSCode)
                 {
                     LaunchItemWithVSCode(item);
                     return;
                 }
-                
-                // Office�A�v���ŊJ���I�v�V�������I���̏ꍇ��Office�A�v���ŊJ��
+
+                // Officeアプリで開くオプションが選択されている場合はOfficeアプリで開く
                 if (item.OpenWithOffice)
                 {
                     LaunchItemWithOffice(item);
                     return;
                 }
-                
+
                 string path = item.Path;
 
                 if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
@@ -56,7 +56,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("�N���Ɏ��s���܂���: " + ex.Message, ex);
+                throw new InvalidOperationException("起動に失敗しました: " + ex.Message, ex);
             }
         }
 
@@ -64,38 +64,38 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // �ŏI�A�N�Z�X�������X�V
+                // 最終アクセス日時を更新
                 item.LastAccessed = DateTime.Now;
-                
+
                 string path = item.Path;
 
-                // VSCode�̃p�X������
+                // VSCodeのパスを検索
                 string vsCodePath = FindVSCodePath();
                 if (string.IsNullOrEmpty(vsCodePath))
                 {
-                    throw new InvalidOperationException("VS Code ��������܂���BVS Code ���C���X�g�[������Ă��邱�Ƃ��m�F���Ă��������B");
+                    throw new InvalidOperationException("VS Code が見つかりません。VS Code がインストールされていることを確認してください。");
                 }
 
-                // VSCode�ŊJ��
+                // VSCodeで開く
                 if (Directory.Exists(path))
                 {
-                    // �t�H���_�̏ꍇ
+                    // フォルダの場合
                     Process.Start(new ProcessStartInfo(vsCodePath, $"\"{path}\"") { UseShellExecute = true });
                 }
                 else if (File.Exists(path))
                 {
-                    // �t�@�C���̏ꍇ
+                    // ファイルの場合
                     Process.Start(new ProcessStartInfo(vsCodePath, $"\"{path}\"") { UseShellExecute = true });
                 }
                 else
                 {
-                    // �p�X�����݂��Ȃ��ꍇ�͒ʏ�̋N�����@������
+                    // パスが存在しない場合は通常の起動方法を使用
                     LaunchItem(new LauncherItem { Path = path, OpenWithVSCode = false });
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("VS Code �ł̋N���Ɏ��s���܂���: " + ex.Message, ex);
+                throw new InvalidOperationException("VS Code での起動に失敗しました: " + ex.Message, ex);
             }
         }
 
@@ -103,31 +103,31 @@ namespace ModernLauncher.Services
         {
             try
             {
-                // �ŏI�A�N�Z�X�������X�V
+                // 最終アクセス日時を更新
                 item.LastAccessed = DateTime.Now;
-                
+
                 string path = item.Path;
 
-                // URL�܂���SharePoint�̏ꍇ
+                // URLまたはSharePointの場合
                 if (path.StartsWith("http://") || path.StartsWith("https://"))
                 {
                     LaunchOfficeUrl(path);
                     return;
                 }
 
-                // ���[�J���t�@�C���̏ꍇ
+                // ローカルファイルの場合
                 if (File.Exists(path))
                 {
                     LaunchOfficeFile(path);
                     return;
                 }
 
-                // �t�@�C�������݂��Ȃ��ꍇ�͒ʏ�̋N�����@������
+                // ファイルが存在しない場合は通常の起動方法を使用
                 LaunchItem(new LauncherItem { Path = path, OpenWithOffice = false });
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Office �A�v���ł̋N���Ɏ��s���܂���: " + ex.Message, ex);
+                throw new InvalidOperationException("Office アプリでの起動に失敗しました: " + ex.Message, ex);
             }
         }
 
@@ -140,14 +140,14 @@ namespace ModernLauncher.Services
                 return;
             }
 
-            // SharePoint�� Office Online ��URL��Office�A�v���ŊJ��
+            // SharePointや Office Online のURLをOfficeアプリで開く
             string officeUri = "";
 
-            // URL�̎�ނɉ�����Office URI�X�L�[�����g�p
+            // URLの種類に応じてOffice URIスキームを使用
             if (url.Contains("sharepoint.com") || url.Contains("office365.sharepoint.com") ||
                 url.Contains("-my.sharepoint.com"))
             {
-                // SharePoint�̃t�@�C���̏ꍇ�i�g�D�T�C�g�ƌl�pOneDrive�̗����ɑΉ��j
+                // SharePointのファイルの場合（企業サイトと個人OneDriveの両方に対応）
                 if (url.Contains(".one") || url.Contains("notebook") || url.Contains(":o:") ||
                     url.Contains("onenote.aspx") || url.Contains("_layouts/OneNote.aspx"))
                 {
@@ -168,14 +168,14 @@ namespace ModernLauncher.Services
                 }
                 else
                 {
-                    // �t�@�C����ނ��s���ȏꍇ�̓u���E�U�ŊJ��
+                    // ファイル種類が不明な場合はブラウザで開く
                     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                     return;
                 }
             }
             else if (url.Contains("docs.google.com"))
             {
-                // Google Docs�̏ꍇ�͓K�؂�Office�A�v���ŊJ��
+                // Google Docsの場合は適切なOfficeアプリで開く
                 if (url.Contains("/spreadsheets/"))
                 {
                     officeUri = $"ms-excel:ofe|u|{url}";
@@ -196,12 +196,12 @@ namespace ModernLauncher.Services
             }
             else
             {
-                // ���̑���URL�̓u���E�U�ŊJ��
+                // その他のURLはブラウザで開く
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 return;
             }
 
-            // Office URI�X�L�[���ŋN��
+            // Office URIスキームで起動
             Process.Start(new ProcessStartInfo(officeUri) { UseShellExecute = true });
         }
 
@@ -210,7 +210,7 @@ namespace ModernLauncher.Services
             string ext = Path.GetExtension(filePath).ToLower();
             string officeUri = "";
 
-            // �t�@�C���g���q�ɉ�����Office URI�X�L�[�����g�p
+            // ファイル拡張子に応じてOffice URIスキームを使用
             switch (ext)
             {
                 case ".one":
@@ -234,30 +234,30 @@ namespace ModernLauncher.Services
                     officeUri = $"ms-powerpoint:ofe|u|file:///{filePath.Replace('\\', '/')}";
                     break;
                 default:
-                    // Office�t�@�C���łȂ��ꍇ�͒ʏ�̕��@�ŊJ��
+                    // Officeファイルでない場合は通常の方法で開く
                     Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
                     return;
             }
 
-            // Office URI�X�L�[���ŋN��
+            // Office URIスキームで起動
             Process.Start(new ProcessStartInfo(officeUri) { UseShellExecute = true });
         }
 
         private string FindVSCodePath()
         {
-            // ��ʓI��VS Code�̃C���X�g�[���p�X
+            // 一般的なVS Codeのインストールパス
             string[] possiblePaths = {
                 @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Microsoft VS Code\Code.exe",
                 @"C:\Program Files\Microsoft VS Code\Code.exe",
                 @"C:\Program Files (x86)\Microsoft VS Code\Code.exe",
-                "code" // PATH���ϐ��ɂ���ꍇ
+                "code" // PATH環境変数にある場合
             };
 
             foreach (string path in possiblePaths)
             {
                 if (path == "code")
                 {
-                    // PATH���ϐ���"code"�R�}���h���g�p�\���`�F�b�N
+                    // PATH環境変数の"code"コマンドが使用可能かチェック
                     try
                     {
                         var process = Process.Start(new ProcessStartInfo("code", "--version")
@@ -274,7 +274,7 @@ namespace ModernLauncher.Services
                     }
                     catch
                     {
-                        // PATH���ϐ���code�R�}���h���Ȃ��ꍇ�͖���
+                        // PATH環境変数にcodeコマンドがない場合は無視
                     }
                 }
                 else if (File.Exists(path))
@@ -357,36 +357,36 @@ namespace ModernLauncher.Services
         public string GetItemType(string path)
         {
             if (string.IsNullOrEmpty(path))
-                return "�s��";
+                return "不明";
 
             if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 return "Web";
 
             if (Directory.Exists(path))
-                return "�t�H���_";
+                return "フォルダ";
 
             if (File.Exists(path))
             {
                 var ext = Path.GetExtension(path).ToLower();
                 return ext switch
                 {
-                    ".exe" or ".msi" or ".bat" or ".cmd" => "���s�t�@�C��",
-                    ".txt" or ".rtf" => "�e�L�X�g",
-                    ".doc" or ".docx" => "Word����",
-                    ".xls" or ".xlsx" => "Excel����",
+                    ".exe" or ".msi" or ".bat" or ".cmd" => "実行ファイル",
+                    ".txt" or ".rtf" => "テキスト",
+                    ".doc" or ".docx" => "Word文書",
+                    ".xls" or ".xlsx" => "Excel文書",
                     ".ppt" or ".pptx" => "PowerPoint",
                     ".pdf" => "PDF",
-                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "�摜",
-                    ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "���y",
-                    ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "����",
-                    ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "���k�t�@�C��",
-                    ".lnk" => "�V���[�g�J�b�g",
-                    ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "�v���O����",
-                    _ => "�t�@�C��"
+                    ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
+                    ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
+                    ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
+                    ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "圧縮ファイル",
+                    ".lnk" => "ショートカット",
+                    ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "プログラム",
+                    _ => "ファイル"
                 };
             }
 
-            return "�R�}���h";
+            return "コマンド";
         }
 
         public string DetectCategory(string path)
@@ -394,14 +394,14 @@ namespace ModernLauncher.Services
             try
             {
                 if (string.IsNullOrEmpty(path))
-                    return "���̑�";
+                    return "その他";
 
                 if (path.StartsWith("http://") || path.StartsWith("https://") || path.StartsWith("www."))
                 {
                     var uri = new Uri(path.StartsWith("www.") ? "http://" + path : path);
                     var host = uri.Host.ToLower();
                     var lowerPath = path.ToLower();
-                    
+
                     if (host.Contains("github.com"))
                         return "GitHubURL";
                     else if (host.Contains("gitlab.com") || lowerPath.Contains("gitlab"))
@@ -409,10 +409,10 @@ namespace ModernLauncher.Services
                     else if (lowerPath.Contains("redmine"))
                         return "RedmineURL";
                     else if (host.Contains("drive.google.com") || host.Contains("docs.google.com"))
-                        return "Google�h���C�u";
+                        return "Googleドライブ";
                     else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
                         return "MicrosoftTeams";
-                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") || 
+                    else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") ||
                              host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com") ||
                              host.Contains("-my.sharepoint.com"))
                         return "SharePoint";
@@ -420,12 +420,12 @@ namespace ModernLauncher.Services
                              host.Contains("onedrive.live.com") || host.Contains("1drv.ms"))
                         return "OneDrive";
                     else
-                        return "Web�T�C�g";
+                        return "Webサイト";
                 }
 
                 if (Directory.Exists(path))
                 {
-                    return "�t�H���_";
+                    return "フォルダ";
                 }
 
                 if (File.Exists(path))
@@ -433,27 +433,27 @@ namespace ModernLauncher.Services
                     var ext = Path.GetExtension(path).ToLower();
                     return ext switch
                     {
-                        ".exe" or ".msi" or ".bat" or ".cmd" => "�A�v���P�[�V����",
-                        ".txt" or ".rtf" => "�h�L�������g",
+                        ".exe" or ".msi" or ".bat" or ".cmd" => "アプリケーション",
+                        ".txt" or ".rtf" => "ドキュメント",
                         ".doc" or ".docx" => "Word",
                         ".xls" or ".xlsx" => "Excel",
                         ".ppt" or ".pptx" => "PowerPoint",
                         ".pdf" => "PDF",
-                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "�摜",
-                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "���y",
-                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "����",
-                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "�A�[�J�C�u",
-                        ".lnk" => "�V���[�g�J�b�g",
-                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "�v���O����",
-                        _ => "�t�@�C��"
+                        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => "画像",
+                        ".mp3" or ".wav" or ".wma" or ".flac" or ".aac" or ".ogg" => "音楽",
+                        ".mp4" or ".avi" or ".mkv" or ".wmv" or ".mov" or ".flv" or ".webm" => "動画",
+                        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => "アーカイブ",
+                        ".lnk" => "ショートカット",
+                        ".py" or ".js" or ".html" or ".css" or ".cpp" or ".c" or ".cs" or ".java" or ".php" => "プログラム",
+                        _ => "ファイル"
                     };
                 }
 
-                return "�R�}���h";
+                return "コマンド";
             }
             catch (Exception)
             {
-                return "���̑�";
+                return "その他";
             }
         }
     }

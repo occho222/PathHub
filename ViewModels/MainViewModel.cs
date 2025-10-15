@@ -1395,6 +1395,13 @@ namespace ModernLauncher.ViewModels
             }
 
             var dialog = new AddItemDialog(targetProject.Groups.ToList());
+
+            // パラメータとしてクリップボードの値が渡された場合は、パスに設定
+            if (parameter is string clipboardPath && !string.IsNullOrWhiteSpace(clipboardPath))
+            {
+                dialog.SetInitialValues("", clipboardPath, "", "");
+            }
+
             if (dialog.ShowDialog() == true && dialog.Result != null)
             {
                 var newItem = dialog.Result;

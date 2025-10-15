@@ -16,17 +16,17 @@ namespace ModernLauncher.Services
         private List<string> _categories = new List<string>();
         private List<string> _defaultCategories = new List<string>
         {
-            "ƒAƒvƒŠƒP[ƒVƒ‡ƒ“",
-            "ƒhƒLƒ…ƒƒ“ƒg",
-            "‰æ‘œ",
-            "‰¹Šy",
-            "“®‰æ",
-            "ƒA[ƒJƒCƒu",
-            "WebƒTƒCƒg",
+            "ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³",
+            "ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ",
+            "ç”»åƒ",
+            "éŸ³æ¥½",
+            "å‹•ç”»",
+            "ã‚¢ãƒ¼ã‚«ã‚¤ãƒ–",
+            "Webã‚µã‚¤ãƒˆ",
             "GitHubURL",
             "GitLabURL",
             "RedmineURL",
-            "Googleƒhƒ‰ƒCƒu",
+            "Googleãƒ‰ãƒ©ã‚¤ãƒ–",
             "MicrosoftTeams",
             "SharePoint",
             "OneDrive",
@@ -34,12 +34,12 @@ namespace ModernLauncher.Services
             "Word",
             "PowerPoint",
             "PDF",
-            "ƒVƒ‡[ƒgƒJƒbƒg",
-            "ƒtƒ@ƒCƒ‹",
-            "ƒtƒHƒ‹ƒ_",
-            "ƒvƒƒOƒ‰ƒ€",
-            "ƒRƒ}ƒ“ƒh",
-            "‚»‚Ì‘¼"
+            "ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆ",
+            "ãƒ•ã‚¡ã‚¤ãƒ«",
+            "ãƒ•ã‚©ãƒ«ãƒ€",
+            "ãƒ—ãƒ­ã‚°ãƒ©ãƒ ",
+            "ã‚³ãƒãƒ³ãƒ‰",
+            "ãã®ä»–"
         };
 
         public CategoryService()

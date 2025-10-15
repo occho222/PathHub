@@ -293,30 +293,8 @@ namespace ModernLauncher.Views
 
                 if (DataContext is MainViewModel viewModel)
                 {
-                    // プロジェクトが選択されているか確認
-                    if (viewModel.CurrentProject == null && !viewModel.IsShowingAllProjects)
-                    {
-                        MessageBox.Show("プロジェクトを選択してください", "エラー",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    // 全プロジェクト表示時は最初のプロジェクトに追加
-                    var targetProject = viewModel.CurrentProject ?? viewModel.Projects.FirstOrDefault();
-                    if (targetProject == null)
-                    {
-                        MessageBox.Show("アイテムを追加するプロジェクトがありません", "エラー",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    // AddItemDialogを開く
-                    var dialog = new AddItemDialog(targetProject.Groups.ToList());
-
-                    // クリップボードの値をパスに設定
-                    dialog.SetInitialValues("", clipboardText.Trim(), "", "");
-
-                    dialog.ShowDialog();
+                    // AddItemCommandを実行して、クリップボードの値を渡す
+                    viewModel.AddItemCommand.Execute(clipboardText.Trim());
                 }
             }
             catch (Exception ex)
