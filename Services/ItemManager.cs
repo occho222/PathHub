@@ -332,6 +332,10 @@ namespace ModernLauncher.Services
                         return "Google Drive";
                     else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
                         return "MicrosoftTeams";
+                    else if (lowerPath.Contains("onenote") || lowerPath.Contains(".one") ||
+                             (host.Contains("sharepoint.com") && lowerPath.Contains("onenote.aspx")) ||
+                             (host.Contains("onedrive.live.com") && lowerPath.Contains("onenote:")))
+                        return "OneNote";
                     else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") ||
                              host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
                         return "SharePoint";

@@ -30,6 +30,7 @@ namespace ModernLauncher.Services
             "MicrosoftTeams",
             "SharePoint",
             "OneDrive",
+            "OneNote",
             "Excel",
             "Word",
             "PowerPoint",

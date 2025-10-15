@@ -31,6 +31,7 @@ namespace ModernLauncher.Models
             ["MicrosoftTeams"] = "#6264A7",    // Microsoft Teams のパープル
             ["SharePoint"] = "#0078D4",        // SharePoint/Microsoft のブルー
             ["OneDrive"] = "#0078D4",          // OneDrive のブルー
+            ["OneNote"] = "#7719AA",           // OneNote の紫色
             ["Excel"] = "#217346",             // Excel のグリーン
             ["Word"] = "#2B579A",              // Word のブルー
             ["PowerPoint"] = "#D24726",        // PowerPoint のオレンジ
