@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -26,10 +29,14 @@ namespace ModernLauncher.Views
         public List<string> Tips { get; private set; }
         public List<string> AboutInfo { get; private set; }
         public string AppVersionText { get; private set; }
+        public string UserDataPath { get; private set; }
 
         private void InitializeHelpContent()
         {
             AppVersionText = $"Modern Project Management Tool {VersionHelper.GetDisplayVersion()}";
+            UserDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "NicoPath");
 
             BasicUsageItems = new List<string>
             {
@@ -123,6 +130,32 @@ namespace ModernLauncher.Views
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Directory.Exists(UserDataPath))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = UserDataPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    });
+                }
+                else
+                {
+                    MessageBox.Show($"データフォルダが見つかりません:\n{UserDataPath}", "エラー",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"フォルダを開けませんでした:\n{ex.Message}", "エラー",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

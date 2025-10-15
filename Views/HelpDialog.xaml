@@ -236,7 +236,7 @@
                 <!-- About Section -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <TextBlock Text="About This Software" 
+                        <TextBlock Text="About This Software"
                                    Style="{StaticResource SectionTitleStyle}"/>
                         <ItemsControl ItemsSource="{Binding AboutInfo}">
                             <ItemsControl.ItemTemplate>
@@ -248,6 +248,61 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- User Data Path Section -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="ユーザーデータ保存場所"
+                                   Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Text="プロジェクト、設定、履歴データの保存場所:"
+                                   Style="{StaticResource ItemTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Text="{Binding UserDataPath, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 Background="#F8F9FA"
+                                 BorderBrush="#DEE2E6"
+                                 BorderThickness="1"
+                                 Padding="8"
+                                 FontFamily="Consolas, Courier New, monospace"
+                                 FontSize="11"
+                                 TextWrapping="Wrap"
+                                 Margin="0,0,0,12"/>
+                        <Button Content="📁 フォルダを開く"
+                                Click="OpenDataFolder_Click"
+                                Background="#28A745"
+                                Foreground="White"
+                                BorderBrush="#28A745"
+                                BorderThickness="1"
+                                Padding="12,6"
+                                MinWidth="140"
+                                Height="32"
+                                HorizontalAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="6"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#218838"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#1E7E34"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </StackPanel>
                 </Border>
             </StackPanel>
