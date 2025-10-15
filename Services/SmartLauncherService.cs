@@ -11,13 +11,27 @@ namespace ModernLauncher.Services
 {
     public class SmartLauncherService : ISmartLauncherService
     {
-        private readonly string accessHistoryFile = "pathAccessHistory.json";
+        private readonly string accessHistoryFile;
         private readonly ILauncherService launcherService;
         private List<PathAccessHistory> accessHistory = new List<PathAccessHistory>();
 
         public SmartLauncherService(ILauncherService launcherService)
         {
             this.launcherService = launcherService;
+
+            // ユーザーフォルダ（AppData\Roaming\NicoPath）を使用
+            var appDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "NicoPath");
+
+            accessHistoryFile = Path.Combine(appDataFolder, "pathAccessHistory.json");
+
+            // フォルダが存在しない場合は作成
+            if (!Directory.Exists(appDataFolder))
+            {
+                Directory.CreateDirectory(appDataFolder);
+            }
+
             LoadAccessHistory();
         }
 

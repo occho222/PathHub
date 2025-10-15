@@ -11,13 +11,29 @@ namespace ModernLauncher.Services
 {
     public class ProjectService : IProjectService
     {
-        private readonly string projectsFolder = "Projects";
-        private readonly string projectListFile = "projects.json";
-        private readonly string colorSettingsFile = "colorSettings.json";
-        private readonly string windowLayoutFile = "windowLayout.json";
+        private readonly string appDataFolder;
+        private readonly string projectsFolder;
+        private readonly string projectListFile;
+        private readonly string colorSettingsFile;
+        private readonly string windowLayoutFile;
 
         public ProjectService()
         {
+            // ユーザーフォルダ（AppData\Roaming\NicoPath）を使用
+            appDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "NicoPath");
+
+            projectsFolder = Path.Combine(appDataFolder, "Projects");
+            projectListFile = Path.Combine(appDataFolder, "projects.json");
+            colorSettingsFile = Path.Combine(appDataFolder, "colorSettings.json");
+            windowLayoutFile = Path.Combine(appDataFolder, "windowLayout.json");
+
+            // フォルダが存在しない場合は作成
+            if (!Directory.Exists(appDataFolder))
+            {
+                Directory.CreateDirectory(appDataFolder);
+            }
             if (!Directory.Exists(projectsFolder))
             {
                 Directory.CreateDirectory(projectsFolder);

@@ -11,7 +11,7 @@ namespace ModernLauncher.Services
     {
         private static readonly string CategoriesFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ModernLauncher", "categories.json");
+            "NicoPath", "categories.json");
 
         private List<string> _categories = new List<string>();
         private List<string> _defaultCategories = new List<string>
