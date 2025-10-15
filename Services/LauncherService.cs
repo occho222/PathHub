@@ -3,6 +3,7 @@ using ModernLauncher.Models;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Specialized;
 
 namespace ModernLauncher.Services
 {
@@ -138,6 +139,107 @@ namespace ModernLauncher.Services
             {
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 return;
+            }
+
+            // OneDrive/SharePointのOneNoteリンクからonenote:プロトコルを抽出または変換
+            if ((url.Contains("onedrive.live.com") || url.Contains("sharepoint.com")) &&
+                (url.Contains("onenote:") || url.Contains("OneNote.aspx")))
+            {
+                try
+                {
+                    // URLに既に "onenote:https://..." が含まれている場合は抽出
+                    int onenoteIndex = url.IndexOf("onenote:", StringComparison.OrdinalIgnoreCase);
+                    if (onenoteIndex >= 0)
+                    {
+                        string onenoteUrl = url.Substring(onenoteIndex);
+
+                        // 最初の空白またはURLエンコードされた空白までを取得
+                        int endIndex = onenoteUrl.IndexOfAny(new[] { ' ', '\t', '\r', '\n' });
+                        if (endIndex > 0)
+                        {
+                            onenoteUrl = onenoteUrl.Substring(0, endIndex);
+                        }
+
+                        Process.Start(new ProcessStartInfo(onenoteUrl) { UseShellExecute = true });
+                        return;
+                    }
+
+                    // SharePointのOneNote.aspxリンクをonenote:形式に変換
+                    if (url.Contains("OneNote.aspx") || url.Contains("onenote.aspx"))
+                    {
+                        var uri = new Uri(url);
+                        var queryParams = ParseQueryString(uri.Query);
+
+                        // id パラメータからノートブックパスを取得
+                        string? idParam = queryParams.ContainsKey("id") ? queryParams["id"] : null;
+                        string? wdParam = queryParams.ContainsKey("wd") ? queryParams["wd"] : null;
+
+                        if (!string.IsNullOrEmpty(idParam) && !string.IsNullOrEmpty(wdParam))
+                        {
+                            // idパラメータをデコード
+                            string notebookPath = Uri.UnescapeDataString(idParam);
+
+                            // wdパラメータから .one ファイル名とセクション/ページ情報を抽出
+                            // 形式: target(ファイル名.one|section-id|ページタイトル|page-id|)
+                            string wdDecoded = Uri.UnescapeDataString(wdParam);
+
+                            if (wdDecoded.StartsWith("target(") && wdDecoded.Contains(".one"))
+                            {
+                                int oneIndex = wdDecoded.IndexOf(".one");
+                                int startIndex = wdDecoded.IndexOf('(') + 1;
+
+                                if (oneIndex > startIndex)
+                                {
+                                    string oneFileName = wdDecoded.Substring(startIndex, oneIndex - startIndex + 4);
+
+                                    // パイプで区切られた情報を抽出
+                                    string[] parts = wdDecoded.Substring(startIndex).Split('|');
+
+                                    string sectionId = "";
+                                    string pageId = "";
+                                    string pageTitle = "";
+
+                                    if (parts.Length >= 4)
+                                    {
+                                        sectionId = parts[1].Trim();
+                                        pageTitle = parts[2].Trim();
+                                        pageId = parts[3].Trim().TrimEnd(')', ' ');
+                                    }
+
+                                    // SharePointのベースURLを構築
+                                    string baseUrl = $"{uri.Scheme}://{uri.Host}{notebookPath}/{oneFileName}";
+
+                                    // onenote: URLを構築
+                                    string onenoteUrl = $"onenote:{baseUrl}";
+
+                                    // ページタイトルがあれば追加
+                                    if (!string.IsNullOrEmpty(pageTitle))
+                                    {
+                                        onenoteUrl += $"#{pageTitle}";
+                                    }
+
+                                    // セクションIDとページIDを追加
+                                    if (!string.IsNullOrEmpty(sectionId))
+                                    {
+                                        onenoteUrl += $"&section-id={sectionId}";
+                                    }
+                                    if (!string.IsNullOrEmpty(pageId))
+                                    {
+                                        onenoteUrl += $"&page-id={pageId}";
+                                    }
+                                    onenoteUrl += "&end";
+
+                                    Process.Start(new ProcessStartInfo(onenoteUrl) { UseShellExecute = true });
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // 抽出・変換に失敗した場合は通常の処理を続行
+                }
             }
 
             // SharePointや Office Online のURLをOfficeアプリで開く
@@ -455,6 +557,34 @@ namespace ModernLauncher.Services
             {
                 return "その他";
             }
+        }
+
+        // URLクエリ文字列を解析するヘルパーメソッド
+        private Dictionary<string, string> ParseQueryString(string query)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (string.IsNullOrEmpty(query))
+                return result;
+
+            // 先頭の ? を除去
+            if (query.StartsWith("?"))
+                query = query.Substring(1);
+
+            // & で分割してキーと値のペアを取得
+            string[] pairs = query.Split('&');
+            foreach (string pair in pairs)
+            {
+                int equalsIndex = pair.IndexOf('=');
+                if (equalsIndex > 0)
+                {
+                    string key = pair.Substring(0, equalsIndex);
+                    string value = pair.Substring(equalsIndex + 1);
+                    result[key] = value;
+                }
+            }
+
+            return result;
         }
     }
 }
