@@ -773,26 +773,26 @@
                 BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" Margin="6,0">
-                    <Menu Background="Transparent" FontSize="13" 
+                    <Menu Background="Transparent" FontSize="13"
                           FontFamily="Segoe UI, Segoe UI Emoji, Noto Color Emoji, Arial Unicode MS">
-                        <MenuItem Header="File">
-                            <MenuItem Header="New Project" Command="{Binding NewProjectCommand}"/>
-                            <MenuItem Header="New Folder" Command="{Binding NewFolderCommand}"/>
+                        <MenuItem Header="ファイル">
+                            <MenuItem Header="新規プロジェクト" Command="{Binding NewProjectCommand}"/>
+                            <MenuItem Header="新規フォルダ" Command="{Binding NewFolderCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Import" Command="{Binding ImportProjectCommand}"/>
-                            <MenuItem Header="Export" Command="{Binding ExportProjectCommand}"/>
+                            <MenuItem Header="インポート" Command="{Binding ImportProjectCommand}"/>
+                            <MenuItem Header="エクスポート" Command="{Binding ExportProjectCommand}"/>
                         </MenuItem>
-                        <MenuItem Header="Edit">
-                            <MenuItem Header="Edit Project/Folder" Command="{Binding EditProjectCommand}"/>
-                            <MenuItem Header="Move Project" Command="{Binding MoveToFolderCommand}"/>
-                            <MenuItem Header="Delete" Command="{Binding DeleteProjectCommand}"/>
+                        <MenuItem Header="編集">
+                            <MenuItem Header="プロジェクト・フォルダ編集" Command="{Binding EditProjectCommand}"/>
+                            <MenuItem Header="プロジェクト移動" Command="{Binding MoveToFolderCommand}"/>
+                            <MenuItem Header="削除" Command="{Binding DeleteProjectCommand}"/>
                         </MenuItem>
-                        <MenuItem Header="View"/>
-                        <MenuItem Header="Tools">
-                            <MenuItem Header="Create Test Folders" Command="{Binding CreateTestFoldersCommand}"/>
-                            <MenuItem Header="Color Settings" Command="{Binding ShowColorSettingsCommand}"/>
+                        <MenuItem Header="表示"/>
+                        <MenuItem Header="ツール">
+                            <MenuItem Header="テストフォルダ作成" Command="{Binding CreateTestFoldersCommand}"/>
+                            <MenuItem Header="色設定" Command="{Binding ShowColorSettingsCommand}"/>
                         </MenuItem>
-                        <MenuItem Header="Help" Command="{Binding ShowHelpCommand}"/>
+                        <MenuItem Header="ヘルプ" Command="{Binding ShowHelpCommand}"/>
                     </Menu>
                 </StackPanel>
                 

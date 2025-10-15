@@ -2,7 +2,7 @@
 <Window x:Class="ModernLauncher.Views.EditItemDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Edit Item"
+        Title="アイテム編集"
         Height="720"
         Width="600"
         WindowStartupLocation="CenterOwner"
@@ -199,7 +199,7 @@
                       Padding="24">
             <StackPanel>
                 <!-- Header -->
-                <TextBlock Text="Edit Item" 
+                <TextBlock Text="アイテムを編集"
                            Style="{StaticResource HeaderStyle}"
                            HorizontalAlignment="Center"/>
 
@@ -222,37 +222,37 @@
                     </Grid.RowDefinitions>
 
                     <!-- Name Field -->
-                    <TextBlock Grid.Row="0" 
-                               Text="Name" 
+                    <TextBlock Grid.Row="0"
+                               Text="名前"
                                Style="{StaticResource LabelStyle}"/>
-                    <TextBox Grid.Row="1" 
+                    <TextBox Grid.Row="1"
                              x:Name="NameTextBox"
                              Style="{StaticResource ModernTextBoxStyle}"
                              Margin="0,0,0,18"/>
 
                     <!-- Path Field -->
-                    <TextBlock Grid.Row="2" 
-                               Text="Path" 
+                    <TextBlock Grid.Row="2"
+                               Text="パス"
                                Style="{StaticResource LabelStyle}"/>
                     <Grid Grid.Row="3" Margin="0,0,0,18">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" 
+                        <TextBox Grid.Column="0"
                                  x:Name="PathTextBox"
                                  Style="{StaticResource ModernTextBoxStyle}"
                                  Margin="0,0,10,0"/>
-                        <Button Grid.Column="1" 
+                        <Button Grid.Column="1"
                                 x:Name="BrowseButton"
-                                Content="Browse"
+                                Content="参照"
                                 Style="{StaticResource BrowseButtonStyle}"
                                 Click="BrowseButton_Click"/>
                     </Grid>
 
                     <!-- Project Field -->
                     <TextBlock Grid.Row="4"
-                               Text="Project"
+                               Text="プロジェクト"
                                Style="{StaticResource LabelStyle}"/>
                     <ComboBox Grid.Row="5"
                               x:Name="ProjectComboBox"
@@ -262,7 +262,7 @@
 
                     <!-- Category Field -->
                     <TextBlock Grid.Row="6"
-                               Text="Category"
+                               Text="分類"
                                Style="{StaticResource LabelStyle}"/>
                     <Grid Grid.Row="7" Margin="0,0,0,18">
                         <Grid.ColumnDefinitions>
@@ -284,7 +284,7 @@
 
                     <!-- Description Field -->
                     <TextBlock Grid.Row="8"
-                               Text="Description"
+                               Text="説明"
                                Style="{StaticResource LabelStyle}"/>
                     <TextBox Grid.Row="9"
                              x:Name="DescriptionTextBox"
@@ -293,24 +293,24 @@
 
                     <!-- Launch Options -->
                     <TextBlock Grid.Row="10"
-                               Text="Launch Options"
+                               Text="起動オプション"
                                Style="{StaticResource LabelStyle}"/>
                     <CheckBox Grid.Row="11"
                               x:Name="VSCodeCheckBox"
                               Content="⚡ VSCodeで開く"
                               Style="{StaticResource ModernCheckBoxStyle}"
                               Margin="0,0,0,8"
-                              ToolTip="Check this option to open the item with Visual Studio Code"/>
+                              ToolTip="Visual Studio Codeで開くオプションをチェック"/>
                     <CheckBox Grid.Row="11"
                               x:Name="OfficeCheckBox"
                               Content="📋 Officeで開く"
                               Style="{StaticResource ModernCheckBoxStyle}"
                               Margin="0,32,0,18"
-                              ToolTip="Check this option to open the item with Microsoft Office applications"/>
+                              ToolTip="Microsoft Office アプリで開くオプションをチェック"/>
 
                     <!-- Groups Field -->
                     <TextBlock Grid.Row="12"
-                               Text="Groups"
+                               Text="グループ"
                                Style="{StaticResource LabelStyle}"/>
                     <ListBox Grid.Row="13"
                              x:Name="GroupsListBox"
@@ -336,18 +336,18 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- OK Button -->
-                <Button Grid.Column="1" 
+                <Button Grid.Column="1"
                         x:Name="OkButton"
-                        Content="Save"
+                        Content="保存"
                         Style="{StaticResource PrimaryButtonStyle}"
                         IsDefault="True"
                         Margin="0,0,12,0"
                         Click="OkButton_Click"/>
 
                 <!-- Cancel Button -->
-                <Button Grid.Column="2" 
+                <Button Grid.Column="2"
                         x:Name="CancelButton"
-                        Content="Cancel"
+                        Content="キャンセル"
                         Style="{StaticResource SecondaryButtonStyle}"
                         IsCancel="True"
                         Click="CancelButton_Click"/>
