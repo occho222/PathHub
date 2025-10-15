@@ -322,6 +322,10 @@ namespace ModernLauncher.Services
                     var host = uri.Host.ToLower();
                     var lowerPath = path.ToLower();
 
+                    // OneNoteの判定を最優先（.oneが含まれていればOneNote）
+                    if (lowerPath.Contains(".one"))
+                        return "OneNote";
+
                     if (host.Contains("github.com"))
                         return "GitHubURL";
                     else if (host.Contains("gitlab.com") || lowerPath.Contains("gitlab"))
@@ -332,9 +336,8 @@ namespace ModernLauncher.Services
                         return "Google Drive";
                     else if (host.Contains("teams.microsoft.com") || host.Contains("teams.live.com"))
                         return "MicrosoftTeams";
-                    else if (lowerPath.Contains("onenote") || lowerPath.Contains(".one") ||
-                             (host.Contains("sharepoint.com") && lowerPath.Contains("onenote.aspx")) ||
-                             (host.Contains("onedrive.live.com") && lowerPath.Contains("onenote:")))
+                    else if (lowerPath.Contains("onenote") ||
+                             (host.Contains("sharepoint.com") && lowerPath.Contains("onenote.aspx")))
                         return "OneNote";
                     else if (host.Contains("sharepoint.com") || host.Contains(".sharepoint.com") ||
                              host.EndsWith("sharepoint.com") || host.Contains("office365.sharepoint.com"))
