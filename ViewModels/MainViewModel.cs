@@ -731,6 +731,13 @@ namespace ModernLauncher.ViewModels
             }
             else if (CurrentProject != null)
             {
+                // 各アイテムにプロジェクト情報を設定
+                foreach (var item in CurrentProject.Items)
+                {
+                    item.ProjectName = CurrentProject.Name;
+                    item.FolderPath = GetProjectFolderPath(CurrentProject);
+                }
+
                 var items = string.IsNullOrEmpty(SearchText)
                     ? CurrentProject.Items
                     : FilterItems(CurrentProject.Items, SearchText);
@@ -992,11 +999,11 @@ namespace ModernLauncher.ViewModels
             }
         }
 
-        private void BuildProjectHierarchy()
+        private void BuildProjectHierarchy(bool suppressAutoSelection = false)
         {
             // 現在選択されているプロジェクトのIDを保存
             var currentSelectedProjectId = SelectedProjectNode?.Id;
-            
+
             ProjectNodes.Clear();
             var nodeMap = new Dictionary<string, ProjectNode>();
 
@@ -1013,7 +1020,7 @@ namespace ModernLauncher.ViewModels
                     Project = project.IsFolder ? null : project // フォルダーの場合はnull、プロジェクトの場合は実際のProjectオブジェクトを設定
                 };
                 nodeMap[project.Id] = node;
-                
+
                 // デバッグ用ログを追加
                 System.Diagnostics.Debug.WriteLine($"BuildProjectHierarchy: Created node {project.Name} (IsFolder: {project.IsFolder}, ItemCount: {(project.IsFolder ? 0 : project.Items?.Count ?? 0)})");
             }
@@ -1034,12 +1041,12 @@ namespace ModernLauncher.ViewModels
 
             // ソート
             SortProjectNodes(ProjectNodes);
-            
+
             // すべてのノードのDisplayNameを更新
             RefreshAllNodeDisplayNames(ProjectNodes);
-            
-            // 以前に選択されていたプロジェクトがあれば再選択
-            if (!string.IsNullOrEmpty(currentSelectedProjectId))
+
+            // 以前に選択されていたプロジェクトがあれば再選択(抑制フラグがfalseの場合のみ)
+            if (!suppressAutoSelection && !string.IsNullOrEmpty(currentSelectedProjectId))
             {
                 var nodeToSelect = FindProjectNode(currentSelectedProjectId);
                 if (nodeToSelect != null)
@@ -2402,8 +2409,10 @@ namespace ModernLauncher.ViewModels
                         var oldName = project.Name;
                         project.Name = dialog.ProjectName;
                         project.ParentId = selectedParentId;
-                        
+
+                        System.Diagnostics.Debug.WriteLine($"EditProject: Before save - Name='{project.Name}', ParentId='{project.ParentId}', IsFolder={project.IsFolder}");
                         projectService.SaveProject(project);
+                        System.Diagnostics.Debug.WriteLine($"EditProject: After save - Name='{project.Name}', ParentId='{project.ParentId}', IsFolder={project.IsFolder}");
                         
                         var projectInfoList = Projects.Select(p => new ProjectInfo
                         {
@@ -2415,16 +2424,14 @@ namespace ModernLauncher.ViewModels
                         }).ToList();
                         
                         projectService.SaveProjectList(projectInfoList);
-                        
-                        // 階層構造を再構築
-                        BuildProjectHierarchy();
-                        
+
+                        // 階層構造を再構築(再選択は手動で行うため、自動再選択を抑制)
+                        BuildProjectHierarchy(suppressAutoSelection: true);
+
                         // 編集されたプロジェクトを再選択
                         var editedNode = FindProjectNode(project.Id);
                         if (editedNode != null)
                         {
-                            SelectedProjectNode = editedNode;
-                            
                             // 移動先フォルダーを展開
                             if (selectedParentId != null)
                             {
@@ -2434,19 +2441,14 @@ namespace ModernLauncher.ViewModels
                                     parentNode.IsExpanded = true;
                                 }
                             }
-                            
+
+                            // SelectedProjectNodeを設定することで、HandleProjectNodeSelectionChangeが呼ばれ、
+                            // CurrentProjectが自動的に設定され、UIが更新される
+                            SelectedProjectNode = editedNode;
+
                             // UI表示を強制的に更新
                             System.Windows.Application.Current.Dispatcher.BeginInvoke(new System.Action(() =>
                             {
-                                // プロジェクトの場合は詳細表示も更新
-                                if (!project.IsFolder)
-                                {
-                                    CurrentProject = project;
-                                    UpdateGroupList();
-                                    SelectedViewGroup = null;
-                                    ShowAllItems();
-                                }
-                                
                                 RefreshProjectNodeDisplayNames();
                                 UpdateStatusText();
                             }), System.Windows.Threading.DispatcherPriority.Render);
