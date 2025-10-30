@@ -70,6 +70,27 @@ namespace ModernLauncher.Views
 
             // MainListViewの横スクロール問題を修正
             SetupMainListViewScrolling();
+
+            // アプリ起動時に自動バックアップを作成
+            CreateAutoBackupOnStartup();
+        }
+
+        /// <summary>
+        /// アプリ起動時に自動バックアップを作成
+        /// </summary>
+        private void CreateAutoBackupOnStartup()
+        {
+            try
+            {
+                var backupService = new PathHub.Services.BackupService();
+                // 最大10個の自動バックアップを保持
+                backupService.CreateAutoBackupOnStartup(maxBackups: 10);
+            }
+            catch (Exception ex)
+            {
+                // エラーが発生してもアプリの起動を妨げない
+                System.Diagnostics.Debug.WriteLine($"自動バックアップ作成エラー: {ex.Message}");
+            }
         }
 
         private void SetupTreeViewDragDrop()
@@ -301,6 +322,49 @@ namespace ModernLauncher.Views
             {
                 MessageBox.Show($"クリップボードの処理中にエラーが発生しました: {ex.Message}", "エラー",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // バックアップ管理ウィンドウを開く
+        private void OpenBackupManager_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var backupWindow = new PathHub.Views.BackupManagerWindow
+                {
+                    Owner = this
+                };
+
+                var result = backupWindow.ShowDialog();
+
+                // 復元が実行された場合はアプリケーションを再起動
+                if (result == true)
+                {
+                    var restartResult = MessageBox.Show(
+                        "復元が完了しました。変更を反映するにはアプリケーションを再起動する必要があります。\n\n今すぐ再起動しますか？",
+                        "再起動の確認",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question
+                    );
+
+                    if (restartResult == MessageBoxResult.Yes)
+                    {
+                        // アプリケーションを再起動
+                        System.Diagnostics.Process.Start(
+                            System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName
+                        );
+                        Application.Current.Shutdown();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"バックアップ管理ウィンドウを開く際にエラーが発生しました。\n\n{ex.Message}",
+                    "エラー",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
     }

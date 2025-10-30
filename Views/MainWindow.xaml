@@ -781,6 +781,8 @@
                             <Separator/>
                             <MenuItem Header="インポート" Command="{Binding ImportProjectCommand}"/>
                             <MenuItem Header="エクスポート" Command="{Binding ExportProjectCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="バックアップ管理" Click="OpenBackupManager_Click"/>
                         </MenuItem>
                         <MenuItem Header="編集">
                             <MenuItem Header="プロジェクト・フォルダ編集" Command="{Binding EditProjectCommand}"/>
