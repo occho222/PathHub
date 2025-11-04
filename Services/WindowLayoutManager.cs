@@ -33,7 +33,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"–‘OƒEƒBƒ“ƒhƒEƒŒƒCƒAƒEƒg‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ï¿½ï¿½ï¿½Oï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½Ì“Ç‚İï¿½ï¿½İ‚Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: {ex.Message}");
                 _windowLayoutSettings = new WindowLayoutSettings();
                 CenterWindowOnScreen(window);
             }
@@ -43,14 +43,14 @@ namespace ModernLauncher.Services
         {
             if (_windowLayoutSettings == null) return;
 
-            // ƒEƒBƒ“ƒhƒEƒTƒCƒY‚ğİ’è
+            // ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Tï¿½Cï¿½Yï¿½ï¿½İ’ï¿½
             if (_windowLayoutSettings.WindowWidth > 0 && _windowLayoutSettings.WindowHeight > 0)
             {
                 window.Width = _windowLayoutSettings.WindowWidth;
                 window.Height = _windowLayoutSettings.WindowHeight;
             }
 
-            // ƒEƒBƒ“ƒhƒEˆÊ’u‚ğİ’è
+            // ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ê’uï¿½ï¿½İ’ï¿½
             if (_windowLayoutSettings.WindowLeft >= 0 && _windowLayoutSettings.WindowTop >= 0)
             {
                 var screenBounds = SystemParameters.WorkArea;
@@ -70,7 +70,7 @@ namespace ModernLauncher.Services
                 CenterWindowOnScreen(window);
             }
 
-            // Å‘å‰»ó‘Ô‚ğİ’è
+            // ï¿½Å‘å‰»ï¿½ï¿½Ô‚ï¿½İ’ï¿½
             if (_windowLayoutSettings.IsMaximized)
             {
                 window.WindowState = WindowState.Maximized;
@@ -96,7 +96,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ƒŒƒCƒAƒEƒgİ’è‚Ì“K—p‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ï¿½ï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½İ’ï¿½Ì“Kï¿½pï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: {ex.Message}");
             }
         }
 
@@ -118,22 +118,22 @@ namespace ModernLauncher.Services
             var leftPanel = window.FindName("LeftPanel") as Grid;
             if (leftPanel == null) return;
 
-            // SmartLauncher‚Ì‚‚³İ’è
+            // SmartLauncherï¿½Ìï¿½ï¿½ï¿½ï¿½İ’ï¿½
             if (leftPanel.RowDefinitions.Count > 1)
             {
                 leftPanel.RowDefinitions[1].Height = new GridLength(_windowLayoutSettings.SmartLauncherHeight);
             }
 
-            // ƒvƒƒWƒFƒNƒgƒGƒŠƒA‚Ì‚‚³İ’è
+            // ï¿½vï¿½ï¿½ï¿½Wï¿½Fï¿½Nï¿½gï¿½Gï¿½ï¿½ï¿½Aï¿½Ìï¿½ï¿½ï¿½ï¿½İ’ï¿½
             if (leftPanel.RowDefinitions.Count > 4)
             {
                 leftPanel.RowDefinitions[4].Height = new GridLength(_windowLayoutSettings.ProjectAreaHeight);
             }
 
-            // ƒOƒ‹[ƒvƒGƒŠƒA‚Ì‚‚³İ’è - ”ä—á“I‚ÈƒTƒCƒYİ’è‚É•ÏX
+            // ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½Gï¿½ï¿½ï¿½Aï¿½Ìï¿½ï¿½ï¿½ï¿½İ’ï¿½ - ï¿½ï¿½ï¿½Iï¿½ÈƒTï¿½Cï¿½Yï¿½İ’ï¿½É•ÏX
             if (leftPanel.RowDefinitions.Count > 7)
             {
-                // 2*‚Ì”ä—áİ’è‚ğˆÛ‚µAÅ¬‚‚³‚Ì‚İ“®“I‚É’²®
+                // 2*ï¿½Ì”ï¿½ï¿½İ’ï¿½ï¿½ï¿½Ûï¿½ï¿½ï¿½ï¿½Aï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚İ“ï¿½ï¿½Iï¿½É’ï¿½ï¿½ï¿½
                 leftPanel.RowDefinitions[7].Height = new GridLength(2, GridUnitType.Star);
                 leftPanel.RowDefinitions[7].MinHeight = Math.Max(50, _windowLayoutSettings.GroupAreaHeight * 0.3);
             }
@@ -146,6 +146,40 @@ namespace ModernLauncher.Services
                 var mainListView = window.FindName("MainListView") as ListView;
                 if (mainListView?.View is GridView gridView)
                 {
+                    // åˆ—é †åºã®å¾©å…ƒ
+                    var columnOrder = _windowLayoutSettings?.ColumnOrder;
+                    if (columnOrder != null && columnOrder.Count > 0)
+                    {
+                        var columnMap = new Dictionary<string, GridViewColumn>();
+                        foreach (var column in gridView.Columns)
+                        {
+                            if (column.Header is GridViewColumnHeader header && header.Tag is string tag)
+                            {
+                                columnMap[tag] = column;
+                            }
+                        }
+
+                        // ä¿å­˜ã•ã‚ŒãŸé †åºã«åŸºã¥ã„ã¦åˆ—ã‚’ä¸¦ã³æ›¿ãˆ
+                        gridView.Columns.Clear();
+                        foreach (var tag in columnOrder)
+                        {
+                            if (columnMap.ContainsKey(tag))
+                            {
+                                gridView.Columns.Add(columnMap[tag]);
+                            }
+                        }
+
+                        // ãƒãƒƒãƒ—ã«ã‚ã‚‹ãŒé †åºãƒªã‚¹ãƒˆã«ãªã„åˆ—ã‚’æœ«å°¾ã«è¿½åŠ ï¼ˆæ–°ã—ãè¿½åŠ ã•ã‚ŒãŸåˆ—ã®å ´åˆï¼‰
+                        foreach (var kvp in columnMap)
+                        {
+                            if (!columnOrder.Contains(kvp.Key))
+                            {
+                                gridView.Columns.Add(kvp.Value);
+                            }
+                        }
+                    }
+
+                    // åˆ—å¹…ã®å¾©å…ƒ
                     var columnWidths = _windowLayoutSettings?.ColumnWidths;
                     if (columnWidths != null)
                     {
@@ -164,7 +198,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GridView—ñ•‚Ìİ’è‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GridViewï¿½ñ•‚Ìİ’ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: {ex.Message}");
             }
         }
 
@@ -183,7 +217,7 @@ namespace ModernLauncher.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ƒEƒBƒ“ƒhƒEƒŒƒCƒAƒEƒg‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½Ì•Û‘ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: {ex.Message}");
             }
         }
 
@@ -230,7 +264,7 @@ namespace ModernLauncher.Services
 
             if (leftPanel.RowDefinitions.Count > 7)
             {
-                // ƒOƒ‹[ƒvƒGƒŠƒA‚Í”ä—áİ’è‚È‚Ì‚ÅÀÛ‚Ì‚‚³‚ğ•Û‘¶
+                // ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½Gï¿½ï¿½ï¿½Aï¿½Í”ï¿½ï¿½İ’ï¿½È‚Ì‚Åï¿½ï¿½Û‚Ìï¿½ï¿½ï¿½ï¿½ï¿½Û‘ï¿½
                 _windowLayoutSettings.GroupAreaHeight = Math.Max(50, leftPanel.RowDefinitions[7].ActualHeight);
             }
         }
@@ -243,21 +277,24 @@ namespace ModernLauncher.Services
                 if (mainListView?.View is GridView gridView && _windowLayoutSettings != null)
                 {
                     var columnWidths = new Dictionary<string, double>();
-                    
+                    var columnOrder = new List<string>();
+
                     foreach (var column in gridView.Columns)
                     {
                         if (column.Header is GridViewColumnHeader header && header.Tag is string tag)
                         {
                             columnWidths[tag] = column.ActualWidth;
+                            columnOrder.Add(tag);
                         }
                     }
-                    
+
                     _windowLayoutSettings.ColumnWidths = columnWidths;
+                    _windowLayoutSettings.ColumnOrder = columnOrder;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GridView—ñ•‚Ì•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GridViewï¿½ñ•‚Ì•Û‘ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: {ex.Message}");
             }
         }
 

@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace ModernLauncher.Models
 {
     /// <summary>
-    /// ƒEƒBƒ“ƒhƒEƒŒƒCƒAƒEƒgİ’è‚ğ•Û‘¶E•œŒ³‚·‚é‚½‚ß‚Ìƒ‚ƒfƒ‹
+    /// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½İ’ï¿½ï¿½Û‘ï¿½ï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½fï¿½ï¿½
     /// </summary>
     public class WindowLayoutSettings : INotifyPropertyChanged
     {
@@ -16,13 +16,13 @@ namespace ModernLauncher.Models
         private double windowTop = 100;
         private bool isMaximized = false;
         
-        // ¶‘¤ƒpƒlƒ‹‚Ìİ’è
+        // ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½lï¿½ï¿½ï¿½Ìİ’ï¿½
         private double leftPanelWidth = 400;
         private double smartLauncherHeight = 100;
         private double projectAreaHeight = 200;
-        private double groupAreaHeight = 150; // ƒfƒtƒHƒ‹ƒg’l‚ğ‘å‚«‚­‚µA”ä—áİ’è‚É‘Î‰
+        private double groupAreaHeight = 150; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½lï¿½ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½İ’ï¿½É‘Î‰ï¿½
         
-        // GridView—ñ•‚Ìİ’è
+        // GridViewï¿½ñ•‚Ìİ’ï¿½
         private Dictionary<string, double> columnWidths = new Dictionary<string, double>
         {
             { "Category", 130 },
@@ -34,8 +34,11 @@ namespace ModernLauncher.Models
             { "FolderPath", 120 },
             { "LastAccessed", 140 }
         };
-        
-        // ƒ\[ƒgİ’è
+
+        // GridViewåˆ—é †åºã®è¨­å®š
+        private List<string>? columnOrder;
+
+        // ï¿½\ï¿½[ï¿½gï¿½İ’ï¿½
         private string? lastSortColumn;
         private bool isAscending = true;
 
@@ -109,6 +112,12 @@ namespace ModernLauncher.Models
         {
             get => isAscending;
             set => SetProperty(ref isAscending, value);
+        }
+
+        public List<string>? ColumnOrder
+        {
+            get => columnOrder;
+            set => SetProperty(ref columnOrder, value);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
